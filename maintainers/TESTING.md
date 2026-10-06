@@ -46,6 +46,17 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] Search (press /) finds tasks and people. N opens New task.
 - [ ] Phone width (Chrome's device toolbar): the menu button opens the sidebar, pages stack, no sideways scrolling.
 
+**The assistant**
+- [ ] Setup step 1 asks everything in one message, including "Do you record your calls? With what?"
+- [ ] Gmail or Microsoft 365 connects by signing in; Claude says what it can see.
+- [ ] A call recorder (Fathom, Fireflies and so on) connects; Claude names your latest call.
+- [ ] For an app that needs a key, `bash setup/scripts/save-key.sh NAME` stores it in Keychain; after restarting Claude it can use it, and the key never appeared in chat.
+- [ ] First run: Replies fills with real emails that need an answer, each with a sensible draft. Draft opens it in Gmail or Outlook, addressed and written.
+- [ ] Calls shows recent calls with summaries, actions in Review and a follow-up draft.
+- [ ] Brain dump "pay HMRC tax bill", then "sort my brain dump": a task with a GOV.UK guide and a suggested time; Approve, then Add to calendar opens a filled-in event.
+- [ ] A scheduled task in the Claude app running `/check-in` hourly updates the app on its own (watch the "Claude checked at" line change).
+- [ ] Claude never sends an email, sends a note-taker to a call, or changes a calendar event without a specific yes.
+
 **Skills**
 - [ ] "Help me reply to [an email in the test inbox]": a draft in your voice, offered as a draft, never sent.
 - [ ] "Chase [a client] about invoice 1042 for £340": specific, right firmness.

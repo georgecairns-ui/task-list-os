@@ -1,6 +1,6 @@
 # Files
 
-Your business documents, in numbered folders so they always sort the same way. Each folder has a short README saying what belongs in it. Claude suggests where things go (see `skills/file-it`) and only moves anything once you agree.
+Your business documents, in numbered folders so they always sort the same way. Each folder has a short README saying what belongs in it. Claude suggests where things go (see `.claude/skills/file-it`) and only moves anything once you agree.
 
 | Folder | For |
 |---|---|

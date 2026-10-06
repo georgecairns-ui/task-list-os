@@ -36,6 +36,8 @@
       <nav class="nav" id="nav">
         <a class="nav__item" href="#today" data-view="today"><span data-icon="sun"></span>Today<span class="nav__count" data-count="today"></span></a>
         <a class="nav__item" href="#review" data-view="review"><span data-icon="sparkle"></span>Review<span class="nav__count nav__count--accent" data-count="review"></span></a>
+        <a class="nav__item" href="#replies" data-view="replies"><span data-icon="mail"></span>Replies<span class="nav__count nav__count--accent" data-count="replies"></span></a>
+        <a class="nav__item" href="#calls" data-view="calls"><span data-icon="phone"></span>Calls<span class="nav__count" data-count="calls"></span></a>
         <a class="nav__item" href="#dump" data-view="dump"><span data-icon="pencil"></span>Brain dump<span class="nav__count" data-count="dump"></span></a>
         <div class="nav__gap"></div>
         <a class="nav__item" href="#week" data-view="week"><span data-icon="columns"></span>This week</a>
@@ -50,9 +52,6 @@
       <div class="sidebar__foot">
         <div class="saved-mini" id="savedMini"></div>
         <div class="sidebar__row">
-          <label class="switch" title="Show a made-up business for videos and screenshots">
-            <input type="checkbox" id="demoToggle"><span class="switch__track" aria-hidden="true"></span>Demo
-          </label>
           <span class="sidebar__spacer"></span>
           <button type="button" class="icon-btn" data-action="shortcuts" aria-label="Keyboard shortcuts"><span data-icon="keyboard"></span></button>
           <button type="button" class="icon-btn" data-action="settings" aria-label="Settings"><span data-icon="settings"></span></button>
@@ -127,6 +126,11 @@
           <label class="field"><span class="field__label">Minutes saved per plan</span><input class="input" type="number" name="minutesSavedPerPlan" min="0" max="240"></label>
         </div>
         <p class="field__hint">The 2 minute values drive the time-saved estimate. A rough guide, not a measurement.</p>
+        <div class="field-row">
+          <label class="field"><span class="field__label">Drafts open in</span><select class="select" name="emailProvider"></select></label>
+          <label class="field"><span class="field__label">Add to calendar opens</span><select class="select" name="calendarProvider"></select></label>
+        </div>
+        <label class="switch" title="Shows a made-up business. Nothing is saved while it's on."><input type="checkbox" id="demoToggle"><span class="switch__track" aria-hidden="true"></span>Show sample data instead of mine (for screenshots and videos)</label>
         <div class="settings-folder"><div><span class="label">Your folder</span><p id="settingsFolder"></p></div><button type="button" class="btn btn--sm" id="changeFolderBtn">Use a different folder</button></div>
       </div>
       <div class="modal__foot"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn--primary">Save</button></div>
@@ -140,7 +144,8 @@
       <div><span class="kbd">N</span> New task</div>
       <div><span class="kbd">/</span> Search</div>
       <div><span class="kbd">1</span> to <span class="kbd">9</span> Go to a page in the sidebar</div>
-      <div><span class="kbd">A</span> Approve the first suggestion in Review</div>
+      <div><span class="kbd">A</span> Approve the first suggestion on the page</div>
+      <div><span class="kbd">D</span> Open the first reply draft on the page</div>
       <div><span class="kbd">Esc</span> Close a panel or pop-up</div>
       <div><span class="kbd">&#8984;</span> or <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> Add your brain dump</div>
     </div>
@@ -152,8 +157,11 @@
   <script src="app/model.js"></script>
   <script src="app/demo-data.js"></script>
   <script src="app/components.js"></script>
+  <script src="app/links.js"></script>
   <script src="app/view-today.js"></script>
   <script src="app/view-review.js"></script>
+  <script src="app/view-replies.js"></script>
+  <script src="app/view-calls.js"></script>
   <script src="app/view-dump.js"></script>
   <script src="app/view-week.js"></script>
   <script src="app/view-calendar.js"></script>

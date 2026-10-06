@@ -14,17 +14,29 @@ Read it, to spot things that need doing, and prepare draft replies for you to ch
 
 The same goes for your calendar, accounts and other apps: Claude reads and drafts. It doesn't pay, book, post, accept or change anything for you. If you ever ask it to do one specific thing (for example "add this meeting to my calendar"), it confirms the exact thing first.
 
+## What about my call recordings?
+
+If you connect your call recorder, Claude reads the summaries and transcripts to write each call up: a short summary, what was decided, your actions and a follow-up email draft. It never sends a note-taker to a meeting, shares a recording or invites anyone. Full transcripts stay in your recorder; only the short write-up goes into your task list.
+
+## What happens when I press Draft or Add to calendar?
+
+Draft opens a new email in Gmail, Outlook or your email app, already written and addressed. Nothing is sent until you press send there. Add to calendar opens a new event, already filled in, for you to save. The task list app itself never sends anything and holds no passwords.
+
 ## Does Claude keep copies of my emails?
 
 No. When Claude spots a task in an email, it writes a short task title and notes where it came from (who it was from, the subject and the date). It doesn't copy the email into this folder. When it learns your writing style, it keeps notes on your style, not your emails.
 
 ## What about passwords and keys?
 
-Claude never asks for your passwords. When you connect an app, you sign in on that app's own screen. If an app needs a key (a long code for a direct connection), you paste it into your computer's secure storage or the app's own settings, never into the chat and never into this folder.
+Claude never asks for your passwords. When you connect an app, you sign in on that app's own screen. If an app needs a key (a long code for a direct connection), Claude gives you one line to paste into the Terminal. It asks for the key and stores it in your computer's secure keychain (on Windows, your user settings). The key never goes into the chat or into this folder.
 
 ## Can I see what's connected and switch it off?
 
 Yes. `context/tools.md` lists every connected app and what Claude may do in each. To disconnect an app, remove it in the Claude app's settings (usually under Connectors), and ask Claude to update the list.
+
+## Does it run when I'm not there?
+
+Only if you turn on hourly check-ins during setup. Then the Claude app checks your inbox, calls and calendar every hour during your working day, while your computer is on and the app is open. It uses a little of your Claude allowance each time. You can pause it in the Claude app.
 
 ## Who sees my information?
 

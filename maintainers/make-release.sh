@@ -35,9 +35,11 @@ if any(not t.get("example") for t in data.get("tasks", [])):
     problems.append("apps/task-list/data/tasks.json has tasks that are not the examples")
 if data.get("plan", {}).get("date") or data.get("activity"):
     problems.append("apps/task-list/data/tasks.json has a plan or activity in it")
-for key in ("events", "people", "dump"):
+for key in ("events", "people", "dump", "replies", "meetings"):
     if data.get(key):
         problems.append("apps/task-list/data/tasks.json has " + key + " in it")
+if (data.get("triage") or {}).get("lastRunAt"):
+    problems.append("apps/task-list/data/tasks.json has a triage run in it")
 if (data.get("week") or {}).get("goals"):
     problems.append("apps/task-list/data/tasks.json has weekly goals in it")
 if any(data.get("settings", {}).get(k) for k in ("yourName", "businessName")):
@@ -57,17 +59,18 @@ PYEOF
 # ---------- 2. Copy, leaving out what customers don't need ----------
 mkdir -p "$OUT" "$DIST"
 rsync -a \
-  --exclude '.git' --exclude '.gitignore' --exclude 'dist' --exclude 'maintainers' --exclude '.claude' \
+  --exclude '.git' --exclude '.gitignore' --exclude 'dist' --exclude 'maintainers' \
+  --exclude '.claude/launch.json' --exclude '.claude/settings.local.json' --exclude '.claude/.cc-writes' \
   --exclude '*.backup.json' --exclude '.DS_Store' --exclude '._*' --exclude 'Thumbs.db' --exclude 'desktop.ini' \
   "$ROOT/" "$OUT/"
 
 # ---------- 3. Checks ----------
-for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" "skills/README.md"; do
+for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" ".claude/skills/README.md" ".claude/settings.json" "setup/scripts/save-key.sh" "setup/connections/README.md"; do
   [ -e "$OUT/$f" ] || fail "missing $f"
 done
 python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$OUT/apps/task-list/data/tasks.json" || fail "tasks.json is not valid"
 if grep -rIl $'—' "$OUT" >/dev/null 2>&1; then fail "an em dash slipped in: $(grep -rIl $'—' "$OUT" | head -3)"; fi
-SKILLS=$(find "$OUT/skills" -name SKILL.md | wc -l | tr -d ' ')
+SKILLS=$(find "$OUT/.claude/skills" -name SKILL.md | wc -l | tr -d ' ')
 
 # ---------- 4. Zip (COPYFILE_DISABLE stops macOS adding hidden ._ files) ----------
 rm -f "$DIST/task-list-os.zip"

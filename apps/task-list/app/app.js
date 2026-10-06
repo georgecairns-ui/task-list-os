@@ -19,7 +19,8 @@
   const mut = M.mut;
   const $ = function (sel, root) { return (root || document).querySelector(sel); };
 
-  const VIEW_ORDER = ["today", "review", "dump", "week", "calendar", "all", "waiting", "people", "done"];
+  const VIEW_ORDER = ["today", "review", "replies", "calls", "dump", "week", "calendar", "all", "waiting", "people", "done"];
+  const L = window.TL.links;
   const narrow = function () { return window.matchMedia("(max-width: 760px)").matches; };
 
   // ---------- Screen state (not saved to the file) ----------
@@ -111,7 +112,7 @@
     if (status === "unsupported") {
       return showGate(gateCard("shrug", "One small thing", "This works in Chrome or Microsoft Edge.",
         "<p>This browser can't save changes to files on your computer. Open this same file in Google Chrome or Microsoft Edge and it will work. Both are free.</p>",
-        '<button type="button" class="btn btn--lg" data-action="demo-on">Look around with sample data</button>'));
+        ""));
     }
     if (status === "needs-permission") {
       return showGate(gateCard("welcome", "Welcome back", "Pick up where you left off.",
@@ -128,11 +129,10 @@
     }
     // needs-connect: the first visit
     showGate(gateCard("welcome", "One-time setup", "Your day, sorted by Claude. <span class=\"accent\">Approved by you.</span>",
-      "<p>Your tasks live in a file on your own computer, in the same folder Claude works from. Connect it once and everything you do here is saved straight into it.</p>" +
-      '<ol class="gate__steps"><li>Click <strong>Connect your task list</strong>.</li><li>Choose your <strong>Task List OS</strong> folder, the one with START-HERE.md in it.</li><li>When Chrome asks to let this page edit files, click <strong>Allow</strong>.</li></ol>' +
+      "<p>Claude sorts your inbox, writes up your calls and drafts your replies. Everything lands here for you to approve. It all lives in a file on your own computer, in the folder Claude works from. Connect it once.</p>" +
+      '<ol class="gate__steps"><li><span>Click <strong>Connect your task list</strong>.</span></li><li><span>Choose your <strong>Task List OS</strong> folder, the one with START-HERE.md in it.</span></li><li><span>When Chrome asks to let this page edit files, click <strong>Allow</strong>.</span></li></ol>' +
       (message ? '<p class="gate__error" role="alert">' + icon("alert") + esc(message) + "</p>" : ""),
-      '<button type="button" class="btn btn--primary btn--lg" data-action="connect">' + icon("folder") + "Connect your task list</button>" +
-      '<button type="button" class="btn btn--ghost btn--lg" data-action="demo-on">See it with sample data</button>',
+      '<button type="button" class="btn btn--primary btn--lg" data-action="connect">' + icon("folder") + "Connect your task list</button>",
       "No account, nothing to install. Your tasks never leave your computer."));
   }
 
@@ -193,6 +193,8 @@
       today: V.today.todaysTasks(data).filter(function (t) { return t.status === "open"; }).length,
       review: M.reviewCount(data),
       dump: M.unsortedDump(data).length,
+      replies: M.openReplies(data).length,
+      calls: data.meetings.filter(function (m) { return (m.actionTaskIds || []).some(function (id) { return M.isSuggestion(M.taskById(data, id)); }); }).length,
       all: M.openTasks(data).length,
       waiting: M.waitingList(data).length,
       people: data.people.length
@@ -307,8 +309,56 @@
     },
     updatePerson: function (personId, fields) {
       change(function (d) { mut.updatePerson(d, personId, fields); });
+    },
+    updateReply: function (replyId, fields) {
+      change(function (d) { mut.setReply(d, replyId, fields); });
+    },
+    updateMeetingFollowUp: function (meetingId, body) {
+      change(function (d) { const m = M.meetingById(d, meetingId); if (m) { m.followUp = Object.assign({}, m.followUp, { body: body, editedAt: new Date().toISOString() }); } });
     }
   };
+
+  // ---------- Drafts and calendar ----------
+  function openDraft(draft, after) {
+    const provider = data.settings.emailProvider || "gmail";
+    L.open(L.composeUrl(draft, provider));
+    if (after) after();
+  }
+  function addToCalendar(taskId) {
+    const t = M.taskById(data, taskId);
+    if (!t || !t.scheduledDate) return;
+    const ev = { title: t.title, date: t.scheduledDate, time: t.scheduledTime || "09:00", minutes: t.durationMinutes || 30,
+      details: [t.notes, t.guide && t.guide.summary ? "How to do it: " + t.guide.summary : ""].filter(Boolean).join("\n\n") + "\n\nFrom Task List OS" };
+    const provider = data.settings.calendarProvider || "google";
+    const url = L.calendarUrl(ev, provider);
+    if (url) L.open(url); else L.downloadIcs(ev);
+    change(function (d) { mut.calendarAdded(d, taskId); });
+  }
+  function slotText(date, time) {
+    const diff = Math.round((ui.parseDate(date) - ui.parseDate(M.todayISO())) / 86400000);
+    return (diff === 0 ? "today" : diff === 1 ? "tomorrow" : ui.parseDate(date).toLocaleDateString("en-GB", { weekday: "long" })) + " at " + M.timeLabel(time);
+  }
+  function scheduled(taskId, date, time) {
+    ui.toast("Planned for " + slotText(date, time), { icon: "calendar", duration: 7000, actionLabel: "Add to calendar", onAction: function () { addToCalendar(taskId); } });
+  }
+
+  // "When would you like to do this?" with free slots from the calendar
+  function askWhen(taskId) {
+    const t = M.taskById(data, taskId);
+    if (!t) return;
+    const slots = M.freeSlots(data, t.durationMinutes || 30, 4);
+    const chip = function (s) {
+      const diff = Math.round((ui.parseDate(s.date) - ui.parseDate(M.todayISO())) / 86400000);
+      const day = diff === 0 ? "Today" : diff === 1 ? "Tomorrow" : ui.parseDate(s.date).toLocaleDateString("en-GB", { weekday: "long" });
+      return '<button type="button" class="slot" data-when-date="' + s.date + '" data-when-time="' + s.time + '"><strong>' + esc(day) + "</strong><span>" + esc(M.timeLabel(s.time)) + "</span></button>";
+    };
+    openGeneric('<form data-form="when" data-task="' + esc(taskId) + '" autocomplete="off"><div class="modal__head"><h2 id="genericTitle">When would you like to do this?</h2><button type="button" class="icon-btn" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+      '<div class="modal__body"><p class="when__task">' + esc(t.title) + "</p>" +
+      (slots.length ? '<div><span class="label">Free in your calendar</span><div class="slots">' + slots.map(chip).join("") + "</div></div>" : "") +
+      '<div><span class="label">Or pick a time</span><div class="field-row field-row--3"><input class="input" type="date" name="date" aria-label="Day" value="' + M.todayISO() + '"><input class="input" type="time" name="time" step="900" aria-label="Time" value="09:00">' +
+      '<select class="select" name="minutes" aria-label="How long">' + [15, 30, 45, 60, 90, 120].map(function (m) { return '<option value="' + m + '"' + (m === (t.durationMinutes || 30) ? " selected" : "") + ">" + ui.minutesLabel(m) + "</option>"; }).join("") + "</select></div></div></div>" +
+      '<div class="modal__foot"><button type="button" class="btn btn--ghost" data-close>No time for now</button><span class="spacer"></span><button type="submit" class="btn btn--primary">Plan it</button></div></form>');
+  }
 
   // Approve or skip with a small, satisfying moment, then save. Undo puts it back.
   function decide(taskId, how, holder) {
@@ -323,6 +373,8 @@
     setTimeout(function () {
       change(function (d) { if (how === "approve") mut.approve(d, taskId); else mut.skip(d, taskId); }).then(function () {
         focusNextDecision();
+        const now = M.taskById(data, taskId);
+        if (how === "approve" && now && now.scheduledTime && now.scheduledAt && Date.now() - new Date(now.scheduledAt) < 5000) return scheduled(taskId, now.scheduledDate, now.scheduledTime);
         const msg = how === "approve" ? (wasNew ? "Added to your list" : "Added to today's list") : (wasNew ? "Skipped. Claude won't suggest it again" : "Skipped. It stays on your list for another day");
         ui.toast(msg, { icon: how === "approve" ? "check" : "info", actionLabel: "Undo", onAction: function () { change(function (d) { mut.unreview(d, taskId, wasNew); }); } });
       });
@@ -336,7 +388,9 @@
     setTimeout(function () {
       change(function (d) { if (how === "approve") mut.approveSchedule(d, taskId); else mut.skipSchedule(d, taskId); }).then(function () {
         focusNextDecision();
-        ui.toast(how === "approve" ? "Planned" : "Suggestion skipped", { actionLabel: "Undo", onAction: function () { change(function (d) { mut.updateTask(d, taskId, before); }); } });
+        const after = M.taskById(data, taskId);
+        if (how === "approve" && after && after.scheduledTime) scheduled(taskId, after.scheduledDate, after.scheduledTime);
+        else ui.toast(how === "approve" ? "Planned" : "Suggestion skipped", { actionLabel: "Undo", onAction: function () { change(function (d) { mut.updateTask(d, taskId, before); }); } });
       });
     }, holder && !ui.prefersReducedMotion() ? 300 : 0);
   }
@@ -440,7 +494,9 @@
   const settingsDialog = $("#settingsDialog"), settingsForm = $("#settingsForm");
   function openSettings() {
     const s = data.settings;
-    ["yourName", "businessName", "dayStarts", "dayEnds", "minutesSavedPerTask", "minutesSavedPerPlan"].forEach(function (k) { settingsForm[k].value = s[k] == null ? "" : s[k]; });
+    settingsForm.emailProvider.innerHTML = L.EMAIL_PROVIDERS.map(function (p) { return '<option value="' + p.key + '">' + esc(p.label) + "</option>"; }).join("");
+    settingsForm.calendarProvider.innerHTML = L.CALENDAR_PROVIDERS.map(function (p) { return '<option value="' + p.key + '">' + esc(p.label) + "</option>"; }).join("");
+    ["yourName", "businessName", "dayStarts", "dayEnds", "minutesSavedPerTask", "minutesSavedPerPlan", "emailProvider", "calendarProvider"].forEach(function (k) { if (s[k] != null) settingsForm[k].value = s[k]; });
     $("#settingsFolder").textContent = store.isDemo() ? "Demo mode (no folder in use)" : store.folderName();
     $("#changeFolderBtn").hidden = store.isDemo();
     settingsDialog.showModal();
@@ -451,7 +507,8 @@
       yourName: settingsForm.yourName.value.trim(), businessName: settingsForm.businessName.value.trim(),
       dayStarts: settingsForm.dayStarts.value || "08:00", dayEnds: settingsForm.dayEnds.value || "18:00",
       minutesSavedPerTask: Math.max(0, Number(settingsForm.minutesSavedPerTask.value) || 0),
-      minutesSavedPerPlan: Math.max(0, Number(settingsForm.minutesSavedPerPlan.value) || 0)
+      minutesSavedPerPlan: Math.max(0, Number(settingsForm.minutesSavedPerPlan.value) || 0),
+      emailProvider: settingsForm.emailProvider.value, calendarProvider: settingsForm.calendarProvider.value
     };
     settingsDialog.close();
     change(function (d) { mut.setSettings(d, v); }).then(function () { ui.toast("Settings saved"); });
@@ -511,6 +568,53 @@
         break;
       }
       case "quick-add": openQuickAdd(); break;
+      case "schedule-ask": askWhen(taskId); break;
+      case "pick-slot": {
+        const date = btn.getAttribute("data-date"), time = btn.getAttribute("data-time");
+        change(function (d) { mut.schedule(d, taskId, date, time); }).then(function () { scheduled(taskId, date, time); });
+        break;
+      }
+      case "add-to-calendar": addToCalendar(taskId); break;
+
+      // replies and calls
+      case "open-reply": openDrawer("reply", btn.getAttribute("data-reply") || btn.closest("[data-reply]").getAttribute("data-reply")); break;
+      case "open-meeting": openDrawer("meeting", btn.closest("[data-meeting]").getAttribute("data-meeting")); break;
+      case "reply-draft": {
+        const id = btn.closest("[data-reply]").getAttribute("data-reply");
+        const r = M.replyById(data, id);
+        if (r) openDraft(r.draft, function () {
+          change(function (d) { mut.markDraftOpened(d, id); });
+          ui.toast("Your draft is open in " + L.emailLabel(data.settings.emailProvider) + ". Check it and press send", { icon: "mail", duration: 7000, actionLabel: "I sent it", onAction: function () { change(function (d) { mut.setReply(d, id, { status: "replied" }); }); } });
+        });
+        break;
+      }
+      case "reply-done": case "reply-dismiss": case "reply-reopen": {
+        const id = btn.closest("[data-reply]").getAttribute("data-reply");
+        const status = action === "reply-done" ? "replied" : action === "reply-dismiss" ? "dismissed" : "waiting";
+        const row = btn.closest(".reply");
+        if (row && status !== "waiting") row.classList.add("is-leaving");
+        setTimeout(function () {
+          change(function (d) { mut.setReply(d, id, status === "dismissed" ? { status: status, dismissedAt: new Date().toISOString() } : { status: status }); }).then(function () {
+            if (status !== "waiting") ui.toast(status === "replied" ? "Marked as replied" : "No reply needed", { actionLabel: "Undo", onAction: function () { change(function (d) { mut.setReply(d, id, { status: "waiting" }); }); } });
+          });
+        }, row && !ui.prefersReducedMotion() ? 260 : 0);
+        break;
+      }
+      case "copy-draft": {
+        const r = M.replyById(data, btn.closest("[data-reply]").getAttribute("data-reply"));
+        if (r) ui.copyText(r.draft.body || "").then(function (ok) { ui.toast(ok ? "Draft copied" : "Couldn't copy"); });
+        break;
+      }
+      case "meeting-draft": {
+        const m = M.meetingById(data, btn.closest("[data-meeting]").getAttribute("data-meeting"));
+        if (m && m.followUp) openDraft(m.followUp, function () { ui.toast("Your follow-up is open in " + L.emailLabel(data.settings.emailProvider) + ". Check it and press send", { icon: "mail", duration: 6000 }); });
+        break;
+      }
+      case "copy-followup": {
+        const m = M.meetingById(data, btn.closest("[data-meeting]").getAttribute("data-meeting"));
+        if (m && m.followUp) ui.copyText(m.followUp.body || "").then(function (ok) { ui.toast(ok ? "Follow-up copied" : "Couldn't copy"); });
+        break;
+      }
       case "quick-add-person": openQuickAdd({ personId: (btn.closest("[data-person]") || btn).getAttribute("data-person"), today: false }); break;
       case "prep-event": generic.close(); openQuickAdd({ title: "Prepare for " + btn.getAttribute("data-title") }); break;
 
@@ -532,9 +636,7 @@
       case "dump-to-task": {
         const id = btn.closest("[data-dump]").getAttribute("data-dump");
         let made = null;
-        change(function (d) { made = mut.dumpToTask(d, id); }).then(function () {
-          ui.toast("Made a task", { actionLabel: "Open", onAction: function () { openDrawer("task", made.id); } });
-        });
+        change(function (d) { made = mut.dumpToTask(d, id); }).then(function () { askWhen(made.id); });
         break;
       }
       case "dump-remove": {
@@ -614,6 +716,17 @@
       input.value = "";
       change(function (d) { mut.addGoal(d, text); }).then(function () { const i = $("#goalAdd"); if (i) i.focus(); });
     }
+    if (kind === "when") {
+      const id = form.getAttribute("data-task");
+      const f = form.elements;
+      const pick = e.submitter && e.submitter.dataset && e.submitter.dataset.whenDate ? e.submitter : null;
+      const date = pick ? pick.dataset.whenDate : f.date.value;
+      const time = pick ? pick.dataset.whenTime : f.time.value;
+      const minutes = Number(f.minutes.value) || 30;
+      if (!date) return f.date.focus();
+      generic.close();
+      change(function (d) { mut.schedule(d, id, date, time || null, minutes); }).then(function () { if (time) scheduled(id, date, time); else ui.toast("Planned for " + ui.parseDate(date).toLocaleDateString("en-GB", { weekday: "long" })); });
+    }
     if (kind === "add-person") {
       const f = form.elements;
       const fields = { name: f.name.value.trim(), organisation: f.organisation.value.trim(), role: f.role.value, email: f.email.value.trim() };
@@ -633,9 +746,13 @@
     renderView();
   });
 
-  $("#demoToggle").addEventListener("change", function () { data = null; store.setDemo(this.checked); });
+  $("#demoToggle").addEventListener("change", function () { settingsDialog.close(); data = null; store.setDemo(this.checked); });
   document.querySelectorAll("dialog.modal").forEach(function (dlg) { dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); }); });
-  generic.addEventListener("click", function (e) { if (e.target === generic) generic.close(); });
+  generic.addEventListener("click", function (e) {
+    if (e.target === generic) return generic.close();
+    const slot = e.target.closest(".slot");
+    if (slot) { const form = slot.closest("form"); slot.type = "submit"; form.requestSubmit(slot); }
+  });
 
   // ============================================================
   // 7. Search
@@ -693,6 +810,7 @@
     if (typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector("dialog[open]")) return;
     if (e.key === "n" || e.key === "N") { e.preventDefault(); openQuickAdd(); }
     else if (e.key === "/") { e.preventDefault(); searchInput.focus(); }
+    else if (e.key === "d" || e.key === "D") { const b = $('#view [data-action="reply-draft"]'); if (b) b.click(); }
     else if (e.key === "a" || e.key === "A") { const b = $('#view [data-action="approve"], #view [data-action="approve-schedule"]'); if (b) b.click(); }
     else if (/^[1-9]$/.test(e.key)) { const v = VIEW_ORDER[Number(e.key) - 1]; if (v) go(v); }
   });

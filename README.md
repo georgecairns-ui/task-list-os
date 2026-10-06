@@ -1,52 +1,55 @@
 # Task List OS
 
-**The task list that does itself.** A free kit from [Get AI Powers](https://getaipowers.com) that sets up your Claude as a proper assistant for your small business, with a task app on top: your day, your week, your calendar and the people you work with, in one place.
+**A personal assistant for your business, run by Claude.** A free kit from [Get AI Powers](https://getaipowers.com).
 
-Every morning you say "sort my day". Claude checks your list, your inbox and your calendar, and proposes a plan, including new jobs it spotted in your email. You approve each one with a click. Admin that used to eat 2 hours feels like 10 minutes.
+Claude reads your email and drafts the replies. It writes up your calls and pulls out the actions. It turns the jumble in your head into tasks, finds time for them in your calendar, and looks up how to do the ones you're not sure about. Everything lands in one calm app for you to approve with a click.
 
-Nothing happens without your say-so. Claude reads and drafts. You decide and you send.
+Nothing goes out without you. Claude reads and drafts; you decide and you send.
 
-## What you get
+## What it does
 
-- **A task app** that opens in your browser. No account, no subscription, works offline.
-  - **Today:** Claude's plan to approve, your list, and your schedule for the day.
-  - **Review:** everything Claude suggests, in one place. Approve, edit or skip.
-  - **This week:** weekly goals, and a board you drag tasks across to plan the week.
-  - **Calendar:** your real meetings, with tasks dragged into time slots. Day, week and month.
-  - **Brain dump:** type everything on your mind. Claude turns it into tasks.
-  - **People:** a light CRM. Everyone you work with, and what's open with each of them.
-- **A guided setup** that connects Claude to your email, calendar and the apps you use, and writes up your business so Claude stops giving generic answers.
-- **15 skills** for the jobs small businesses ask for most: replies that sound like you rather than a robot, polite invoice chasers, meeting write-ups, handing work to your team, and more.
-- **A tidy folder structure** for your business documents.
+- **Sorts your inbox.** Every new email goes in a pile: needs a reply, a task, just so you know, or no action. The ones that need an answer appear on **Replies** with a draft in your voice. Press **Draft** and the email opens in Gmail or Outlook, written and addressed. Check it, press send.
+- **Writes up your calls.** If you record calls (Fathom, Fireflies, Otter, Granola, tl;dv, Read AI, Zoom, Teams or Google Meet), each one appears on **Calls** with a summary, what was decided, your actions to approve and a follow-up email ready to go.
+- **Turns your brain dump into a plan.** Type "pay my tax to HMRC" into **Brain dump**. Claude makes it a task, looks up how to do it on GOV.UK, and suggests a free slot in your calendar. Approve it, press **Add to calendar**, done.
+- **Plans your day and week.** **Today** shows Claude's plan for the day, what needs a reply and your schedule. **This week** has your goals and a board to drag tasks across. **Calendar** shows your real meetings with your tasks in the gaps.
+- **Keeps track of people.** **People** is a light CRM: everyone you work with, what's open with them and what you're waiting on.
+- **Keeps itself up to date.** If you want, Claude checks in every hour while you work, so the app is always current.
 
-## Get started (about 45 minutes, once)
+## What you need
 
-You need the Claude app (a paid Claude plan works best, for connecting email) and Google Chrome or Microsoft Edge.
+- **Claude Code**, signed in with a paid Claude plan (Pro or Max). Your email, calendar and app connections come from your Claude account, and Claude Code only uses them when it's signed in with a subscription. The Claude desktop app works too.
+- **Google Chrome or Microsoft Edge**, to open the task list app.
+- About 15 to 20 minutes, once.
 
-1. **Download this kit.** Click the green **Code** button above, then **Download ZIP**. Unzip it and move the folder somewhere permanent, such as Documents. You can rename it.
-2. **Give Claude the folder.** Open Claude and give it access to the folder. In the Claude desktop app, choose the folder when you start working on files, or in Claude Code, open the folder.
-3. **Say: "Read START-HERE.md and set me up."**
+## Get started
 
-Claude takes it from there. It asks a few questions, helps you connect your email and apps, and shows you how to open your task list. You can stop at any time and say "carry on setting up" later.
+1. **Get the kit.** Click the green **Code** button on this page, then **Download ZIP**. Unzip it and move the **Task List OS** folder somewhere permanent, such as Documents. (Or, if you use git, clone it.)
+2. **Open it in Claude Code.** Open the Terminal (on Windows, PowerShell), go into the folder and start Claude:
+   ```bash
+   cd ~/Documents/"Task List OS"
+   claude
+   ```
+   Or, in the Claude desktop app, open the Code tab and choose the folder.
+3. **Type `/setup`.**
 
-Want a look first? Double-click **Open Task List.html** (in Chrome or Edge) and click **See it with sample data** (or the **Demo** switch at the bottom of the left-hand menu). It shows a made-up business and saves nothing.
+Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. When it's done, double-click **Open Task List.html**.
+
+If an app needs a key rather than a sign-in, Claude gives you one line to paste into the Terminal. The key is stored in your computer's secure keychain, never in a chat and never in this folder.
 
 ## Every day
 
-| Say | When |
+| Say (or type the command) | What happens |
 |---|---|
-| "Sort my day" | In the morning |
-| "Plan my week" | On Monday |
-| "Sort my brain dump" | Whenever your head is full |
-| "Add [something] to my list" | Any time |
-| "Help me reply to [name]" | When an email needs answering |
-| "Wrap up my day" | At the end of the day |
-
-Open your list with **Open Task List.html**.
+| "Sort my day" (`/sort-my-day`) | Your plan for today, from your list, inbox, calls and calendar |
+| "Check in" (`/check-in`) | Anything new in your inbox, calls and calendar. Runs on its own every hour if you turn that on |
+| "Sort my brain dump" (`/sort-my-brain-dump`) | Your notes become tasks, with times and how-to guides |
+| "Plan my week" (`/plan-my-week`) | Goals for the week and a day for each task |
+| "Help me reply to Tom" | A draft in your voice |
+| "Wrap up my day" (`/wrap-up-my-day`) | What got done and what rolls over |
 
 ## Your information
 
-Everything stays in this folder on your computer and in the apps you already use. Claude never sends, deletes or pays for anything on your behalf. Read [docs/PRIVACY-AND-SAFETY.md](docs/PRIVACY-AND-SAFETY.md) for the detail.
+Your tasks and notes live in this folder on your computer. Claude reads your email, calendar and apps through the connections you approve, and only ever reads and drafts. It never sends, deletes, pays or posts for you. There's no Task List OS account or server; Get AI Powers can't see any of it. Read [docs/PRIVACY-AND-SAFETY.md](docs/PRIVACY-AND-SAFETY.md) for the detail.
 
 ## Make it yours
 
@@ -59,16 +62,20 @@ Task List OS works on its own. If you'd like your folders, business context and 
 ## What's inside
 
 ```
-START-HERE.md          Claude reads this first and runs setup
+START-HERE.md          Claude reads this first and runs setup (/setup)
 CLAUDE.md              Claude's standing instructions in this folder
 Open Task List.html    double-click to open your task list
-setup/                 the 8 setup steps, and a progress checklist
+setup/                 the 8 setup steps, a guide per app in connections/, and the key scripts
 context/               Claude's notes about your business
-skills/                saved know-how for common jobs
+.claude/skills/        saved know-how; each one also works as a command in Claude Code
 files/                 your business documents, in numbered folders
 apps/                  the task list app and its look (theme.css)
 docs/                  customising, privacy and safety
 maintainers/           for people developing Task List OS itself
 ```
+
+## Licence
+
+Free to use and change for your own business. Not for resale. See [LICENSE](LICENSE) for the plain-English terms.
 
 Fonts: Zilla Slab and Source Serif 4, under the SIL Open Font License (see `apps/shared/fonts/OFL.txt`).

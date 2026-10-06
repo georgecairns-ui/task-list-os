@@ -1,10 +1,10 @@
 # Task list: standing instructions for Claude
 
-This folder is the task list app inside Task List OS. You (Claude) and the app share one file, `data/tasks.json`. The person you work for sees it as a proper piece of software: Today, Review, Brain dump, This week, Calendar, All tasks, Waiting on, People and Done. They approve your suggestions there with one click. You keep it sorted and up to date. Read this file every time you work with the task list.
+This folder is the task list app inside Task List OS. You (Claude) and the app share one file, `data/tasks.json`. The person you work for sees it as a proper piece of software: Today, Review, Replies, Calls, Brain dump, This week, Calendar, All tasks, Waiting on, People and Done. They approve your suggestions there with one click. You keep it sorted and up to date. Read this file every time you work with the task list.
 
 The app opens from `Open Task List.html` in the main Task List OS folder (2 levels up). If setup has not happened yet (the tasks in `data/tasks.json` still have `"example": true`), follow `START-HERE.md` in the main folder first.
 
-The routines live as skills in the main folder: `skills/sort-my-day`, `skills/inbox-to-tasks`, `skills/plan-my-week`, `skills/sort-my-brain-dump` and `skills/wrap-up-my-day`. This file is the reference for the data they read and write.
+The routines live as skills in `.claude/skills/` in the main folder: `check-in` (the regular update), `triage-inbox`, `process-calls`, `sort-my-day`, `plan-my-week`, `sort-my-brain-dump`, `research-task`, `schedule-it` and `wrap-up-my-day`. This file is the reference for the data they read and write.
 
 ## The one rule: you propose, they approve
 
@@ -27,7 +27,7 @@ Everything lives in this one file. The app checks it every few seconds and saves
 {
   "about": ["..."],
   "formatVersion": 2,
-  "settings": { "yourName": "Sam", "businessName": "Fern & Finch", "minutesSavedPerTask": 6, "minutesSavedPerPlan": 20, "dayStarts": "08:00", "dayEnds": "18:00" },
+  "settings": { "yourName": "Sam", "businessName": "Fern & Finch", "minutesSavedPerTask": 6, "minutesSavedPerPlan": 20, "dayStarts": "08:00", "dayEnds": "18:00", "emailProvider": "gmail", "calendarProvider": "google" },
   "tasks":  [ { ...task... } ],
   "plan":   { "date": "2026-10-06", "preparedAt": "2026-10-06T07:55:00.000Z", "note": "...", "items": [ { ...plan item... } ] },
   "week":   { "start": "2026-10-05", "goals": [ { "id": "g-a1b2c3", "text": "Get the Marlow invoice paid", "done": false, "addedBy": "claude" } ], "note": "" },
@@ -35,6 +35,9 @@ Everything lives in this one file. The app checks it every few seconds and saves
   "eventsSyncedAt": "2026-10-06T07:50:00.000Z",
   "people": [ { ...person... } ],
   "dump":   [ { ...brain dump line... } ],
+  "replies":  [ { ...email that needs an answer, with a draft... } ],
+  "meetings": [ { ...a call, written up... } ],
+  "triage":   { "lastRunAt": "2026-10-06T10:30:00.000Z", "nextRunAt": "2026-10-06T11:30:00.000Z", "emailsScanned": 47, "needReply": 6, "newTasks": 4, "noAction": 37, "callsProcessed": 2 },
   "activity": [ { "at": "2026-10-06T09:15:00.000Z", "type": "task-done", "taskId": "t-k3j9x2", "minutes": 6 } ]
 }
 ```
@@ -64,7 +67,9 @@ An older file with `formatVersion: 1` is fine. The app adds the missing sections
 | `suggested` | `true` on a new task you spotted yourself (email, calendar, a meeting, the brain dump) that the person has not approved yet. It shows in Review with a "New" tag and stays off their list until they approve it, which removes this field. |
 | `source` | Where a suggested task came from: `{ "type": "email", "from": "Tom at Greenway Café", "subject": "Signed contract attached", "date": "2026-10-06", "ref": "<message id if you have one>" }`. `type` is `email`, `calendar`, `meeting`, `braindump` or `other` (add a `label` for other). Keep it after approval; it is how you avoid suggesting the same thing twice. |
 | `proposedDate`, `proposedTime`, `proposedReason` | Your suggested day (and optionally time) for an existing task, from "plan my week". Shows as a dashed card on the week board and in Review. Approving moves it into `scheduledDate` and `scheduledTime`. Never set `scheduledDate` yourself unless the person asks for that specific task. |
-| `dismissedAt`, `approvedAt`, `scheduledAt` | Timestamps the app sets. Leave them alone. |
+| `guide` | "How to do this", from `research-task`: `{ "summary": "...", "steps": ["..."], "links": [{ "label": "Pay your Self Assessment tax bill (GOV.UK)", "url": "https://www.gov.uk/pay-self-assessment-tax-bill" }], "researchedAt": "<timestamp>" }`. Shown in the task's panel. |
+| `replyId` | Links a task to the email in `replies` it came from, so the panel can open the draft. |
+| `dismissedAt`, `approvedAt`, `scheduledAt`, `calendarAddedAt` | Timestamps the app sets. Leave them alone. `calendarAddedAt` means the person pressed Add to calendar. |
 
 ### The 5 categories
 
@@ -129,7 +134,41 @@ Whatever the person typed into Brain dump, one line per item:
 ```
 
 - `status` is `unsorted`, `sorted` (you or the person turned it into tasks; `taskIds` lists them) or `dismissed` (removed, or nothing to do).
-- See `skills/sort-my-brain-dump` for how to turn lines into suggested tasks.
+- See `.claude/skills/sort-my-brain-dump` for how to turn lines into suggested tasks.
+
+### Replies: emails that need an answer
+
+From `triage-inbox`. The app's Replies page lists those `waiting`, urgent first, each with a **Draft** button that opens the draft, written and addressed, in Gmail, Outlook or their email app (from `settings.emailProvider`). The person checks it and sends it.
+
+```json
+{ "id": "r-k3j9x2", "from": { "name": "Dev Patel", "email": "dev@hollins.example" }, "subject": "Can we move today's kick-off to 2:30?",
+  "receivedAt": "2026-10-06T09:12:00.000Z", "ref": "<message id>", "threadUrl": "<link to the email, if you have one>", "personId": "p-dev",
+  "why": "Wants to move today's 2pm call by half an hour. You're free at 2:30.", "summary": "Dev's viewing is running over...",
+  "urgency": "high", "status": "waiting",
+  "draft": { "to": "dev@hollins.example", "cc": "", "subject": "Re: Can we move today's kick-off to 2:30?", "body": "Hi Dev,\n\n2:30 works fine..." } }
+```
+
+- `urgency` is `high`, `normal` or `low`. `status` is `waiting`, `replied` (the person marked it, or you saw their reply in the thread) or `dismissed` (no reply needed).
+- The person can edit the draft in the app; keep their edits (`draftEditedAt` is set). Don't overwrite a draft they've edited.
+- Never re-add a reply for a message `ref` that's already here, whatever its status.
+
+### Meetings: calls, written up
+
+From `process-calls` (or `meeting-follow-up` for pasted notes). Shown on the Calls page.
+
+```json
+{ "id": "m-x7k2p9", "title": "Discovery call with Ellis Joinery", "date": "2026-10-05T15:00", "source": "Fathom", "ref": "<recording id>", "transcriptUrl": "<link>",
+  "personIds": ["p-mark"], "summary": "Mark wants a logo that...", "decisions": ["3 logo routes by Friday"], "actionTaskIds": ["t-a1b2c3"],
+  "followUp": { "to": "mark@ellisjoinery.example", "subject": "Great to talk today", "body": "Hi Mark,..." } }
+```
+
+### Triage: when you last checked
+
+`triage` powers the line at the top of Today and Replies ("Claude checked at 10:30: 47 emails sorted, 6 need a reply..."). `check-in` updates it every run. Counts are for today; start them from zero on a new day. `nextRunAt` is when the next scheduled check-in is due, or `null`.
+
+### Settings for the app's buttons
+
+`emailProvider` decides where Draft opens: `gmail`, `outlook-work` (Microsoft 365), `outlook-personal` (Outlook.com, opens the computer's email app) or `other` (the computer's email app). `calendarProvider` decides where Add to calendar opens: `google`, `outlook-work`, `outlook-personal` or `other` (downloads a calendar file any calendar app can open).
 
 ### The activity log
 
@@ -140,17 +179,21 @@ The app adds a line to `activity` when a task is ticked off (`task-done`), added
 
 | They say | Do |
 |---|---|
-| "Sort my day", "plan my day", "what should I do today" | `skills/sort-my-day`: copy in the calendar, check the inbox, propose today's plan |
-| "Plan my week", "what does my week look like" | `skills/plan-my-week`: suggest goals and a day for the tasks that need one |
-| "Sort my brain dump", "deal with my notes" | `skills/sort-my-brain-dump` |
-| "Anything in my inbox I need to do?" | `skills/inbox-to-tasks` |
+| "Sort my day", "plan my day", "what should I do today" | `.claude/skills/sort-my-day`: copy in the calendar, check the inbox, propose today's plan |
+| "Plan my week", "what does my week look like" | `.claude/skills/plan-my-week`: suggest goals and a day for the tasks that need one |
+| "Sort my brain dump", "deal with my notes" | `.claude/skills/sort-my-brain-dump` |
+| "Check my inbox", "anything new?", "check in" | `.claude/skills/check-in` (calendar, inbox, calls) |
+| "What needs a reply?", "triage my inbox" | `.claude/skills/triage-inbox` |
+| "Write up my calls", "what came out of the call with Tom?" | `.claude/skills/process-calls` |
+| "How do I...?", "research this" | `.claude/skills/research-task` |
+| "When should I do this?", "book time for X" | `.claude/skills/schedule-it` |
 | "Add this to my list", "remind me to" | Add a task with `addedBy: "you"`, a sensible category, any date they mentioned and the right `personId`. If it's for today, also add an `approved` plan item (create today's plan with `preparedAt: null` if there isn't one). If they gave a time, set `scheduledDate`, `scheduledTime` and `durationMinutes`. Confirm in one line. |
 | "Put X in my diary at 2pm", "block out time for X" | Set the task's `scheduledDate`, `scheduledTime` and `durationMinutes`. It appears on the app's calendar. Tell them it's in the task list's calendar, not their real calendar, unless they also want you to draft a calendar invite. |
 | "I've done X", "X is sorted" | Mark it done and log `task-done`. If several tasks could match, ask which. |
 | "I'm waiting on X from Y" | Category `waiting`, fill in `waitingOn`, `waitingSince` and `personId`. |
 | "Add Tom from Greenway to my people" | Add a person. |
 | "What's on my plate?", "What am I waiting on?" | Read and answer. Change nothing. |
-| "Wrap up my day" | `skills/wrap-up-my-day`. Change nothing unless asked. |
+| "Wrap up my day" | `.claude/skills/wrap-up-my-day`. Change nothing unless asked. |
 
 ## Rules for editing the file safely
 

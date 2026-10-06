@@ -109,7 +109,7 @@
       "<div><h2 class=\"greeting\">" + esc(ui.greeting()) + (name ? ", " + esc(name) : "") + "</h2>" +
       '<p class="muted">' + esc(greetingLine(d)) + "</p></div>" +
       (list.length ? '<div class="progress"><span class="progress__label num"><strong>' + done + "</strong> of " + list.length + ' done</span><span class="progress__bar" role="progressbar" aria-label="Today\'s progress" aria-valuemin="0" aria-valuemax="' + list.length + '" aria-valuenow="' + done + '"><span style="width:' + Math.round(done / list.length * 100) + '%"></span></span></div>' : "") +
-      "</div>";
+      "</div>" + window.TL.views.replies.triageStrip(d, true);
 
     // Claude's plan
     if (props.length) {
@@ -120,6 +120,14 @@
     } else if (!M.claudeHasPlanned(d)) {
       main += '<section class="panel nudge">' + '<div class="nudge__art"><img src="' + C.ART.thinking + '" alt="" width="64" height="64"></div>' +
         "<div><h2>No plan for today yet</h2><p class=\"muted\">Ask Claude to sort your day. It checks your list, inbox and calendar, then suggests a plan for you to approve.</p></div>" + C.say("Sort my day") + "</section>";
+    }
+
+    // Emails that need an answer, with Claude's drafts
+    const replies = M.openReplies(d);
+    if (replies.length) {
+      main += '<section class="panel panel--flush">' + C.sectionHead("Needs a reply", { icon: "mail", count: replies.length,
+        right: '<a class="btn btn--ghost btn--sm" href="#replies">All replies' + icon("chevronRight") + "</a>" }) +
+        '<ul class="replies" role="list">' + replies.slice(0, 3).map(function (r) { return window.TL.views.replies.replyRow(ctx, r, { suffix: "-today" }); }).join("") + "</ul></section>";
     }
 
     // Overdue

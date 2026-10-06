@@ -2,7 +2,7 @@
 
 Status: not filled in yet
 
-<!-- Claude: fill this in during setup step 4, ideally using skills/write-like-me in "learn" mode. Store patterns and short example phrases, never copies of private emails. Every draft Claude writes uses this file. -->
+<!-- Claude: fill this in during setup step 4, ideally using .claude/skills/write-like-me in "learn" mode. Store patterns and short example phrases, never copies of private emails. Every draft Claude writes uses this file. -->
 
 ## Overall
 

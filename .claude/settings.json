@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Edit(./apps/task-list/data/**)",
+      "Write(./apps/task-list/data/**)",
+      "Edit(./context/**)",
+      "Write(./context/**)",
+      "Edit(./files/**)",
+      "Write(./files/**)",
+      "Edit(./setup/progress.md)",
+      "WebSearch"
+    ]
+  }
+}

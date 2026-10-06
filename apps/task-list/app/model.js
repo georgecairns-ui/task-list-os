@@ -69,10 +69,14 @@
     d.plan.items = d.plan.items.filter(function (i) { return i && i.taskId; });
     if (!d.week || typeof d.week !== "object") d.week = { start: null, goals: [], note: "" };
     if (!Array.isArray(d.week.goals)) d.week.goals = [];
-    ["events", "people", "dump", "activity"].forEach(function (k) { if (!Array.isArray(d[k])) d[k] = []; });
+    ["events", "people", "dump", "activity", "replies", "meetings"].forEach(function (k) { if (!Array.isArray(d[k])) d[k] = []; });
     d.events = d.events.filter(function (e) { return e && e.id && e.start; });
     d.people = d.people.filter(function (p) { return p && p.id && p.name; });
     d.dump = d.dump.filter(function (x) { return x && x.id && x.text; });
+    d.replies = d.replies.filter(function (r) { return r && r.id && r.subject !== undefined; });
+    d.replies.forEach(function (r) { if (["waiting", "replied", "dismissed"].indexOf(r.status) === -1) r.status = "waiting"; if (!r.draft) r.draft = { to: "", cc: "", subject: "", body: "" }; });
+    d.meetings = d.meetings.filter(function (m) { return m && m.id && m.title; });
+    if (!d.triage || typeof d.triage !== "object") d.triage = { lastRunAt: null, nextRunAt: null, emailsScanned: 0, needReply: 0, newTasks: 0, noAction: 0, callsProcessed: 0 };
     return d;
   }
 
@@ -213,6 +217,50 @@
     return { minutes: minutes, tasksDone: tasksDone, plans: plans };
   }
 
+  // ---------- Emails that need a reply, and calls ----------
+  function openReplies(d) {
+    const rank = { high: 0, normal: 1, low: 2 };
+    return d.replies.filter(function (r) { return r.status === "waiting"; })
+      .sort(function (a, b) { return (rank[a.urgency] || 1) - (rank[b.urgency] || 1) || String(a.receivedAt || "").localeCompare(String(b.receivedAt || "")); });
+  }
+  function replyById(d, id) { return d.replies.find(function (r) { return r.id === id; }); }
+  function meetingsSorted(d) {
+    return d.meetings.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
+  }
+  function meetingById(d, id) { return d.meetings.find(function (m) { return m.id === id; }); }
+
+  // ---------- Free time ----------
+  // Free slots of at least `length` minutes, inside working hours, from now onwards.
+  // Used to suggest "when would you like to do this?"
+  function freeSlots(d, length, maxSlots, daysAhead) {
+    const len = length || 30;
+    const startOfDay = toMinutes(d.settings.dayStarts) || 480;
+    const endOfDay = toMinutes(d.settings.dayEnds) || 1080;
+    const out = [];
+    const now = new Date();
+    for (let i = 0; i < (daysAhead || 5) && out.length < (maxSlots || 3); i++) {
+      const day = ui.addDays(now, i);
+      if (day.getDay() === 0 || day.getDay() === 6) continue; // weekdays only
+      const iso = ui.isoDate(day);
+      const busy = eventsForDate(d, iso).filter(function (e) { return !e.allDay; }).map(function (e) {
+        const s = splitLocal(e.start).minutes, en = splitLocal(e.end).minutes;
+        return [s, en == null ? s + 30 : en];
+      }).concat(timedTasksForDate(d, iso).filter(function (t) { return t.status === "open"; }).map(function (t) {
+        const s = toMinutes(t.scheduledTime);
+        return [s, s + (t.durationMinutes || 30)];
+      })).sort(function (a, b) { return a[0] - b[0]; });
+      // Start from the next half hour today, or the start of the working day
+      let cursor = i === 0 ? Math.max(startOfDay, Math.ceil((now.getHours() * 60 + now.getMinutes() + 15) / 30) * 30) : startOfDay;
+      busy.forEach(function (b) {
+        if (out.length >= (maxSlots || 3)) return;
+        if (b[0] - cursor >= len && cursor + len <= endOfDay) out.push({ date: iso, time: fromMinutes(cursor) });
+        cursor = Math.max(cursor, b[1]);
+      });
+      if (out.length < (maxSlots || 3) && endOfDay - cursor >= len) out.push({ date: iso, time: fromMinutes(cursor) });
+    }
+    return out.slice(0, maxSlots || 3);
+  }
+
   // Simple search across tasks and people
   function search(d, query) {
     const q = String(query || "").trim().toLowerCase();
@@ -265,6 +313,8 @@
       if (!t) return;
       const item = planIsToday(d) ? d.plan.items.find(function (i) { return i.taskId === taskId && i.status === "proposed"; }) : null;
       if (item) { item.status = "approved"; item.approvedAt = nowISO(); t.category = item.category || t.category; }
+      // A brand-new suggestion that came with a suggested time: one Approve accepts both
+      if (t.suggested && t.proposedDate) mut.approveSchedule(d, taskId);
       acceptSuggestion(t);
       logPlanApproved(d);
     },
@@ -448,6 +498,24 @@
       if (p) Object.assign(p, fields);
     },
 
+    // ---------- Replies ----------
+    setReply: function (d, replyId, fields) {
+      const r = replyById(d, replyId);
+      if (!r) return;
+      if (fields.draft) { r.draft = Object.assign({}, r.draft, fields.draft); delete fields.draft; r.draftEditedAt = nowISO(); }
+      Object.assign(r, fields);
+      if (fields.status === "replied") r.repliedAt = nowISO();
+      if (fields.status === "waiting") { delete r.repliedAt; }
+    },
+    markDraftOpened: function (d, replyId) {
+      const r = replyById(d, replyId);
+      if (r) r.draftOpenedAt = nowISO();
+    },
+    calendarAdded: function (d, taskId) {
+      const t = taskById(d, taskId);
+      if (t) t.calendarAddedAt = nowISO();
+    },
+
     setSettings: function (d, values) { Object.assign(d.settings, values); }
   };
 
@@ -464,6 +532,7 @@
     doneTasks: doneTasks, doneToday: doneToday, eventsForDate: eventsForDate, timedTasksForDate: timedTasksForDate,
     unsortedDump: unsortedDump, tasksForPerson: tasksForPerson, personSummary: personSummary,
     timeSaved: timeSaved, search: search, history: history, num: num,
+    openReplies: openReplies, replyById: replyById, meetingsSorted: meetingsSorted, meetingById: meetingById, freeSlots: freeSlots,
     mut: mut
   };
 })();

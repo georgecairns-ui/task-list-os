@@ -21,16 +21,16 @@
     const category = o.category || t.category;
     let reason = o.reason || "";
     let extra = "";
-    if (o.kind === "schedule") {
+    if (o.kind === "schedule" || (isNew && t.proposedDate)) {
       const day = ui.parseDate(t.proposedDate);
       extra = '<span class="chip chip--accent">' + icon("calendar") + esc(day.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })) + (t.proposedTime ? " " + esc(M.timeLabel(t.proposedTime)) : "") + "</span>";
-      reason = t.proposedReason || "";
+      reason = reason || t.proposedReason || "";
     }
     const approveAction = o.kind === "schedule" ? "approve-schedule" : "approve";
     const skipAction = o.kind === "schedule" ? "skip-schedule" : "skip";
     return '<li class="proposal' + ctx.anim("p-" + o.kind + "-" + t.id) + '" data-task="' + esc(t.id) + '" data-kind="' + esc(o.kind) + '">' +
       '<div class="proposal__body">' +
-      '<div class="proposal__top">' + (isNew ? '<span class="new-tag">New</span>' : "") + (o.kind === "schedule" ? extra : C.catChip(category)) + C.dateChip(t) + C.whoChip(d, t) + "</div>" +
+      '<div class="proposal__top">' + (isNew ? '<span class="new-tag">New</span>' : "") + (extra || C.catChip(category)) + C.dateChip(t) + C.whoChip(d, t) + "</div>" +
       '<button type="button" class="proposal__title" data-action="open-task">' + esc(t.title) + "</button>" +
       (reason ? '<p class="proposal__reason">' + esc(reason) + "</p>" : "") +
       (isNew ? C.sourceLine(t) : "") +
