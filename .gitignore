@@ -1,0 +1,11 @@
+# Built zips
+dist/
+
+# Safety copies the app makes before every save
+*.backup.json
+
+# Computer clutter
+.DS_Store
+._*
+Thumbs.db
+desktop.ini

@@ -1,0 +1,95 @@
+/*
+  THEME
+  -----
+  Every colour, font, size, space, corner and shadow in the toolkit comes from this file.
+  To re-brand the whole toolkit for a client, change the values below and nothing else.
+
+  Current brand: Get AI Powers (warm document palette, 3 September 2026 brand decision).
+  Fonts are bundled in shared/fonts so nothing is loaded from the internet.
+*/
+
+/* ---------- Fonts (local files, no internet needed) ---------- */
+@font-face { font-family: "Zilla Slab"; src: url("fonts/ZillaSlab-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Zilla Slab"; src: url("fonts/ZillaSlab-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Zilla Slab"; src: url("fonts/ZillaSlab-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Zilla Slab"; src: url("fonts/ZillaSlab-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Source Serif 4"; src: url("fonts/SourceSerif4-Variable.woff2") format("woff2"); font-weight: 200 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Source Serif 4"; src: url("fonts/SourceSerif4-Italic-Variable.woff2") format("woff2"); font-weight: 200 900; font-style: italic; font-display: swap; }
+
+:root {
+  /* ---------- Colours ---------- */
+  --color-bg:            #F4F0E7;  /* page background (cream, never pure white) */
+  --color-surface:       #FBF8F1;  /* cards and panels */
+  --color-surface-sunk:  #EDE7DB;  /* inset areas, skeletons, hover on cards */
+  --color-ink:           #211C16;  /* main text and borders (never pure black) */
+  --color-ink-soft:      #4A423A;  /* secondary headings */
+  --color-muted:         #6A655E;  /* helper text, labels */
+  --color-line:          #DCD3C4;  /* hairline dividers */
+  --color-dark:          #2B2119;  /* espresso: dark bands, tooltips, toasts */
+  --color-on-dark:       #EFE7DA;  /* text on espresso */
+  --color-on-dark-muted: #A9A59D;
+
+  --color-accent:        #C07A55;  /* terracotta: decoration, large headline words, fills */
+  --color-accent-strong: #A85842;  /* terracotta deep: buttons (passes contrast with light text) */
+  --color-accent-text:   #9A4E33;  /* terracotta for small text on cream */
+  --color-accent-tint:   #F1DDCF;  /* soft terracotta wash */
+  --color-highlight:     #EAC15C;  /* mustard: one highlight per view, sparingly */
+  --color-highlight-tint:#F6E7BD;
+
+  --color-success:       #4E6B3A;  /* done, approved */
+  --color-success-tint:  #E3E8D6;
+  --color-danger:        #9C3B2E;  /* errors only */
+  --color-danger-tint:   #F3DAD3;
+
+  /* Category colours (Do today, Quick wins, Waiting on, Can wait, Delegate) */
+  --cat-today:    #C07A55;
+  --cat-quick:    #D9A441;
+  --cat-waiting:  #7C8C9A;
+  --cat-later:    #A79B89;
+  --cat-delegate: #6F8A5A;
+
+  /* ---------- Type ---------- */
+  --font-display: "Zilla Slab", Rockwell, "Roboto Slab", Georgia, serif;
+  --font-body:    "Source Serif 4", "Iowan Old Style", Charter, Georgia, serif;
+  --font-ui:      "Zilla Slab", Rockwell, "Roboto Slab", Georgia, serif;
+  --font-mono:    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --text-xs:   0.8125rem;  /* 13px */
+  --text-sm:   0.9375rem;  /* 15px */
+  --text-base: 1.0625rem;  /* 17px */
+  --text-lg:   1.25rem;
+  --text-xl:   1.5rem;
+  --text-2xl:  2rem;
+  --text-3xl:  clamp(2rem, 1.4rem + 2.4vw, 2.875rem);
+  --leading:   1.55;
+  --tracking-label: 0.14em;
+
+  /* ---------- Space ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --page-max: 1180px;
+
+  /* ---------- Corners, borders, shadows ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+  --border: 1.5px solid var(--color-ink);
+  --border-soft: 1px solid var(--color-line);
+  --shadow-offset: 4px 4px 0 var(--color-ink);       /* the brand's hard offset shadow */
+  --shadow-offset-sm: 2px 2px 0 var(--color-ink);
+  --shadow-soft: 0 1px 2px rgba(33, 28, 22, 0.06), 0 8px 24px -12px rgba(33, 28, 22, 0.18);
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+}

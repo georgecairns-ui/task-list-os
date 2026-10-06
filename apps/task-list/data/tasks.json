@@ -1,0 +1,95 @@
+{
+  "about": [
+    "This is your task list. The app (index.html) and Claude both read and write this file.",
+    "Claude: read CLAUDE.md in the folder above before changing anything here.",
+    "Categories: today, quick-win, delegate, waiting, later. Plan item status: proposed, approved, skipped.",
+    "Tasks marked \"example\": true are samples. Replace them with the person's real tasks during setup."
+  ],
+  "formatVersion": 1,
+  "settings": {
+    "yourName": "",
+    "businessName": "",
+    "minutesSavedPerTask": 6,
+    "minutesSavedPerPlan": 20
+  },
+  "tasks": [
+    {
+      "id": "t-ex001",
+      "title": "Reply to yesterday's customer emails",
+      "notes": "",
+      "category": "today",
+      "status": "open",
+      "due": null,
+      "waitingOn": "",
+      "delegateTo": "",
+      "addedBy": "you",
+      "created": "2026-10-06T08:00:00.000Z",
+      "doneAt": null,
+      "example": true
+    },
+    {
+      "id": "t-ex002",
+      "title": "Chase any unpaid invoices",
+      "notes": "",
+      "category": "today",
+      "status": "open",
+      "due": null,
+      "waitingOn": "",
+      "delegateTo": "",
+      "addedBy": "you",
+      "created": "2026-10-06T08:00:00.000Z",
+      "doneAt": null,
+      "example": true
+    },
+    {
+      "id": "t-ex003",
+      "title": "Book a call with the accountant",
+      "notes": "",
+      "category": "quick-win",
+      "status": "open",
+      "due": null,
+      "waitingOn": "",
+      "delegateTo": "",
+      "addedBy": "you",
+      "created": "2026-10-06T08:00:00.000Z",
+      "doneAt": null,
+      "example": true
+    },
+    {
+      "id": "t-ex004",
+      "title": "Quote from the supplier",
+      "notes": "",
+      "category": "waiting",
+      "status": "open",
+      "due": null,
+      "waitingOn": "Your supplier",
+      "waitingSince": "2026-10-06",
+      "delegateTo": "",
+      "addedBy": "you",
+      "created": "2026-10-06T08:00:00.000Z",
+      "doneAt": null,
+      "example": true
+    },
+    {
+      "id": "t-ex005",
+      "title": "Refresh the photos on the website",
+      "notes": "",
+      "category": "later",
+      "status": "open",
+      "due": null,
+      "waitingOn": "",
+      "delegateTo": "",
+      "addedBy": "you",
+      "created": "2026-10-06T08:00:00.000Z",
+      "doneAt": null,
+      "example": true
+    }
+  ],
+  "plan": {
+    "date": null,
+    "preparedAt": null,
+    "note": "",
+    "items": []
+  },
+  "activity": []
+}

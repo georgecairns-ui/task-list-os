@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task list | Small business toolkit</title>
+  <meta name="description" content="The task list that does itself. Claude sorts your day, you approve it.">
+  <link rel="icon" type="image/svg+xml" href="../../shared/images/GAIP-emblem-black-teal-pop-RGB.svg">
+  <!-- Shared look and feel (theme.css holds every brand colour and font) -->
+  <link rel="stylesheet" href="../../shared/theme.css">
+  <link rel="stylesheet" href="../../shared/base.css">
+  <!-- This module's own layout -->
+  <link rel="stylesheet" href="app/app.css">
+</head>
+<body>
+  <a class="sr-only" href="#main">Skip to your tasks</a>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <img class="topbar__logo" src="../../shared/images/GAIP-logo-black-teal-pop-RGB.svg" alt="Get AI Powers">
+      <span class="topbar__divider" aria-hidden="true"></span>
+      <span class="topbar__title">Task list</span>
+      <span class="topbar__spacer"></span>
+      <div class="topbar__actions">
+        <span id="saveStatus" class="pill save-status" hidden></span>
+        <label class="switch" title="Show made-up sample data for videos and screenshots">
+          <input type="checkbox" id="demoToggle">
+          <span class="switch__track" aria-hidden="true"></span>
+          <span class="switch__label">Demo</span>
+        </label>
+        <button type="button" class="icon-btn" id="settingsBtn" aria-label="Settings" hidden></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page" id="main" tabindex="-1">
+    <div id="banner" aria-live="polite"></div>
+    <!-- The app draws the current screen in here: welcome, loading, or your day -->
+    <div id="screen"></div>
+    <footer class="footer">
+      <span>Get AI Powers</span>
+      <span>Small business toolkit / 01 Task list</span>
+    </footer>
+  </main>
+
+  <!-- Pop-up: edit a task -->
+  <dialog class="modal" id="editDialog" aria-labelledby="editTitle">
+    <form method="dialog" id="editForm">
+      <div class="modal__head">
+        <h2 id="editTitle">Edit task.</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close"></button>
+      </div>
+      <div class="modal__body">
+        <label class="field">
+          <span class="field__label">What needs doing</span>
+          <input class="input" name="title" required maxlength="200" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field__label">Notes</span>
+          <textarea class="textarea" name="notes" maxlength="2000" placeholder="Anything that helps, like a name, a number or a link"></textarea>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Where it goes</span>
+            <select class="select" name="category"></select>
+          </label>
+          <label class="field">
+            <span class="field__label">Due</span>
+            <input class="input" type="date" name="due">
+          </label>
+        </div>
+        <label class="field" data-show-for="waiting">
+          <span class="field__label">Waiting on</span>
+          <input class="input" name="waitingOn" maxlength="120" placeholder="For example, Tom at Greenway Café">
+        </label>
+        <label class="field" data-show-for="delegate">
+          <span class="field__label">Hand it to</span>
+          <input class="input" name="delegateTo" maxlength="120" placeholder="Who should do this?">
+        </label>
+      </div>
+      <div class="modal__foot">
+        <button type="button" class="btn btn--ghost btn--danger" id="deleteTaskBtn">Delete task</button>
+        <span class="modal__foot-spacer"></span>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn btn--primary" id="editSaveBtn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Pop-up: end of day summary -->
+  <dialog class="modal modal--wide" id="summaryDialog" aria-labelledby="summaryTitle">
+    <div id="summaryContent"></div>
+  </dialog>
+
+  <!-- Pop-up: settings -->
+  <dialog class="modal" id="settingsDialog" aria-labelledby="settingsTitle">
+    <form method="dialog" id="settingsForm">
+      <div class="modal__head">
+        <h2 id="settingsTitle">Settings.</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close"></button>
+      </div>
+      <div class="modal__body">
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Your first name</span>
+            <input class="input" name="yourName" maxlength="60" autocomplete="given-name">
+          </label>
+          <label class="field">
+            <span class="field__label">Business name</span>
+            <input class="input" name="businessName" maxlength="80" autocomplete="organization">
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Minutes saved per task</span>
+            <input class="input" type="number" name="minutesSavedPerTask" min="0" max="120" step="1">
+          </label>
+          <label class="field">
+            <span class="field__label">Minutes saved per plan</span>
+            <input class="input" type="number" name="minutesSavedPerPlan" min="0" max="240" step="1">
+          </label>
+        </div>
+        <p class="field__hint">These 2 numbers drive the "time saved" estimate. They are a rough guide, not a measurement.</p>
+        <div class="settings-folder">
+          <div>
+            <span class="eyebrow">Your folder</span>
+            <p id="settingsFolderName" class="settings-folder__name"></p>
+          </div>
+          <button type="button" class="btn btn--small" id="changeFolderBtn">Use a different folder</button>
+        </div>
+      </div>
+      <div class="modal__foot">
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn btn--primary">Save settings</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Shared helpers first, then this module -->
+  <script src="../../shared/js/ui.js"></script>
+  <script src="../../shared/js/store.js"></script>
+  <script src="app/demo-data.js"></script>
+  <script src="app/app.js"></script>
+</body>
+</html>
