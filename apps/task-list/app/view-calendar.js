@@ -11,7 +11,7 @@
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui, esc = ui.esc, icon = ui.icon;
+  const ui = window.TaskListOS.ui, esc = ui.esc, icon = ui.icon;
   const M = window.TL.model, C = window.TL.c;
   const HOUR_PX = 48;
   let grabOffset = 0; // where in a block the pointer picked it up, so it lands where you expect

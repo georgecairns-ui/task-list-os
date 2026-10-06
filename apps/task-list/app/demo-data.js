@@ -9,7 +9,7 @@
   "use strict";
 
   function makeTaskDemoData() {
-    const ui = window.Toolkit.ui;
+    const ui = window.TaskListOS.ui;
     const now = new Date();
     const today = ui.isoDate(now);
     const day = function (offset) { return ui.isoDate(ui.addDays(now, offset)); };

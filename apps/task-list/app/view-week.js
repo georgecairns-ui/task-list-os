@@ -9,7 +9,7 @@
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui, esc = ui.esc, icon = ui.icon;
+  const ui = window.TaskListOS.ui, esc = ui.esc, icon = ui.icon;
   const M = window.TL.model, C = window.TL.c;
 
   function card(ctx, t, opts) {

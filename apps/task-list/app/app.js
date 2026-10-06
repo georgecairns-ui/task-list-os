@@ -14,7 +14,7 @@
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui, esc = ui.esc, icon = ui.icon;
+  const ui = window.TaskListOS.ui, esc = ui.esc, icon = ui.icon;
   const M = window.TL.model, C = window.TL.c, V = window.TL.views, Drawer = window.TL.drawer;
   const mut = M.mut;
   const $ = function (sel, root) { return (root || document).querySelector(sel); };
@@ -44,7 +44,7 @@
   // 1. The store
   // ============================================================
 
-  const store = window.Toolkit.createStore({
+  const store = window.TaskListOS.createStore({
     moduleId: "task-list",
     fileName: "tasks.json",
     // Where tasks.json can be, depending on which folder the person picks

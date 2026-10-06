@@ -11,7 +11,7 @@
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui, esc = ui.esc, icon = ui.icon;
+  const ui = window.TaskListOS.ui, esc = ui.esc, icon = ui.icon;
   // Looked up each time, so it's always the browser's current speech feature
   function recognition() { return window.SpeechRecognition || window.webkitSpeechRecognition; }
   function supported() { return typeof recognition() === "function"; }
