@@ -57,7 +57,7 @@ Change the colours, labels and folders by asking Claude. See [docs/CUSTOMISING.m
 
 ## Want it set up properly for you?
 
-Task List OS works on its own. If you'd like your folders, business context and Claude skills built around how your business really works, Get AI Powers runs a 4 week setup. Find us at [getaipowers.com](https://getaipowers.com).
+Task List OS works on its own. If you'd like help building your folders, business context and Claude skills around how your business really works, Get AI Powers can help. Find us at [getaipowers.com](https://getaipowers.com).
 
 ## What's inside
 
