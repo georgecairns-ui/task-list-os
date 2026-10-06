@@ -26,7 +26,7 @@ The routine that makes the task list feel live. It runs every hour if setup step
 
 ## What to say
 
-If the person asked: one or two lines. "2 new emails need a reply (both drafted, in Replies), 1 new task from your call with Tom, nothing else urgent."
+If the person asked: one or two lines. "2 new emails need a reply (both drafted, in your Inbox), 1 new task from your call with Tom, nothing else urgent."
 If this is a scheduled run, say nothing unless something is urgent (an email marked urgent, a call action due today); then one line.
 
 ## Rules

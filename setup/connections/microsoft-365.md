@@ -1,6 +1,6 @@
 # Connect Microsoft 365
 
-One line: fills Replies (Outlook email), Calendar (Outlook meetings) and Calls (Teams meeting transcripts turned into actions), feeding Review.
+One line: fills the Inbox (Outlook email), the calendar in This week (Outlook meetings) and Calls (Teams meeting transcripts turned into actions), feeding Review.
 
 **Recommended route:** the Microsoft 365 connector in Claude's connector directory. **Plans:** Free, Pro, Max, Team and Enterprise on the Claude side; needs a work or school Microsoft 365 account on a Microsoft Entra tenant (not outlook.com, hotmail.com or live.com), plus a one-time consent from a Microsoft Entra Global Administrator.
 

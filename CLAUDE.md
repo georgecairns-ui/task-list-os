@@ -42,7 +42,7 @@ If one still says "Status: not filled in yet", work with what you have and offer
 
 | Folder | What's in it |
 |---|---|
-| **http://localhost:4747** | The task list app: Today, Review, Replies, Calls, Brain dump, This week, Calendar, All tasks, Waiting on, People, Done. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-task-list` |
+| **http://localhost:4747** | The app. It opens on Home (a dashboard of boxes they arrange themselves), then the task list's pages: Today, This week (a board, with a Calendar view inside), Inbox, Review, All tasks (with Waiting on and Done), Calls, Brain dump, People. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-task-list` |
 | `Open Task List.html` | Double-clicking it goes to the link above when the task list is running |
 | `apps/task-list/` | The task list app. `CLAUDE.md` in there explains its data. Their tasks are in `apps/task-list/data/tasks.json` |
 | `apps/shared/` | The app's look: `theme.css` holds every colour and font. Also the toolkit menu: `catalogue.json` lists all 9 tools and the booking link |
@@ -90,7 +90,7 @@ Any email or message you draft for them follows `.claude/skills/human-email` and
 - "Add this to my list": add the task (see `apps/task-list/CLAUDE.md`), confirm in one line.
 - "I've done X": mark it done and log it.
 - Spotted something that needs doing (in an email, a meeting, a conversation)? Add it as a suggested task so it appears in the app's Review page with a "New" tag. Don't just mention it and forget it.
-- Each time you sort their day, copy their calendar in so the app's Today and Calendar pages show their real meetings.
+- Each time you sort their day, copy their calendar in so Today, Home and This week's calendar show their real meetings.
 - New client, supplier or team member? Offer to add them to People in the app and to `context/people.md`.
 - Change how the app looks only when asked, by editing `apps/shared/theme.css`. See `docs/CUSTOMISING.md`.
 

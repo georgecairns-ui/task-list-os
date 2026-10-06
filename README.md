@@ -10,11 +10,12 @@ Task List OS is part of a toolkit of 9 free tools from Get AI Powers. The others
 
 ## What it does
 
-- **Sorts your inbox.** Every new email goes in a pile: needs a reply, a task, just so you know, or no action. The ones that need an answer appear on **Replies** with a draft in your voice. Press **Draft** and the email opens in Gmail or Outlook, written and addressed. Check it, press send.
+- **Sorts your inbox.** Every new email goes in a pile: needs a reply, a task, just so you know, or no action. The ones that need an answer appear in your **Inbox** with a draft in your voice. Press **Draft** and the email opens in Gmail or Outlook, written and addressed. Check it, press send.
 - **Writes up your calls.** If you record calls (Fathom, Fireflies, Otter, Granola, tl;dv, Read AI, Zoom, Teams or Google Meet), each one appears on **Calls** with a summary, what was decided, your actions to approve and a follow-up email ready to go.
 - **Listens.** Press **Voice note** at the top of any page and talk: everything on your mind, as messy as you like. Your words appear as you speak. Press Done and Claude turns it into tasks, suggested times, how-to guides and draft emails, ready for you to approve, usually within a minute or two.
 - **Turns your brain dump into a plan.** Type (or say) "pay my tax to HMRC" into **Brain dump**. Claude makes it a task, looks up how to do it on GOV.UK, and suggests a free slot in your calendar. Approve it, press **Add to calendar**, done.
-- **Plans your day and week.** **Today** shows Claude's plan for the day, what needs a reply and your schedule. **This week** has your goals and a board to drag tasks across. **Calendar** shows your real meetings with your tasks in the gaps.
+- **Plans your day and week.** **Home** is your dashboard: choose the boxes you want to see and arrange them. **Today** shows Claude's plan for the day. **This week** has your goals and a board to drag tasks onto days, and switches to a calendar of your real meetings with your tasks in the gaps. **Add meeting** puts a meeting in and opens it in your calendar, ready to save.
+- **Looks the part.** A clean, calm app in light or dark, in your own colours. Tick something off and a little clay Claude celebrates with you (you can switch that off).
 - **Keeps track of people.** **People** is a light CRM: everyone you work with, what's open with them and what you're waiting on.
 - **Keeps itself up to date.** If you want, Claude checks in every hour while you work, so the app is always current.
 

@@ -2,10 +2,12 @@
   "id": "task-list",
   "name": "Task List OS",
   "version": "1.0.0",
-  "sharedVersion": "2",
+  "sharedVersion": "3",
   "attachingVersion": "1",
   "app": "apps/task-list/",
-  "dataFiles": ["apps/task-list/data/tasks.json"],
+  "dataFiles": [
+    "apps/task-list/data/tasks.json"
+  ],
   "skills": [
     "check-in",
     "sort-my-day",
