@@ -161,14 +161,15 @@
     return mon.toLocaleDateString("en-GB", { day: "numeric", month: mon.getMonth() === sun.getMonth() ? undefined : "short" }) + " to " + sun.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   }
 
-  function render(ctx) {
+  // opts.lead: anything to show first in the toolbar (This week's Board or Calendar switch)
+  function render(ctx, opts) {
     const st = ctx.state;
     const mode = st.calMode;
     const modes = [["day", "Day"], ["week", "Week"], ["month", "Month"]].map(function (m) {
       return '<button type="button" data-action="cal-mode" data-mode="' + m[0] + '" aria-pressed="' + (mode === m[0]) + '">' + m[1] + "</button>";
     }).join("");
     let html = '<div class="page page--wide page--calendar">' +
-      '<div class="toolbar"><div class="toolbar__group">' +
+      '<div class="toolbar"><div class="toolbar__group">' + ((opts && opts.lead) || "") +
       '<button type="button" class="icon-btn" data-action="cal-prev" aria-label="Previous">' + icon("chevronLeft") + "</button>" +
       '<button type="button" class="btn btn--sm" data-action="cal-today">Today</button>' +
       '<button type="button" class="icon-btn" data-action="cal-next" aria-label="Next">' + icon("chevronRight") + "</button>" +

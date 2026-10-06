@@ -31,6 +31,7 @@
     calDate: M.todayISO(),
     calScroll: null,
     weekStart: null,
+    weekMode: (function () { try { return localStorage.getItem("tlos-week-mode") === "calendar" ? "calendar" : "board"; } catch (e) { return "board"; } })(),
     filterCat: "all", filterPerson: "", sortBy: "date", filterRole: "all",
     drawer: null
   };
@@ -285,7 +286,13 @@
   // 4. Moving between pages
   // ============================================================
 
+  // The calendar lives inside This week now: anything that asks for "calendar" opens This week in calendar view
+  function setWeekMode(mode) {
+    state.weekMode = mode === "calendar" ? "calendar" : "board";
+    try { localStorage.setItem("tlos-week-mode", state.weekMode); } catch (e) { /* not remembered, fine */ }
+  }
   function go(view) {
+    if (view === "calendar") { setWeekMode("calendar"); view = "week"; }
     if (!V[view]) view = "today";
     if (view !== state.view) seen.clear();
     state.view = view;
@@ -728,7 +735,8 @@
         else state.calDate = ui.isoDate(ui.addDays(cur, dir * (state.calMode === "day" ? 1 : 7)));
         renderView(); break;
       }
-      case "go-calendar-day": state.calDate = btn.getAttribute("data-date"); state.calMode = "day"; state.calScroll = null; if (state.view === "calendar") renderView(); else go("calendar"); break;
+      case "go-calendar-day": state.calDate = btn.getAttribute("data-date"); state.calMode = "day"; state.calScroll = null; go("calendar"); break;
+      case "week-mode": setWeekMode(btn.getAttribute("data-mode")); seen.clear(); state.calScroll = null; renderView(); break;
       case "open-event": openEvent(btn.getAttribute("data-event") || (btn.closest("[data-event]") || btn).getAttribute("data-event")); break;
 
       // lists and people
@@ -893,6 +901,7 @@
   let remembered = null;
   try { remembered = localStorage.getItem("tlos-view"); } catch (e) { remembered = null; }
   state.view = V[fromHash] ? fromHash : V[remembered] ? remembered : "today";
+  if (state.view === "calendar") { setWeekMode("calendar"); state.view = "week"; }
   if (location.hash !== "#" + state.view) history.replaceState(null, "", "#" + state.view);
 
   renderGate();
