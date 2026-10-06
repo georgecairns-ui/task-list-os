@@ -258,6 +258,9 @@ body.has-drawer .main { margin-right: 0; }
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 .toolbar__group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .week-mode { margin-right: var(--space-3); }
+.all-views { justify-self: start; }
+.segmented__n { font-size: var(--text-2xs); font-weight: 700; color: var(--color-faint); margin-left: 2px; }
+.segmented button[aria-pressed="true"] .segmented__n { color: var(--color-accent-text); }
 .segmented button { display: inline-flex; align-items: center; gap: 6px; }
 .segmented button svg { width: 14px; height: 14px; }
 .toolbar__label { font-size: var(--text-md); font-weight: 650; margin-left: 6px; white-space: nowrap; }

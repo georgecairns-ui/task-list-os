@@ -32,7 +32,7 @@
     calScroll: null,
     weekStart: null,
     weekMode: (function () { try { return localStorage.getItem("tlos-week-mode") === "calendar" ? "calendar" : "board"; } catch (e) { return "board"; } })(),
-    filterCat: "all", filterPerson: "", sortBy: "date", filterRole: "all",
+    filterCat: "all", filterPerson: "", sortBy: "date", allView: "all", filterRole: "all",
     drawer: null
   };
 
@@ -741,6 +741,7 @@
 
       // lists and people
       case "filter-cat": state.filterCat = btn.getAttribute("data-cat"); renderView(); break;
+      case "all-view": state.allView = btn.getAttribute("data-view-key"); renderView(); break;
       case "filter-role": state.filterRole = btn.getAttribute("data-role"); renderView(); break;
       case "add-person": openAddPerson(); break;
 
