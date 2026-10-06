@@ -34,6 +34,10 @@ Claude never asks for your passwords. When you connect an app, you sign in on th
 
 Yes. `context/tools.md` lists every connected app and what Claude may do in each. To disconnect an app, remove it in the Claude app's settings (usually under Connectors), and ask Claude to update the list.
 
+## What happens to my voice notes?
+
+When you press Voice note, your browser turns your speech into text as you talk. Chrome does this with Google's speech service, Edge with Microsoft's and Safari with Apple's, so your words pass through that company to become text, as they do with any dictation. No audio is kept: only the text is saved, in your brain dump. Claude then sorts the text into tasks on your computer. If you'd rather not use your browser's speech service, type into Brain dump instead.
+
 ## What is the task list helper?
 
 Your task list app runs from a small program in your Task List OS folder, so it opens like a web page at http://localhost:4747. It only listens on your own computer: nothing on the internet or your network can reach it. It only shows the app and only ever saves your task file, keeping a backup before every save. Claude can make it start with your computer, and you can turn that off any time by asking Claude.

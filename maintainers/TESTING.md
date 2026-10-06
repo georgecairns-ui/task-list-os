@@ -54,6 +54,7 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] First run: Replies fills with real emails that need an answer, each with a sensible draft. Draft opens it in Gmail or Outlook, addressed and written.
 - [ ] Calls shows recent calls with summaries, actions in Review and a follow-up draft.
 - [ ] Brain dump "pay HMRC tax bill", then "sort my brain dump": a task with a GOV.UK guide and a suggested time; Approve, then Add to calendar opens a filled-in event.
+- [ ] Voice note (top bar, or V): talk for a minute about 4 or 5 different things, press Done. "Claude is sorting your voice note" appears, then "Claude has sorted your voice note"; Review has the new tasks, one with a Draft email, one with a suggested time. Works in Chrome; Firefox shows the explanation.
 - [ ] A scheduled task in the Claude app running `/check-in` hourly updates the app on its own (watch the "Claude checked at" line change).
 - [ ] Claude never sends an email, sends a note-taker to a call, or changes a calendar event without a specific yes.
 

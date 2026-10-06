@@ -30,7 +30,7 @@
       '<section class="composer">' +
       '<label class="sr-only" for="dumpText">Brain dump</label>' +
       '<textarea id="dumpText" class="composer__text" data-keep rows="7" placeholder="Everything on your mind, one thing per line.\nCall the bank about the card machine\nIdeas for the summer menu\nAsk Priya about next week’s rota\nRenew the van insurance before the 20th"></textarea>' +
-      '<div class="composer__foot"><p class="muted">Each line becomes an item. Messy is fine.</p>' +
+      '<div class="composer__foot"><button type="button" class="btn" data-action="voice-note">' + icon("mic") + "Record instead</button><p class=\"muted composer__tip\">Each line becomes an item. Messy is fine.</p>" +
       '<button type="button" class="btn btn--primary" data-action="dump-add">' + icon("plus") + 'Add to brain dump <span class="kbd kbd--on-accent">⌘↵</span></button></div>' +
       "</section>";
 
@@ -39,8 +39,8 @@
     if (unsorted.length) {
       html += '<ul class="dump-list" role="list">' + unsorted.map(function (x) {
         return '<li class="dump-item' + ctx.anim("dump-" + x.id) + '" data-dump="' + esc(x.id) + '">' +
-          '<span class="dump-item__bullet" aria-hidden="true"></span>' +
-          '<span class="dump-item__text">' + esc(x.text) + '<span class="dump-item__when">' + esc(ago(x.createdAt)) + "</span></span>" +
+          (x.kind === "voice" ? '<span class="dump-item__voice" title="Voice note">' + icon("mic") + "</span>" : '<span class="dump-item__bullet" aria-hidden="true"></span>') +
+          '<span class="dump-item__text' + (x.kind === "voice" ? " is-voice" : "") + '">' + esc(x.text) + '<span class="dump-item__when">' + (x.kind === "voice" ? "Voice note \u00b7 " : "") + esc(ago(x.createdAt)) + "</span></span>" +
           '<span class="dump-item__actions">' +
           '<button type="button" class="btn btn--sm" data-action="dump-to-task">' + icon("plus") + "Make a task</button>" +
           '<button type="button" class="icon-btn icon-btn--sm" data-action="dump-remove" aria-label="Remove: ' + esc(x.text) + '">' + icon("x") + "</button>" +

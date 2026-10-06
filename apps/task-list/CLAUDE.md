@@ -69,6 +69,7 @@ An older file with `formatVersion: 1` is fine. The app adds the missing sections
 | `proposedDate`, `proposedTime`, `proposedReason` | Your suggested day (and optionally time) for an existing task, from "plan my week". Shows as a dashed card on the week board and in Review. Approving moves it into `scheduledDate` and `scheduledTime`. Never set `scheduledDate` yourself unless the person asks for that specific task. |
 | `guide` | "How to do this", from `research-task`: `{ "summary": "...", "steps": ["..."], "links": [{ "label": "Pay your Self Assessment tax bill (GOV.UK)", "url": "https://www.gov.uk/pay-self-assessment-tax-bill" }], "researchedAt": "<timestamp>" }`. Shown in the task's panel. |
 | `replyId` | Links a task to the email in `replies` it came from, so the panel can open the draft. |
+| `emailDraft` | An email the person needs to send for this task, drafted by you: `{ "to": "tom@greenway.example", "subject": "Quote for the menu boards", "body": "Hi Tom,..." }`. The task's panel shows it with a Draft button. |
 | `dismissedAt`, `approvedAt`, `scheduledAt`, `calendarAddedAt` | Timestamps the app sets. Leave them alone. `calendarAddedAt` means the person pressed Add to calendar. |
 
 ### The 5 categories
@@ -134,6 +135,7 @@ Whatever the person typed into Brain dump, one line per item:
 ```
 
 - `status` is `unsorted`, `sorted` (you or the person turned it into tasks; `taskIds` lists them) or `dismissed` (removed, or nothing to do).
+- `"kind": "voice"` marks a voice note: one long spoken paragraph from the app's Voice note button. When one is added, the task list asks you to sort it straight away (a `claude -p` run started by the helper, with nobody watching).
 - See `.claude/skills/sort-my-brain-dump` for how to turn lines into suggested tasks.
 
 ### Replies: emails that need an answer

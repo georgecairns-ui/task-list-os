@@ -461,6 +461,12 @@
       item.status = "sorted"; item.sortedAt = nowISO(); item.taskIds = [t.id];
       return t;
     },
+    // A voice note goes into the brain dump as one item; Claude splits it into tasks
+    addVoiceNote: function (d, text) {
+      const item = { id: ui.makeId("b"), text: String(text).slice(0, 20000), createdAt: nowISO(), status: "unsorted", kind: "voice" };
+      d.dump.push(item);
+      return item;
+    },
     removeDump: function (d, dumpId) {
       const item = d.dump.find(function (x) { return x.id === dumpId; });
       if (item) { item.status = "dismissed"; item.sortedAt = nowISO(); }

@@ -57,6 +57,14 @@
       }).join("") + "</ul>" : "") +
       (t.guide.researchedAt ? '<p class="muted drawer__small">Researched by Claude on ' + esc(new Date(t.guide.researchedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long" })) + ". Check the official pages before acting.</p>" : "") + "</section>"
       : (!done ? '<section class="drawer__section"><button type="button" class="btn btn--sm btn--ghost" data-action="copy" data-text="Research how to do this task and add the steps to it: ' + esc(t.title) + '">' + icon("search") + "Ask Claude how to do this</button></section>" : "");
+    // An email Claude drafted for this task (for example from "email Tom about the quote" in a voice note)
+    const ed = t.emailDraft;
+    const emailDraft = ed && ed.body && !done ? '<section class="drawer__section draft"><h3 class="label">Email to send</h3>' +
+      '<div class="draft__fields"><label class="draft__field"><span>To</span><input class="input input--bare" data-efield="to" value="' + esc(ed.to || "") + '"></label>' +
+      '<label class="draft__field"><span>Subject</span><input class="input input--bare" data-efield="subject" value="' + esc(ed.subject || "") + '"></label></div>' +
+      '<textarea class="textarea draft__body" data-efield="body" rows="7" aria-label="Email to send">' + esc(ed.body) + "</textarea>" +
+      '<div class="draft__actions"><button type="button" class="btn btn--primary" data-action="task-draft">' + icon("pencil") + "Draft in " + esc(window.TL.links.emailLabel(d.settings.emailProvider)) + "</button>" +
+      '<button type="button" class="btn" data-action="copy-task-draft">' + icon("list") + "Copy</button></div></section>" : "";
     const replyLink = t.replyId && M.replyById(d, t.replyId) ? '<section class="drawer__section"><button type="button" class="btn btn--sm" data-action="open-reply" data-reply="' + esc(t.replyId) + '">' + icon("mail") + "Open the email and Claude's draft</button></section>" : "";
 
     const lengthOptions = '<option value="">Length</option>' + LENGTHS.map(function (m) { return '<option value="' + m + '"' + (Number(t.durationMinutes) === m ? " selected" : "") + ">" + esc(ui.minutesLabel(m)) + "</option>"; }).join("");
@@ -79,7 +87,7 @@
       prop("Due", '<input class="input input--bare" type="date" data-field="due" value="' + esc(t.due || "") + '" aria-label="Due date">') +
       prop("Today", done ? '<span class="muted">Done</span>' : onToday ? '<button type="button" class="btn btn--sm" data-action="remove-today">' + icon("sun") + "On today's list · Remove</button>" : '<button type="button" class="btn btn--sm" data-action="add-today">' + icon("sun") + "Add to today</button>") +
       "</div>" +
-      replyLink + guide +
+      emailDraft + replyLink + guide +
       '<section class="drawer__section"><h3 class="label"><label for="taskNotes">Notes</label></h3><textarea class="textarea" id="taskNotes" data-field="notes" rows="4" maxlength="4000" placeholder="Names, amounts, links, anything useful">' + esc(t.notes || "") + "</textarea></section>" +
       source +
       (hist.length ? '<section class="drawer__section"><h3 class="label">History</h3><ol class="history">' + hist.map(function (h) {
@@ -225,6 +233,13 @@
       el.addEventListener("change", function () {
         const draft = {}; draft[el.getAttribute("data-rfield")] = el.value;
         ctx.actions.updateReply(target.id, { draft: draft });
+      });
+    });
+    root.querySelectorAll("[data-efield]").forEach(function (el) {
+      el.addEventListener("change", function () {
+        const t = M.taskById(ctx.d, target.id);
+        const draft = Object.assign({}, t.emailDraft); draft[el.getAttribute("data-efield")] = el.value;
+        ctx.actions.updateTask(target.id, { emailDraft: draft });
       });
     });
     root.querySelectorAll("[data-mfield]").forEach(function (el) {

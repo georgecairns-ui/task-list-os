@@ -15,7 +15,11 @@ Other port:  TLOS_PORT=4848 python3 apps/server/server.py
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
+import threading
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote
 
@@ -26,6 +30,72 @@ APPS = os.path.join(ROOT, "apps")
 DATA = os.path.join(APPS, "task-list", "data", "tasks.json")
 BACKUP = DATA[:-5] + ".backup.json"
 MAX_BODY = 10 * 1024 * 1024
+# Asking Claude to sort a voice note (see server.js for the plain-English explanation)
+AUTO_CLAUDE = os.environ.get("TLOS_AUTO_CLAUDE", "on") != "off"
+_logs = os.path.join(os.path.expanduser("~"), "Library", "Logs")
+CLAUDE_LOG = os.path.join(_logs if os.path.isdir(_logs) else os.environ.get("TMPDIR", "/tmp"), "task-list-os-claude.log")
+RUN_LIMIT_S = 10 * 60
+SORT_PROMPT = ("A new voice note has just been added to the brain dump in the task list. "
+               "Follow .claude/skills/sort-my-brain-dump for the unsorted brain dump items only. Be quick and change nothing else. "
+               "Nobody is watching this run, so do not ask questions: make your best reading of anything unclear and say so in the task notes.")
+claude_run = {"running": False, "queued": False, "startedAt": None, "lastRunAt": None, "lastResult": None}
+claude_lock = threading.Lock()
+
+
+def now_iso():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def find_claude():
+    if os.environ.get("TLOS_CLAUDE"):
+        return os.environ["TLOS_CLAUDE"]
+    found = shutil.which("claude")
+    if found:
+        return found
+    for d in (os.path.expanduser("~/.local/bin"), os.path.expanduser("~/.claude/local"), "/usr/local/bin", "/opt/homebrew/bin"):
+        for name in ("claude", "claude.exe", "claude.cmd"):
+            full = os.path.join(d, name)
+            if os.access(full, os.X_OK):
+                return full
+    return None
+
+
+def _claude_worker(binary):
+    while True:
+        with open(CLAUDE_LOG, "a") as log:
+            log.write("\n--- %s sorting the brain dump\n" % claude_run["startedAt"])
+            log.flush()
+            try:
+                result = subprocess.run([binary, "-p", SORT_PROMPT], cwd=ROOT, stdout=log, stderr=log, timeout=RUN_LIMIT_S)
+                outcome = "ok" if result.returncode == 0 else "failed"
+            except (OSError, subprocess.TimeoutExpired):
+                outcome = "failed"
+        with claude_lock:
+            claude_run["lastRunAt"] = now_iso()
+            claude_run["lastResult"] = outcome
+            if claude_run["queued"]:
+                claude_run["queued"] = False
+                claude_run["startedAt"] = now_iso()
+                continue
+            claude_run["running"] = False
+            return
+
+
+def run_claude():
+    with claude_lock:
+        if claude_run["running"]:
+            claude_run["queued"] = True
+            return True
+        binary = find_claude()
+        if not binary:
+            claude_run["lastResult"] = "not-installed"
+            return False
+        claude_run["running"] = True
+        claude_run["startedAt"] = now_iso()
+    threading.Thread(target=_claude_worker, args=(binary,), daemon=True).start()
+    return True
+
+
 TYPES = {
     ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
     ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".png": "image/png",
@@ -95,6 +165,8 @@ class Handler(BaseHTTPRequestHandler):
             except OSError:
                 return self.send_json(404, {"error": "missing"})
             return self.send(200, text, TYPES[".json"], {"X-Modified": str(modified())})
+        if url == "/api/claude/status":
+            return self.send_json(200, dict(claude_run, available=AUTO_CLAUDE and bool(find_claude())))
         if url.startswith("/api/"):
             return self.send_json(404, {"error": "not found"})
         if url in ("/", ""):
@@ -120,7 +192,20 @@ class Handler(BaseHTTPRequestHandler):
     def refuse(self):
         self.send(405, "Not allowed")
 
-    do_POST = do_DELETE = do_PATCH = do_OPTIONS = refuse
+    def do_POST(self):
+        if not self.host_ok():
+            return self.send(403, "Not allowed")
+        if self.path.split("?")[0] != "/api/claude/sort-brain-dump":
+            return self.refuse()
+        if not self.origin_ok() or "application/json" not in self.headers.get("Content-Type", ""):
+            return self.send_json(403, {"error": "forbidden"})
+        if not AUTO_CLAUDE:
+            return self.send_json(503, {"error": "turned off"})
+        if run_claude():
+            return self.send_json(202, {"started": True})
+        return self.send_json(503, {"error": "claude not installed"})
+
+    do_DELETE = do_PATCH = do_OPTIONS = refuse
 
     def do_PUT(self):
         if not self.host_ok() or not self.origin_ok():

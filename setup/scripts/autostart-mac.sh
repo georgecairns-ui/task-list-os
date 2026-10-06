@@ -3,7 +3,8 @@
 # START THE TASK LIST WITH YOUR MAC
 # ---------------------------------
 # Makes the task list helper start whenever you log in, and restarts it if it ever stops, so
-# http://localhost:4747 always works. Claude runs this with your permission.
+# http://localhost:4747 always works. Claude runs this with your permission. It remembers where
+# Claude Code is installed, so voice notes can be sorted straight away.
 #   bash setup/scripts/autostart-mac.sh install
 #   bash setup/scripts/autostart-mac.sh remove      (to undo)
 #
@@ -49,7 +50,7 @@ cat > "$PLIST" <<PLIST
   <key>ProgramArguments</key>
   <array><string>$(xml "$RUNTIME")</string><string>$(xml "$SERVER")</string></array>
   <key>WorkingDirectory</key><string>$(xml "$DIR")</string>
-  <key>EnvironmentVariables</key><dict><key>TLOS_PORT</key><string>$PORT</string></dict>
+  <key>EnvironmentVariables</key><dict><key>TLOS_PORT</key><string>$PORT</string><key>PATH</key><string>$(xml "$PATH")</string></dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>StandardOutPath</key><string>$(xml "$LOG")</string>

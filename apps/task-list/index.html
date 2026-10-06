@@ -77,7 +77,9 @@
           <span class="kbd topbar__search-kbd">/</span>
           <div class="search-results popover" id="searchResults" hidden role="listbox"></div>
         </div>
+        <span class="claude-status" id="claudeStatus" hidden></span>
         <span class="save-status" id="saveStatus" hidden></span>
+        <button type="button" class="btn topbar__voice" data-action="voice-note" title="Record a voice note (V)"><span data-icon="mic"></span><span class="topbar__voice-label">Voice note</span></button>
         <button type="button" class="btn btn--primary topbar__new" data-action="quick-add" aria-label="New task"><span data-icon="plus"></span><span class="topbar__new-label">New</span></button>
       </header>
       <div id="banner"></div>
@@ -141,6 +143,7 @@
   <dialog class="modal" id="shortcutsDialog" aria-labelledby="shortcutsTitle">
     <div class="modal__head"><h2 id="shortcutsTitle">Keyboard shortcuts</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="x"></span></button></div>
     <div class="modal__body shortcuts">
+      <div><span class="kbd">V</span> Record a voice note</div>
       <div><span class="kbd">N</span> New task</div>
       <div><span class="kbd">/</span> Search</div>
       <div><span class="kbd">1</span> to <span class="kbd">9</span> Go to a page in the sidebar</div>
@@ -158,6 +161,7 @@
   <script src="app/demo-data.js"></script>
   <script src="app/components.js"></script>
   <script src="app/links.js"></script>
+  <script src="app/voice.js"></script>
   <script src="app/view-today.js"></script>
   <script src="app/view-review.js"></script>
   <script src="app/view-replies.js"></script>
