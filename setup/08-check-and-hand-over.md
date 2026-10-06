@@ -20,7 +20,7 @@ Check these yourself. Fix anything that fails, then check again.
 - [ ] Every `context/` file says "Status: filled in", or `setup/progress.md` says why not.
 
 **With them** (ask them to do these 3 things)
-- [ ] Open the app. They see "Good morning, [name]", the line saying when you last checked, and your suggestions.
+- [ ] They open **http://localhost:4747** (or their bookmark). They see "Good morning, [name]", the line saying when you last checked, and your suggestions.
 - [ ] On **Replies**, press **Draft** on one. The email opens in Gmail or Outlook, written and addressed. (They don't have to send it.)
 - [ ] On **Review**, approve one suggestion. Then read the task file again and check it changed. Tell them: "That's working both ways. I can see you approved [task]."
 
@@ -43,6 +43,7 @@ Mention it once. Never suggest the task list is broken without it.
 2. In `CLAUDE.md`, change `Setup: not done yet` to `Setup: complete on <date>`.
 3. Tell them, briefly:
    - What's connected, and that you only read and draft.
+   - Their link, **http://localhost:4747**, and whether it starts with their computer.
    - Whether you're checking in automatically, and when.
    - The phrases that do most of the work: "sort my day", "check my inbox", "plan my week", "sort my brain dump", "wrap up my day". In Claude Code each also works as a command, for example `/sort-my-day`.
    - That they can ask for anything in plain words, and change how the app looks by asking you (see `docs/CUSTOMISING.md`).

@@ -42,7 +42,8 @@ If one still says "Status: not filled in yet", work with what you have and offer
 
 | Folder | What's in it |
 |---|---|
-| `Open Task List.html` | Double-click to open the task list app (Chrome or Edge): Today, Review, Replies, Calls, Brain dump, This week, Calendar, All tasks, Waiting on, People, Done |
+| **http://localhost:4747** | The task list app: Today, Review, Replies, Calls, Brain dump, This week, Calendar, All tasks, Waiting on, People, Done. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-task-list` |
+| `Open Task List.html` | Double-clicking it goes to the link above when the task list is running |
 | `apps/task-list/` | The task list app. `CLAUDE.md` in there explains its data. Their tasks are in `apps/task-list/data/tasks.json` |
 | `apps/shared/` | The app's look: `theme.css` holds every colour and font |
 | `context/` | Your notes about the business (see above) |
@@ -65,6 +66,7 @@ When a request matches a skill in `.claude/skills/`, read that skill's `SKILL.md
 | "How do I...?", "research this" | `.claude/skills/research-task` |
 | "When should I do this?", "put it in my diary" | `.claude/skills/schedule-it` |
 | "Set me up", "carry on setting up" | `.claude/skills/setup` |
+| "Open my task list", "it's not loading" | `.claude/skills/open-task-list` |
 | "Plan my week", "what does my week look like" | `.claude/skills/plan-my-week` |
 | "Sort my brain dump", "turn my notes into tasks" | `.claude/skills/sort-my-brain-dump` |
 | "Wrap up my day", "what did I get done" | `.claude/skills/wrap-up-my-day` |

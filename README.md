@@ -18,7 +18,7 @@ Nothing goes out without you. Claude reads and drafts; you decide and you send.
 ## What you need
 
 - **Claude Code**, signed in with a paid Claude plan (Pro or Max). Your email, calendar and app connections come from your Claude account, and Claude Code only uses them when it's signed in with a subscription. The Claude desktop app works too.
-- **Google Chrome or Microsoft Edge**, to open the task list app.
+- Nothing else to install in most cases. Your task list runs on your own computer using Node (Claude installs it for you if it's missing, with your permission).
 - About 15 to 20 minutes, once.
 
 ## Get started
@@ -32,7 +32,7 @@ Nothing goes out without you. Claude reads and drafts; you decide and you send.
    Or, in the Claude desktop app, open the Code tab and choose the folder.
 3. **Type `/setup`.**
 
-Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. When it's done, double-click **Open Task List.html**.
+Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. Then it opens your task list and gives you its link, **http://localhost:4747**. Bookmark it. That's it.
 
 If an app needs a key rather than a sign-in, Claude gives you one line to paste into the Terminal. The key is stored in your computer's secure keychain, never in a chat and never in this folder.
 
@@ -64,7 +64,7 @@ Task List OS works on its own. If you'd like your folders, business context and 
 ```
 START-HERE.md          Claude reads this first and runs setup (/setup)
 CLAUDE.md              Claude's standing instructions in this folder
-Open Task List.html    double-click to open your task list
+Open Task List.html    double-click to open your task list (or use the link Claude gives you)
 setup/                 the 8 setup steps, a guide per app in connections/, and the key scripts
 context/               Claude's notes about your business
 .claude/skills/        saved know-how; each one also works as a command in Claude Code

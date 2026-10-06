@@ -19,17 +19,16 @@ Edit `apps/task-list/data/tasks.json`:
 9. **Today's plan:** follow `.claude/skills/sort-my-day`.
 10. Save, read the file back and check it's valid.
 
-## 6.2 Open the app
+## 6.2 Open it for them
 
-> Your task list is ready, and it's already full of your real work. I sorted 143 emails from the last week: 9 need a reply (I've drafted them all), and 6 have become tasks. I wrote up your 4 calls, with 11 actions. Today's plan has 7 suggestions.
+Follow `.claude/skills/open-task-list`: start the task list, offer to make it start with the computer, then (with their yes) open **http://localhost:4747** in their browser. There's nothing for them to set up or connect.
+
+Then tell them what's waiting, in this shape and in your own words:
+
+> Your task list is open, and it's already full of your real work. I sorted 143 emails from the last week: 9 need a reply (I've drafted them all), and 6 have become tasks. I wrote up your 4 calls, with 11 actions. Today's plan has 7 suggestions.
 >
-> To open it:
-> 1. In your Task List OS folder, double-click **Open Task List.html**. It needs Google Chrome or Microsoft Edge; if it opens in Safari or Firefox, right-click it, choose **Open With**, and pick Chrome or Edge.
-> 2. Click **Connect your task list** and choose your **Task List OS** folder.
-> 3. When Chrome asks, click **Allow** (choose **Allow on every visit** if it offers it).
+> Your link is **http://localhost:4747**. Bookmark it.
 >
 > Start with **Replies**: press **Draft** on any of them and the email opens, written and addressed, ready for you to check and send. Then **Review** to approve the tasks I've suggested.
 
-If you're running in Claude Code on a Mac, you can open it for them: `open -a "Google Chrome" "Open Task List.html"` (or `start chrome "Open Task List.html"` on Windows). Ask first.
-
-Suggest bookmarking it in Chrome. Tick step 6.
+Tick step 6.

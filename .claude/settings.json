@@ -9,7 +9,9 @@
       "Edit(./files/**)",
       "Write(./files/**)",
       "Edit(./setup/progress.md)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(bash setup/scripts/start-task-list.sh)",
+      "Bash(powershell -ExecutionPolicy Bypass -File setup\\scripts\\start-task-list.ps1)"
     ]
   }
 }

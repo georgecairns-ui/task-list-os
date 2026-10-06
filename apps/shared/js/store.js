@@ -74,12 +74,13 @@
       moduleId     e.g. "task-list" (used to remember which folder belongs to which app)
       fileName     e.g. "tasks.json"
       dataPaths    where to look for the file inside the folder the person picks
+      api          the helper's address for the task file, for example "/api/tasks" (see apps/server)
       makeDemoData function returning fresh sample data for Demo mode
       validate     function(data) that throws if the file is not in the expected shape
       onData       function(data, reason) called whenever data arrives. reason is
                    "load", "save", "external" (Claude changed the file) or "demo"
       onStatus     function(status, detail) called when the connection state changes:
-                   "checking", "unsupported", "needs-connect", "needs-permission", "ready", "demo", "error"
+                   "checking", "unsupported", "needs-helper", "needs-connect", "needs-permission", "ready", "demo", "error"
   */
   function createStore(options) {
     const opts = options;
@@ -95,7 +96,7 @@
       pollTimer: null
     };
 
-    function setStatus(status, detail) { opts.onStatus(status, detail || {}); }
+    function setStatus(status, detail) { state.lastStatus = status; opts.onStatus(status, detail || {}); }
 
     // Find the data folder inside whatever folder the customer picked.
     // opts.dataPaths lists the places to look, relative to the picked folder,
@@ -158,6 +159,41 @@
       startWatching();
     }
 
+    // ---------- The helper on this computer (http://localhost:4747) ----------
+    // When the app is opened from the helper's link, it reads and saves through the helper:
+    // no folder to pick and nothing to allow. opts.api is the helper's address for the task file.
+    async function helperAvailable() {
+      if (!opts.api || !/^https?:$/.test(location.protocol)) return false;
+      try { const r = await fetch(opts.api + "/meta", { cache: "no-store" }); return r.ok; } catch (e) { return false; }
+    }
+    async function helperRead() {
+      let r;
+      try { r = await fetch(opts.api, { cache: "no-store" }); } catch (e) { throw StoreError("helper-stopped", "The task list helper isn't running.", e); }
+      if (r.status === 404) throw StoreError("missing", "The data file could not be found.");
+      if (!r.ok) throw StoreError("helper-stopped", "The task list helper didn't answer.");
+      const text = await r.text();
+      let data;
+      try { data = JSON.parse(text); if (opts.validate) opts.validate(data); } catch (e) { throw StoreError("bad-file", "The data file has a mistake in it, so it could not be read.", e); }
+      return { data: data, text: text, lastModified: Number(r.headers.get("X-Modified")) || 0 };
+    }
+    async function helperWrite(data) {
+      let r;
+      try {
+        r = await fetch(opts.api, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      } catch (e) { throw StoreError("helper-stopped", "The task list helper isn't running.", e); }
+      if (!r.ok) throw StoreError("save-failed", "Your change could not be saved.");
+      return (await r.json()).modified;
+    }
+    async function openHelper() {
+      const result = await helperRead();
+      state.mode = "helper";
+      state.data = result.data;
+      state.lastModified = result.lastModified;
+      setStatus("ready", { folderName: "Task List OS", helper: true });
+      opts.onData(state.data, "load");
+      startWatching();
+    }
+
     // ---------- Watching for Claude's edits ----------
     function startWatching() {
       stopWatching();
@@ -172,7 +208,9 @@
     function onVisible() { if (document.visibilityState === "visible") checkForChanges(); }
 
     async function checkForChanges() {
-      if (state.mode !== "file" || state.busy || document.visibilityState !== "visible") return;
+      if (state.busy || document.visibilityState !== "visible") return;
+      if (state.mode === "helper") return checkHelper();
+      if (state.mode !== "file") return;
       try {
         const handle = await state.dataDir.getFileHandle(opts.fileName);
         const file = await handle.getFile();
@@ -190,10 +228,36 @@
       }
     }
 
+    async function checkHelper() {
+      try {
+        const r = await fetch(opts.api + "/meta", { cache: "no-store" });
+        if (!r.ok) throw StoreError("helper-stopped", "The task list helper didn't answer.");
+        const meta = await r.json();
+        if (meta.modified === state.lastModified) {
+          if (state.lastStatus === "error") setStatus("ready", { folderName: "Task List OS", helper: true });
+          return;
+        }
+        const result = await helperRead();
+        state.data = result.data;
+        state.lastModified = result.lastModified;
+        setStatus("ready", { folderName: "Task List OS", helper: true });
+        opts.onData(state.data, "external");
+      } catch (e) {
+        const err = e.kind ? e : StoreError("helper-stopped", "The task list helper isn't running.", e);
+        setStatus("error", { error: err, folderName: "Task List OS", helper: true });
+      }
+    }
+
     // ---------- Public actions ----------
     async function start() {
       setStatus("checking");
       if (readDemoFlag()) return startDemo();
+      // Opened from the helper's link: everything just works, no folder to pick
+      if (await helperAvailable()) {
+        try { return await openHelper(); } catch (e) { return setStatus("error", { error: e, folderName: "Task List OS", helper: true }); }
+      }
+      // Opened as a file without the helper running: ask Claude to start it
+      if (location.protocol === "file:" && opts.api) return setStatus("needs-helper");
       if (!isSupported()) return setStatus("unsupported");
       let folder = null;
       try { folder = await remembered.get(opts.moduleId); } catch (e) { folder = null; }
@@ -249,6 +313,30 @@
         opts.onData(state.data, "save");
         return Promise.resolve(state.data);
       }
+      if (state.mode === "helper") {
+        const runHelper = async function () {
+          state.busy = true;
+          try {
+            const latest = await helperRead();   // fresh copy, including anything Claude just wrote
+            const data = latest.data;
+            change(data);
+            state.lastModified = await helperWrite(data);
+            state.data = data;
+            setStatus("ready", { folderName: "Task List OS", helper: true, savedAt: new Date() });
+            opts.onData(state.data, "save");
+            return data;
+          } catch (e) {
+            const err = e.kind ? e : StoreError("save-failed", "Your change could not be saved.", e);
+            setStatus("error", { error: err, folderName: "Task List OS", helper: true });
+            throw err;
+          } finally {
+            state.busy = false;
+          }
+        };
+        const queued = state.writing.then(runHelper, runHelper);
+        state.writing = queued.catch(function () {});
+        return queued;
+      }
       if (state.mode !== "file") return Promise.reject(StoreError("not-connected", "No folder is connected yet."));
 
       const run = async function () {
@@ -297,6 +385,7 @@
     }
 
     function retry() {
+      if (state.mode === "helper" || (opts.api && /^https?:$/.test(location.protocol))) return start();
       if (state.folder) return openFolder(state.folder).catch(function (e) { setStatus("error", { error: e, folderName: state.folder.name }); });
       return start();
     }
@@ -305,6 +394,7 @@
       start: start, connect: connect, reconnect: reconnect, forget: forget, update: update,
       setDemo: setDemo, retry: retry,
       isDemo: function () { return state.mode === "demo"; },
+      isHelper: function () { return state.mode === "helper"; },
       isSupported: isSupported,
       getData: function () { return state.data; },
       folderName: function () { return state.folder ? state.folder.name : ""; }

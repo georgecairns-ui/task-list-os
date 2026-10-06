@@ -8,7 +8,8 @@ A kit a small business owner downloads and opens in Claude Code (or the Claude d
 
 ## Stack
 
-- No framework, no build step. The app is `index.html` plus plain JavaScript and CSS, opened by double-clicking. Nothing loads from the internet.
+- No framework, no build step. The app is `index.html` plus plain JavaScript and CSS. Nothing loads from the internet.
+- `apps/server/`: `server.js` (Node, no libraries) and `server.py` (Python 3 fallback). Serves `apps/` on 127.0.0.1:4747 and reads and saves `apps/task-list/data/tasks.json` through `/api/tasks` (backup and atomic save; refuses other hosts, other origins and paths outside `apps/`). `setup/scripts/start-task-list.*` starts it; `autostart-mac.sh` and `autostart-windows.ps1` make it start at login.
 - `apps/shared/`: `theme.css` (every design token), `base.css` (components and animation), `js/store.js` (File System Access API, IndexedDB to remember the folder, polling for Claude's edits, demo mode), `js/ui.js` (helpers and icons), bundled fonts and images.
 - `apps/task-list/app/`: `model.js` (data shape, questions, every change, free-slot finder), `links.js` (Draft and Add to calendar links), `components.js`, one `view-*.js` per page (today, review, replies, calls, dump, week, calendar, lists, people), `drawer.js` (task, person, reply and call records), `app.js` (store, routing, actions, search, shortcuts), `demo-data.js`, `app.css`.
 - Claude's side: `START-HERE.md`, `CLAUDE.md`, `setup/` (steps, `connections/` guides, `scripts/save-key.*`), `.claude/skills/` (loaded automatically by Claude Code, each also a slash command), `.claude/settings.json` (narrow pre-approved permissions for unattended check-ins), `context/` templates.
@@ -16,7 +17,7 @@ A kit a small business owner downloads and opens in Claude Code (or the Claude d
 
 ## Commands
 
-- Run the app: double-click `Open Task List.html` (Chrome or Edge).
+- Run the app: `node apps/server/server.js` (or `python3 apps/server/server.py`), then open http://localhost:4747. Without the helper, `Open Task List.html` still opens the app from the file, which can connect to the folder through Chrome's File System Access as a fallback.
 - Test: by hand, see `maintainers/TESTING.md`.
 - Release zip: `bash maintainers/make-release.sh` (creates `dist/task-list-os.zip`; refuses to build if the shipped files contain real data).
 

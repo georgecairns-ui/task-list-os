@@ -570,3 +570,5 @@ body.has-drawer .main { margin-right: 0; }
 .guide__links a { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); }
 .guide__links svg { width: 13px; height: 13px; }
 .sorted__summary--pad { padding: var(--space-3) var(--space-4); }
+.gate__note { font-size: var(--text-sm) !important; color: var(--color-muted) !important; }
+.gate__small .link-btn { font-size: var(--text-sm); }

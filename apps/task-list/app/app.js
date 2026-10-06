@@ -49,6 +49,8 @@
     fileName: "tasks.json",
     // Where tasks.json can be, depending on which folder the person picks
     dataPaths: ["data", "", "apps/task-list/data"],
+    // The helper on this computer (apps/server), which Claude starts during setup
+    api: "/api/tasks",
     makeDemoData: window.makeTaskDemoData,
     validate: M.validate,
     onStatus: function (s, detail) {
@@ -83,6 +85,7 @@
     if (kind === "bad-file") return { title: "Your task file has a small mistake in it.", body: "Nothing new can show or save until it's fixed. Claude can sort it in a few seconds, and the last good version is kept in tasks.backup.json next to it.", say: "Please check my tasks.json file and fix it", short: "Your task file needs a quick fix" };
     if (kind === "missing") return { title: "Your task file has gone missing.", body: "It may have been moved or renamed. Ask Claude to check, or choose your folder again.", say: "My task list file seems to be missing, please check it", short: "Your task file can't be found" };
     if (kind === "needs-permission") return { title: "Chrome needs your permission again.", body: "Click Try again and allow access to your folder.", short: "Chrome needs your permission again" };
+    if (kind === "helper-stopped") return { title: "Your task list has stopped running.", body: "Everything is saved. In Claude, say \u201copen my task list\u201d and it starts again. This page reconnects by itself.", say: "Open my task list", short: "Your task list has stopped running" };
     return { title: "That change didn't save.", body: "Nothing is lost. Try again in a moment.", short: "That change didn't save. Please try again" };
   }
 
@@ -108,6 +111,14 @@
   function renderGate(message) {
     if (status === "checking" || ((status === "ready" || status === "demo") && !data)) {
       return showGate('<div class="gate__loading" aria-busy="true" aria-label="Opening your task list"><div class="skeleton" style="width:220px;height:14px"></div><div class="skeleton" style="width:320px;height:28px"></div><div class="skeleton" style="width:260px;height:14px"></div></div>');
+    }
+    if (status === "needs-helper") {
+      return showGate(gateCard("welcome", "", "Your task list opens from Claude.",
+        "<p>Claude runs your task list on this computer and gives you a link to it. In Claude Code, in your Task List OS folder, just say:</p>" +
+        C.say("Open my task list") +
+        "<p class=\"gate__note\">Not set up yet? Say <strong>/setup</strong> instead. Claude connects your email, calendar and calls and builds your list first.</p>",
+        "",
+        '<button type="button" class="link-btn" data-action="connect">Or connect the folder yourself in Chrome</button>'));
     }
     if (status === "unsupported") {
       return showGate(gateCard("shrug", "One small thing", "This works in Chrome or Microsoft Edge.",
@@ -170,7 +181,7 @@
       pill.hidden = false;
       pill.className = "save-status" + (just ? " is-saving" : "");
       pill.innerHTML = '<span class="save-status__dot"></span><span class="save-status__text">' + (just ? "Saved" : "All changes saved") + "</span>";
-      pill.title = "Connected to " + (statusDetail.folderName || "your folder");
+      pill.title = statusDetail.helper ? "Saved in your Task List OS folder" : "Connected to " + (statusDetail.folderName || "your folder");
       if (just) setTimeout(function () { if (status === "ready") renderChrome(); }, 3100);
     } else if (status === "error" && data) {
       pill.hidden = false; pill.className = "save-status is-error";
@@ -497,8 +508,8 @@
     settingsForm.emailProvider.innerHTML = L.EMAIL_PROVIDERS.map(function (p) { return '<option value="' + p.key + '">' + esc(p.label) + "</option>"; }).join("");
     settingsForm.calendarProvider.innerHTML = L.CALENDAR_PROVIDERS.map(function (p) { return '<option value="' + p.key + '">' + esc(p.label) + "</option>"; }).join("");
     ["yourName", "businessName", "dayStarts", "dayEnds", "minutesSavedPerTask", "minutesSavedPerPlan", "emailProvider", "calendarProvider"].forEach(function (k) { if (s[k] != null) settingsForm[k].value = s[k]; });
-    $("#settingsFolder").textContent = store.isDemo() ? "Demo mode (no folder in use)" : store.folderName();
-    $("#changeFolderBtn").hidden = store.isDemo();
+    $("#settingsFolder").textContent = store.isDemo() ? "Sample data (nothing is saved)" : store.isHelper() ? "Your Task List OS folder, on this computer" : store.folderName();
+    $("#changeFolderBtn").hidden = store.isDemo() || store.isHelper();
     settingsDialog.showModal();
   }
   settingsForm.addEventListener("submit", function (e) {
