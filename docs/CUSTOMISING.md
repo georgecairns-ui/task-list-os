@@ -14,7 +14,6 @@ Task List OS comes with a clean, calm look in light or dark (the moon or sun but
 |---|---|
 | Colours, fonts, corner roundness, spacing | `apps/shared/theme.css` (every look-and-feel setting is in this one file, with a light set and a dark set). The `match-my-brand` skill does it for you from your website or brand guidelines |
 | What Home shows | The **Customise** button on Home: show or hide boxes, drag them into order, make them wide. **Reset** puts it back |
-| The little celebration when you tick something off | Settings (the cog): "Celebrate with a little clip". It's always off if your computer is set to reduce motion |
 | The Get AI Powers slab-serif headings | `apps/shared/theme.css`: follow the note at the bottom of the file |
 | Your name, business name, time saved per task and per plan | The Settings button (the cog) in the app, or `settings` in your task file |
 | The words on the category labels | `CATEGORIES` near the top of `apps/task-list/app/model.js` |

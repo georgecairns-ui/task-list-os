@@ -30,7 +30,7 @@ Change only these files:
 - **Font: `apps/shared/fonts/` and `apps/shared/theme.css`.** The app works offline, so a font must be a file in that folder. If their font is free to use (Google Fonts and other open licences), download its `.woff2` file there, add an `@font-face` line next to Figtree's, and put it first in `--font-ui` (or only in `--font-display` for headings). If it's a paid font, don't download it: use the closest free match or a system font, and tell them why.
 - **Logo: `apps/shared/images/`.** Save it as `brand-logo.svg` (or `.png`), then point the sidebar's brand image at it: the `<img>` inside `.sidebar__brand` in `apps/task-list/index.html` and `apps/home/index.html` (and any other tool's `index.html` in `apps/`). Keep it square-ish and at least 56 pixels high; if their logo is a wide wordmark, use their icon or monogram if they have one, and ask if not.
 
-Leave the "by Get AI Powers" line, the Claude character, the celebration clips and the layout as they are. Keep the previous values in a comment in `theme.css` for one change, so going back is easy.
+Leave the "by Get AI Powers" line, the Claude character pictures and the layout as they are. Keep the previous values in a comment in `theme.css` for one change, so going back is easy.
 
 ## 4. Show them
 

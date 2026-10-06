@@ -486,7 +486,6 @@
     setTimeout(function () {
       change(function (d) { mut.setDone(d, taskId, nowDone); }).then(function () {
         if (!nowDone) return;
-        document.dispatchEvent(new CustomEvent("tlos:task-done", { detail: { id: taskId } }));
         const today = V.today.todaysTasks(data);
         if (today.length && today.every(function (x) { return x.status === "done"; })) ui.toast("That's everything on today's list. Nice work", { icon: "sparkle" });
         else ui.toast("Done", { actionLabel: "Undo", onAction: function () { change(function (d) { mut.setDone(d, taskId, false); }); } });
@@ -594,7 +593,6 @@
     ["yourName", "businessName", "dayStarts", "dayEnds", "minutesSavedPerTask", "minutesSavedPerPlan", "emailProvider", "calendarProvider"].forEach(function (k) { if (s[k] != null) settingsForm[k].value = s[k]; });
     $("#settingsFolder").textContent = store.isDemo() ? "Sample data (nothing is saved)" : store.isHelper() ? "Your Task List OS folder, on this computer" : store.folderName();
     $("#changeFolderBtn").hidden = store.isDemo() || store.isHelper();
-    $("#celebrateToggle").checked = window.TaskListOS.celebrate.isOn();
     settingsDialog.showModal();
   }
   settingsForm.addEventListener("submit", function (e) {
@@ -873,7 +871,6 @@
     renderView();
   });
 
-  $("#celebrateToggle").addEventListener("change", function () { window.TaskListOS.celebrate.setOn(this.checked); if (this.checked) window.TaskListOS.celebrate.play(); });
   $("#demoToggle").addEventListener("change", function () { settingsDialog.close(); data = null; store.setDemo(this.checked); });
   document.querySelectorAll("dialog.modal").forEach(function (dlg) { dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); }); });
   generic.addEventListener("click", function (e) {

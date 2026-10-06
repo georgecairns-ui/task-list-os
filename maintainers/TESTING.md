@@ -65,14 +65,13 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] "Wrap up my day": short and kind, changes nothing.
 
 **The redesign** (shared version 3)
-- [ ] http://localhost:4747 opens Home: a greeting and 7 boxes in rows that line up. Approve on Today's plan works there; ticks there play the celebration.
+- [ ] http://localhost:4747 opens Home: a greeting and 7 boxes in rows that line up. Approve on Today's plan works there.
 - [ ] Customise on Home: hide, show, move, make wide, Done. Reload: still the same. Reset puts the default back.
 - [ ] Sidebar: Home at the top, Task List OS as a dropdown with its pages (All tasks has Waiting on and Done under it). Fold it: the total waiting shows on its name. Reload: still folded.
 - [ ] The moon or sun button switches light and dark on every page, and is remembered.
 - [ ] This week: Board or Calendar switch. Drag a task between days on the board; in Calendar, drag one onto a time. A link to the old Calendar page opens This week's calendar.
 - [ ] All tasks: All, Needs a reply (the emails waiting, each with Draft, plus tasks with an email to send) and In my calendar (tasks with a time).
 - [ ] Add meeting: it shows dashed in This week's calendar at once and opens in Google Calendar or Outlook with the title, time, place and guests filled in. Its panel can open it again or remove it.
-- [ ] Tick a task: a clay Claude clip pops up bottom right with no background, then fades. The next tick shows the other clip. Settings can switch it off.
 - [ ] Setup step 5 offers to match the brand from a website or brand guidelines, and the colour, font and logo change in light and dark.
 
 **Toolkit menu and attaching** (shared version 2)

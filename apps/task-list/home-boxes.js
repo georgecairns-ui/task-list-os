@@ -155,9 +155,7 @@
       if (name === "tick") {
         const t = M.taskById(data, id);
         const done = t && t.status !== "done";
-        change(function (d) { mut.setDone(d, id, done); }).then(function () {
-          if (done) document.dispatchEvent(new CustomEvent("tlos:task-done", { detail: { id: id } }));
-        });
+        change(function (d) { mut.setDone(d, id, done); });
       }
     }
   });

@@ -2,7 +2,7 @@
 
 Shared version 3, 6 October 2026. Task List OS is the reference. Every other tool in the toolkit (Pipeline OS, Skill Map OS and the rest) copies the parts below from this folder so they attach to each other and look like one app. `ATTACHING.md` explains why; this file is the exact list. It replaces `SHARED-V2-CHANGES.md`.
 
-**New in version 3:** every tool in the sidebar is a dropdown of its pages; a Home dashboard for the whole app that each tool adds boxes to; the clean look (Figtree font, white and soft grey, outlined cards, near-black main buttons, small Claude terracotta accents) in light and dark with a switch in the top bar; a short clay Claude clip when something is ticked off; and a `match-my-brand` skill that puts the customer's colours, font and logo on the app during setup.
+**New in version 3:** every tool in the sidebar is a dropdown of its pages; a Home dashboard for the whole app that each tool adds boxes to; the clean look (Figtree font, white and soft grey, outlined cards, near-black main buttons, small Claude terracotta accents) in light and dark with a switch in the top bar; and a `match-my-brand` skill that puts the customer's colours, font and logo on the app during setup.
 
 When a shared part changes here, the number in `apps/shared/VERSION` goes up, a new version of this file is written, and the change is copied into every other tool.
 
@@ -12,14 +12,12 @@ When a shared part changes here, the number in `apps/shared/VERSION` goes up, a 
 |---|---|
 | `apps/server/server.js`, `apps/server/server.py` | The helper. Serves `apps/` at http://localhost:4747 (which opens Home), saves the data files of installed tools and Home's layout. Same behaviour in both |
 | `apps/shared/theme.css` | Every colour, font and size, in a light set and a dark set. A customer's own colours live here; when attaching, keep theirs |
-| `apps/shared/base.css` | Buttons, inputs, segmented switches, dialogs, toasts, cards, the celebration clip, animation |
+| `apps/shared/base.css` | Buttons, inputs, segmented switches, dialogs, toasts, cards, animation |
 | `apps/shared/sidebar.css` | The sidebar: brand, Home link, tool dropdowns (`.tool-group`), pages (`.nav`, `.nav__item`, `.nav__sub`), locked tools, the locked panel, the footer, the phone-width drawer |
 | `apps/shared/js/ui.js` | Helpers and icons. Exposes `window.TaskListOS.ui` |
 | `apps/shared/js/store.js` | Reading and saving a data file. Exposes `window.TaskListOS.createStore` |
 | `apps/shared/js/theme.js` | Light or dark. Load it in `<head>`. Any button with `data-theme-toggle` flips it. Exposes `window.TaskListOS.theme` |
 | `apps/shared/js/sidebar.js` | Dropdowns, the other tools in the folder, "More tools" and the Book a free call panel. Exposes `window.TaskListOS.sidebar` (also as `toolkitMenu`) |
-| `apps/shared/js/celebrate.js` | The clay Claude clip. Plays whenever the page sends a `tlos:task-done` event. Exposes `window.TaskListOS.celebrate` |
-| `apps/shared/images/celebrate/` | The 2 see-through clips (animated WebP) |
 | `apps/shared/catalogue.json` | All 9 tools, what each does, and the booking link |
 | `apps/shared/VERSION` | `3` then the date, one per line |
 | `apps/shared/fonts/`, `apps/shared/images/` | Bundled fonts (Figtree is the app's font; licence in `fonts/OFL.txt`), logos and character images |
@@ -72,7 +70,7 @@ The tool's pages, for its dropdown in every other tool's sidebar and on Home, an
 ```
 
 - `id` is the page's address inside the tool (`../pipeline/#board`). `icon` is a name from `ui.js`. `children` show indented under their page.
-- `home.scripts` load in order on Home, after `ui.js`, `store.js`, `sidebar.js` and `celebrate.js`. The last one registers the boxes.
+- `home.scripts` load in order on Home, after `ui.js`, `store.js`, and `sidebar.js`. The last one registers the boxes.
 
 ### `apps/<folder>/home-boxes.js` (new in version 3)
 
@@ -94,13 +92,12 @@ window.TaskListOS.home.register("pipeline", {
 - **`defaultOn` is false for every tool except Task List OS.** A box from a tool attached later appears in Home's hidden list and the person switches it on. Home never changes by itself.
 - Read and save the tool's data through `window.TaskListOS.createStore` with the same options as the tool's own page, so Demo mode and saving behave the same.
 - Use the shared row and stat styles in `apps/home/home.css` (`.hlist`, `.hrow`, `.hrow__title`, `.hrow__sub`, `.hstat`, `.hbox__empty`) so every box looks the same.
-- When something is ticked off inside a box, send `document.dispatchEvent(new CustomEvent("tlos:task-done"))` so the celebration plays.
 
 ### `apps/<folder>/index.html`
 
 - `<body data-tool="<id>">`
 - In `<head>`, in this order: `../shared/theme.css` (first: Task List OS's `components.js` finds the images folder from it), `../shared/base.css`, `../shared/sidebar.css`, `<script src="../shared/js/theme.js">`, then the tool's own `app/app.css`
-- Scripts at the end, in this order: `../shared/js/ui.js`, `../shared/js/store.js`, `../shared/js/sidebar.js`, `../shared/js/celebrate.js`, then the tool's own
+- Scripts at the end, in this order: `../shared/js/ui.js`, `../shared/js/store.js`, `../shared/js/sidebar.js`, then the tool's own
 - A light and dark button in the top bar: `<button type="button" class="icon-btn" data-theme-toggle aria-label="Switch to dark mode"><span data-icon="moon"></span></button>`
 - The sidebar markup (copy from `apps/task-list/index.html`, change the tool's name, icon and pages):
 
@@ -134,7 +131,6 @@ window.TaskListOS.home.register("pipeline", {
 - The tool's own pages live in its own `<section>` so they work even when the shared files can't load. The `[data-icon]` placeholders are swapped for icons by the tool's own start-up code (copy that loop from the end of Task List OS's `app.js`); keep each placeholder inside its wrapper `<span>` as shown.
 - Counts: a `.nav__count--accent` count (things waiting for the person) is added up and shown on the tool's name when its dropdown is folded.
 - The page grid (`.shell`), the top bar, and opening the sidebar on phones (adding `sidebar-open` to `<body>`) belong to each tool's own CSS and JavaScript; copy them from `apps/task-list/app/app.css` and `app.js`. Don't put the class `nav__item` on anything without an `href`.
-- When the person ticks something off, send the `tlos:task-done` event (see the end of `toggleDone` in Task List OS's `app.js`). Add the "Celebrate" switch to the tool's settings if it has a settings pop-up.
 
 ### The store
 
@@ -222,6 +218,5 @@ On a scratch copy, never the shipped data:
 - `showMoreTools: false` hides the locked tools.
 - Light and dark both look right on every page; the switch remembers the choice.
 - Home: the tool's boxes appear in the hidden list (switched off), can be shown, moved, made wide and saved; they show real data and Demo data.
-- Ticking something off plays the celebration; switching it off in Settings stops it.
 - The helper saves the tool's data with a backup, refuses an unlisted file, refuses a listed file outside the tool's own `data/` folder, and refuses the tool once it's removed from `apps/installed.json`. Check Node and Python.
 - Attach it to a copy of Task List OS (following `ATTACHING.md`): both tools show as dropdowns, each opens, both save, and Home offers both tools' boxes.

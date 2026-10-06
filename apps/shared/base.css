@@ -255,16 +255,6 @@ dialog.modal[open]::backdrop { animation: fade-in var(--dur-base) var(--ease-out
 .say__copy { border: 0; border-radius: 4px; padding: 3px 8px; cursor: pointer; background: var(--color-surface); color: var(--color-accent-text); font-size: var(--text-xs); font-weight: 650; box-shadow: var(--shadow-sm); }
 .say__copy:hover { background: var(--color-sunk); color: var(--color-accent-hover); }
 
-/* ---------- The celebration clip (js/celebrate.js) ---------- */
-.celebrate {
-  position: fixed; z-index: 85; right: var(--space-5); bottom: 76px; width: 210px; pointer-events: none;
-  opacity: 0; transform: translateY(16px) scale(0.92); transform-origin: bottom right;
-  transition: opacity 280ms var(--ease-out), transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.celebrate.is-showing { opacity: 1; transform: none; pointer-events: auto; cursor: pointer; }
-.celebrate img { width: 100%; height: auto; filter: drop-shadow(0 10px 18px rgba(20, 24, 33, 0.18)); }
-@media (max-width: 640px) { .celebrate { width: 150px; right: var(--space-3); bottom: 120px; } }
-
 /* ---------- Animations ---------- */
 .enter { animation: enter var(--dur-slow) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 30ms); }
 @keyframes enter     { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
