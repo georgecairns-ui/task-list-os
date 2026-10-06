@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task List OS</title>
+  <meta name="description" content="Your day, your week and your calendar. Claude sorts it, you approve it.">
+  <link rel="icon" type="image/svg+xml" href="../shared/images/GAIP-emblem-black-teal-pop-RGB.svg">
+  <!-- Shared look (theme.css holds every colour and font) -->
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/base.css">
+  <!-- This app's layout -->
+  <link rel="stylesheet" href="app/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#view">Skip to main content</a>
+
+  <!-- Shown before a folder is connected: welcome, loading, or a problem -->
+  <div id="gate" class="gate"></div>
+
+  <!-- The app itself -->
+  <div id="shell" class="shell" hidden>
+    <aside class="sidebar" id="sidebar" aria-label="Main">
+      <div class="sidebar__brand">
+        <img src="../shared/images/GAIP-emblem-black-teal-pop-RGB.svg" alt="" width="28" height="28">
+        <div>
+          <div class="sidebar__product">Task List OS</div>
+          <div class="sidebar__business" id="businessName"></div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn--primary sidebar__new" data-action="quick-add">
+        <span data-icon="plus"></span>New task<span class="kbd sidebar__kbd">N</span>
+      </button>
+
+      <nav class="nav" id="nav">
+        <a class="nav__item" href="#today" data-view="today"><span data-icon="sun"></span>Today<span class="nav__count" data-count="today"></span></a>
+        <a class="nav__item" href="#review" data-view="review"><span data-icon="sparkle"></span>Review<span class="nav__count nav__count--accent" data-count="review"></span></a>
+        <a class="nav__item" href="#replies" data-view="replies"><span data-icon="mail"></span>Replies<span class="nav__count nav__count--accent" data-count="replies"></span></a>
+        <a class="nav__item" href="#calls" data-view="calls"><span data-icon="phone"></span>Calls<span class="nav__count" data-count="calls"></span></a>
+        <a class="nav__item" href="#dump" data-view="dump"><span data-icon="pencil"></span>Brain dump<span class="nav__count" data-count="dump"></span></a>
+        <div class="nav__gap"></div>
+        <a class="nav__item" href="#week" data-view="week"><span data-icon="columns"></span>This week</a>
+        <a class="nav__item" href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Calendar</a>
+        <div class="nav__gap"></div>
+        <a class="nav__item" href="#all" data-view="all"><span data-icon="list"></span>All tasks<span class="nav__count" data-count="all"></span></a>
+        <a class="nav__item" href="#waiting" data-view="waiting"><span data-icon="hourglass"></span>Waiting on<span class="nav__count" data-count="waiting"></span></a>
+        <a class="nav__item" href="#people" data-view="people"><span data-icon="users"></span>People<span class="nav__count" data-count="people"></span></a>
+        <a class="nav__item" href="#done" data-view="done"><span data-icon="check"></span>Done</a>
+      </nav>
+
+      <div class="sidebar__foot">
+        <div class="saved-mini" id="savedMini"></div>
+        <div class="sidebar__row">
+          <span class="sidebar__spacer"></span>
+          <button type="button" class="icon-btn" data-action="shortcuts" aria-label="Keyboard shortcuts"><span data-icon="keyboard"></span></button>
+          <button type="button" class="icon-btn" data-action="settings" aria-label="Settings"><span data-icon="settings"></span></button>
+        </div>
+        <div class="sidebar__by">
+          <img src="../shared/images/GAIP-logo-black-teal-pop-RGB.svg" alt="Get AI Powers" width="22" height="22">
+          <span>by Get AI Powers</span>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-scrim" data-action="close-sidebar"></div>
+
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="icon-btn topbar__menu" data-action="open-sidebar" aria-label="Open menu"><span data-icon="menu"></span></button>
+        <div class="topbar__title">
+          <h1 id="viewTitle">Today</h1>
+          <span class="topbar__sub" id="viewSub"></span>
+        </div>
+        <div class="topbar__search">
+          <span data-icon="search" class="topbar__search-icon"></span>
+          <input type="search" id="searchInput" class="input" placeholder="Search tasks and people" autocomplete="off" aria-label="Search tasks and people">
+          <span class="kbd topbar__search-kbd">/</span>
+          <div class="search-results popover" id="searchResults" hidden role="listbox"></div>
+        </div>
+        <span class="claude-status" id="claudeStatus" hidden></span>
+        <span class="save-status" id="saveStatus" hidden></span>
+        <button type="button" class="btn topbar__voice" data-action="voice-note" title="Record a voice note (V)"><span data-icon="mic"></span><span class="topbar__voice-label">Voice note</span></button>
+        <button type="button" class="btn btn--primary topbar__new" data-action="quick-add" aria-label="New task"><span data-icon="plus"></span><span class="topbar__new-label">New</span></button>
+      </header>
+      <div id="banner"></div>
+      <main id="view" class="view" tabindex="-1"></main>
+    </div>
+
+    <!-- The record panel: one task or one person, slides in from the right -->
+    <aside class="drawer" id="drawer" aria-label="Details" hidden></aside>
+  </div>
+
+  <!-- Pop-up: quick add -->
+  <dialog class="modal" id="quickAdd" aria-labelledby="quickAddTitle">
+    <form id="quickAddForm" autocomplete="off">
+      <div class="modal__head"><h2 id="quickAddTitle">New task</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="x"></span></button></div>
+      <div class="modal__body">
+        <input class="input input--title" name="title" required maxlength="200" placeholder="What needs doing?" aria-label="What needs doing">
+        <div class="field-row">
+          <label class="field"><span class="field__label">List</span><select class="select" name="category"></select></label>
+          <label class="field"><span class="field__label">Who's it for</span><select class="select" name="personId"></select></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span class="field__label">Plan for</span><input class="input" type="date" name="scheduledDate"></label>
+          <label class="field"><span class="field__label">Due</span><input class="input" type="date" name="due"></label>
+        </div>
+        <label class="switch"><input type="checkbox" name="today" checked><span class="switch__track" aria-hidden="true"></span>Put it on today's list</label>
+      </div>
+      <div class="modal__foot"><span class="muted spacer">Press Enter to add</span><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn--primary">Add task</button></div>
+    </form>
+  </dialog>
+
+  <!-- Pop-up: settings -->
+  <dialog class="modal" id="settingsDialog" aria-labelledby="settingsTitle">
+    <form id="settingsForm">
+      <div class="modal__head"><h2 id="settingsTitle">Settings</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="x"></span></button></div>
+      <div class="modal__body">
+        <div class="field-row">
+          <label class="field"><span class="field__label">Your first name</span><input class="input" name="yourName" maxlength="60" autocomplete="given-name"></label>
+          <label class="field"><span class="field__label">Business name</span><input class="input" name="businessName" maxlength="80" autocomplete="organization"></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span class="field__label">Your day starts</span><input class="input" type="time" name="dayStarts"></label>
+          <label class="field"><span class="field__label">Your day ends</span><input class="input" type="time" name="dayEnds"></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span class="field__label">Minutes saved per task</span><input class="input" type="number" name="minutesSavedPerTask" min="0" max="120"></label>
+          <label class="field"><span class="field__label">Minutes saved per plan</span><input class="input" type="number" name="minutesSavedPerPlan" min="0" max="240"></label>
+        </div>
+        <p class="field__hint">The 2 minute values drive the time-saved estimate. A rough guide, not a measurement.</p>
+        <div class="field-row">
+          <label class="field"><span class="field__label">Drafts open in</span><select class="select" name="emailProvider"></select></label>
+          <label class="field"><span class="field__label">Add to calendar opens</span><select class="select" name="calendarProvider"></select></label>
+        </div>
+        <label class="switch" title="Shows a made-up business. Nothing is saved while it's on."><input type="checkbox" id="demoToggle"><span class="switch__track" aria-hidden="true"></span>Show sample data instead of mine (for screenshots and videos)</label>
+        <div class="settings-folder"><div><span class="label">Your folder</span><p id="settingsFolder"></p></div><button type="button" class="btn btn--sm" id="changeFolderBtn">Use a different folder</button></div>
+      </div>
+      <div class="modal__foot"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn--primary">Save</button></div>
+    </form>
+  </dialog>
+
+  <!-- Pop-up: keyboard shortcuts -->
+  <dialog class="modal" id="shortcutsDialog" aria-labelledby="shortcutsTitle">
+    <div class="modal__head"><h2 id="shortcutsTitle">Keyboard shortcuts</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="x"></span></button></div>
+    <div class="modal__body shortcuts">
+      <div><span class="kbd">V</span> Record a voice note</div>
+      <div><span class="kbd">N</span> New task</div>
+      <div><span class="kbd">/</span> Search</div>
+      <div><span class="kbd">1</span> to <span class="kbd">9</span> Go to a page in the sidebar</div>
+      <div><span class="kbd">A</span> Approve the first suggestion on the page</div>
+      <div><span class="kbd">D</span> Open the first reply draft on the page</div>
+      <div><span class="kbd">Esc</span> Close a panel or pop-up</div>
+      <div><span class="kbd">&#8984;</span> or <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> Add your brain dump</div>
+    </div>
+  </dialog>
+
+  <!-- Shared helpers, then the model, then the pages, then the app that ties them together -->
+  <script src="../shared/js/ui.js"></script>
+  <script src="../shared/js/store.js"></script>
+  <script src="app/model.js"></script>
+  <script src="app/demo-data.js"></script>
+  <script src="app/components.js"></script>
+  <script src="app/links.js"></script>
+  <script src="app/voice.js"></script>
+  <script src="app/view-today.js"></script>
+  <script src="app/view-review.js"></script>
+  <script src="app/view-replies.js"></script>
+  <script src="app/view-calls.js"></script>
+  <script src="app/view-dump.js"></script>
+  <script src="app/view-week.js"></script>
+  <script src="app/view-calendar.js"></script>
+  <script src="app/view-lists.js"></script>
+  <script src="app/view-people.js"></script>
+  <script src="app/drawer.js"></script>
+  <script src="app/app.js"></script>
+</body>
+</html>

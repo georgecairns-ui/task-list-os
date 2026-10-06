@@ -1,0 +1,215 @@
+#!/usr/bin/env node
+/*
+  TASK LIST OS: the little helper that runs your task list on this computer
+  -------------------------------------------------------------------------
+  Claude starts this during setup. It does 2 things:
+    1. Serves the task list app at http://localhost:4747 so it opens like any web page.
+    2. Lets the app read and save your task file (apps/task-list/data/tasks.json), so there's
+       no folder to pick and nothing to allow. Claude's changes appear within seconds.
+
+  Safety:
+    - It only listens on this computer (127.0.0.1). Nothing on the internet or your network can reach it.
+    - It only serves the app (the apps folder) and only ever saves the one task file.
+    - It keeps a backup (tasks.backup.json) before every save, and saves in a way that can't leave
+      a half-written file.
+    - It refuses requests from other websites.
+
+  It can also ask Claude to sort a new voice note straight away: it runs Claude Code on this
+  computer ("claude -p ...") in the Task List OS folder, one run at a time. Only the task list app
+  itself can trigger this. Turn it off with TLOS_AUTO_CLAUDE=off.
+
+  Run it:        node apps/server/server.js
+  Other port:    TLOS_PORT=4848 node apps/server/server.js
+  No libraries needed. Works with Node 16 or newer.
+*/
+"use strict";
+
+const http = require("http");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawn } = require("child_process");
+
+const PORT = Number(process.env.TLOS_PORT || 4747);
+const HOST = "127.0.0.1";
+const ROOT = path.resolve(__dirname, "..", "..");           // the Task List OS folder
+const APPS = path.join(ROOT, "apps");                         // the only folder it serves
+const DATA = path.join(APPS, "task-list", "data", "tasks.json");
+const BACKUP = DATA.replace(/\.json$/, ".backup.json");
+const MAX_BODY = 10 * 1024 * 1024;
+
+// ---------- Asking Claude to sort a voice note ----------
+const AUTO_CLAUDE = (process.env.TLOS_AUTO_CLAUDE || "on") !== "off";
+const CLAUDE_LOG = path.join(fs.existsSync(path.join(os.homedir(), "Library", "Logs")) ? path.join(os.homedir(), "Library", "Logs") : os.tmpdir(), "task-list-os-claude.log");
+const RUN_LIMIT_MS = 10 * 60 * 1000;
+const SORT_PROMPT = "A new voice note has just been added to the brain dump in the task list. " +
+  "Follow .claude/skills/sort-my-brain-dump for the unsorted brain dump items only. Be quick and change nothing else. " +
+  "Nobody is watching this run, so do not ask questions: make your best reading of anything unclear and say so in the task notes.";
+const claudeRun = { running: false, queued: false, startedAt: null, lastRunAt: null, lastResult: null };
+
+// Find the "claude" command on this computer, if Claude Code is installed
+function findClaude() {
+  if (process.env.TLOS_CLAUDE) return process.env.TLOS_CLAUDE;
+  const names = process.platform === "win32" ? ["claude.exe", "claude.cmd"] : ["claude"];
+  const dirs = (process.env.PATH || "").split(path.delimiter).concat([path.join(os.homedir(), ".local", "bin"), path.join(os.homedir(), ".claude", "local"), "/usr/local/bin", "/opt/homebrew/bin"]);
+  for (const dir of dirs) {
+    for (const name of names) {
+      const full = path.join(dir, name);
+      try { fs.accessSync(full, fs.constants.X_OK); return full; } catch (e) { /* keep looking */ }
+    }
+  }
+  return null;
+}
+
+function runClaude() {
+  if (claudeRun.running) { claudeRun.queued = true; return true; }
+  const bin = findClaude();
+  if (!bin) { claudeRun.lastResult = "not-installed"; return false; }
+  claudeRun.running = true;
+  claudeRun.startedAt = new Date().toISOString();
+  const log = fs.openSync(CLAUDE_LOG, "a");
+  fs.writeSync(log, "\n--- " + claudeRun.startedAt + " sorting the brain dump\n");
+  const isCmd = /\.cmd$/i.test(bin);
+  const child = spawn(isCmd ? "cmd.exe" : bin, isCmd ? ["/d", "/c", bin, "-p", SORT_PROMPT] : ["-p", SORT_PROMPT],
+    { cwd: ROOT, stdio: ["ignore", log, log], windowsHide: true });
+  const limit = setTimeout(function () { child.kill(); }, RUN_LIMIT_MS);
+  function finished(result) {
+    clearTimeout(limit);
+    try { fs.closeSync(log); } catch (e) { /* already closed */ }
+    claudeRun.running = false;
+    claudeRun.lastRunAt = new Date().toISOString();
+    claudeRun.lastResult = result;
+    if (claudeRun.queued) { claudeRun.queued = false; runClaude(); }
+  }
+  child.on("error", function () { finished("failed"); });
+  child.on("exit", function (code) { finished(code === 0 ? "ok" : "failed"); });
+  return true;
+}
+
+const TYPES = {
+  ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".png": "image/png",
+  ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8", ".ico": "image/x-icon"
+};
+
+// Only answer requests addressed to this computer (stops "DNS rebinding" tricks by websites)
+function hostOk(req) {
+  return /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(req.headers.host || "");
+}
+// Saves must come from the app itself, never from another website
+function originOk(req) {
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  return origin === "http://localhost:" + PORT || origin === "http://127.0.0.1:" + PORT;
+}
+
+function send(res, status, body, type, extra) {
+  res.writeHead(status, Object.assign({
+    "Content-Type": type || "text/plain; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff"
+  }, extra || {}));
+  res.end(body);
+}
+function sendJson(res, status, obj) { send(res, status, JSON.stringify(obj), TYPES[".json"]); }
+
+function modified() {
+  try { return fs.statSync(DATA).mtimeMs; } catch (e) { return 0; }
+}
+
+function readBody(req) {
+  return new Promise(function (resolve, reject) {
+    let size = 0;
+    const chunks = [];
+    req.on("data", function (c) {
+      size += c.length;
+      if (size > MAX_BODY) { reject(new Error("too large")); req.destroy(); return; }
+      chunks.push(c);
+    });
+    req.on("end", function () { resolve(Buffer.concat(chunks).toString("utf8")); });
+    req.on("error", reject);
+  });
+}
+
+// Save safely: keep a backup of the current file, write a temporary file, then swap it in
+function saveTasks(text) {
+  if (fs.existsSync(DATA)) fs.copyFileSync(DATA, BACKUP);
+  const tmp = DATA + ".saving";
+  fs.writeFileSync(tmp, text);
+  fs.renameSync(tmp, DATA);
+}
+
+async function handleApi(req, res, url) {
+  if (url === "/api/alive.js") {
+    // Used by "Open Task List.html" to check the helper is running
+    return send(res, 200, "window.tlosAlive = true;", TYPES[".js"]);
+  }
+  if (url === "/api/tasks/meta" && req.method === "GET") {
+    return sendJson(res, 200, { modified: modified() });
+  }
+  if (url === "/api/tasks" && req.method === "GET") {
+    let text;
+    try { text = fs.readFileSync(DATA, "utf8"); } catch (e) { return sendJson(res, 404, { error: "missing" }); }
+    return send(res, 200, text, TYPES[".json"], { "X-Modified": String(modified()) });
+  }
+  if (url === "/api/tasks" && req.method === "PUT") {
+    if (!originOk(req)) return sendJson(res, 403, { error: "forbidden" });
+    if (!/application\/json/i.test(req.headers["content-type"] || "")) return sendJson(res, 415, { error: "json only" });
+    let text;
+    try { text = await readBody(req); } catch (e) { return sendJson(res, 413, { error: "too large" }); }
+    let data;
+    try { data = JSON.parse(text); } catch (e) { return sendJson(res, 400, { error: "not valid" }); }
+    if (!data || typeof data !== "object" || !Array.isArray(data.tasks)) return sendJson(res, 400, { error: "no tasks list" });
+    try { saveTasks(JSON.stringify(data, null, 2) + "\n"); } catch (e) { return sendJson(res, 500, { error: "save failed" }); }
+    return sendJson(res, 200, { modified: modified() });
+  }
+  if (url === "/api/claude/status" && req.method === "GET") {
+    return sendJson(res, 200, { available: AUTO_CLAUDE && !!findClaude(), running: claudeRun.running, queued: claudeRun.queued,
+      startedAt: claudeRun.startedAt, lastRunAt: claudeRun.lastRunAt, lastResult: claudeRun.lastResult });
+  }
+  if (url === "/api/claude/sort-brain-dump" && req.method === "POST") {
+    // Only the app may ask: same origin, and a JSON request (other websites can't send one without permission)
+    if (!originOk(req) || !/application\/json/i.test(req.headers["content-type"] || "")) return sendJson(res, 403, { error: "forbidden" });
+    if (!AUTO_CLAUDE) return sendJson(res, 503, { error: "turned off" });
+    return runClaude() ? sendJson(res, 202, { started: true }) : sendJson(res, 503, { error: "claude not installed" });
+  }
+  return sendJson(res, 404, { error: "not found" });
+}
+
+function handleFile(req, res, url) {
+  if (url === "/" || url === "") { res.writeHead(302, { Location: "/task-list/" }); return res.end(); }
+  let rel = decodeURIComponent(url);
+  if (rel.endsWith("/")) rel += "index.html";
+  const file = path.resolve(APPS, "." + rel);
+  // Never serve anything outside the apps folder, and never the data backups
+  if (!file.startsWith(APPS + path.sep) || /\.backup\.json$|\.saving$/.test(file)) return send(res, 403, "Not allowed");
+  fs.readFile(file, function (err, buf) {
+    if (err) return send(res, 404, "Not found");
+    send(res, 200, buf, TYPES[path.extname(file).toLowerCase()] || "application/octet-stream");
+  });
+}
+
+const server = http.createServer(function (req, res) {
+  if (!hostOk(req)) return send(res, 403, "Not allowed");
+  const url = (req.url || "/").split("?")[0];
+  if (url.startsWith("/api/")) {
+    handleApi(req, res, url).catch(function () { sendJson(res, 500, { error: "unexpected" }); });
+  } else if (req.method === "GET" || req.method === "HEAD") {
+    handleFile(req, res, url);
+  } else {
+    send(res, 405, "Not allowed");
+  }
+});
+
+server.on("error", function (err) {
+  if (err.code === "EADDRINUSE") {
+    console.error("Task List OS: port " + PORT + " is already in use. It may already be running: open http://localhost:" + PORT);
+  } else {
+    console.error("Task List OS: could not start: " + err.message);
+  }
+  process.exit(1);
+});
+
+server.listen(PORT, HOST, function () {
+  console.log("Task List OS is running at http://localhost:" + PORT);
+});
