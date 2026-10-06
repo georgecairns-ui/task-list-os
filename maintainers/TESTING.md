@@ -64,6 +64,12 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] "Write up this call" with pasted notes: summary, follow-up draft, actions as New suggestions in the app.
 - [ ] "Wrap up my day": short and kind, changes nothing.
 
+**Toolkit menu and attaching** (shared version 2)
+- [ ] The sidebar shows "Your tools" with Task List OS, and "More tools" with the other 8, each with a padlock, in the catalogue's order.
+- [ ] Clicking a locked tool opens the panel. "Book a free call" opens the booking page in a new tab, and its address ends with `utm_source=task-list-os&utm_medium=toolkit-app&utm_campaign=<that tool>`. Escape, "Not now" and a click outside all close it.
+- [ ] With `showMoreTools` set to `false` in `apps/shared/catalogue.json`, the locked tools disappear.
+- [ ] The full list of helper checks, including a throwaway test tool, is in `maintainers/SHARED-V2-CHANGES.md` section 5. Never ship the test tool.
+
 ## 4. Reset
 
 Delete the test folder (it's a copy) and unzip again. If you tested inside the repo by mistake, restore the shipped files with:

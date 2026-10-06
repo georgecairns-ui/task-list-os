@@ -9,8 +9,9 @@ A kit a small business owner copies from GitHub (they ask Claude to clone it) an
 ## Stack
 
 - No framework, no build step. The app is `index.html` plus plain JavaScript and CSS. Nothing loads from the internet.
-- `apps/server/`: `server.js` (Node, no libraries) and `server.py` (Python 3 fallback). Serves `apps/` on 127.0.0.1:4747 and reads and saves `apps/task-list/data/tasks.json` through `/api/tasks` (backup and atomic save; refuses other hosts, other origins and paths outside `apps/`). `setup/scripts/start-task-list.*` starts it; `autostart-mac.sh` and `autostart-windows.ps1` make it start at login.
-- `apps/shared/`: `theme.css` (every design token), `base.css` (components and animation), `js/store.js` (File System Access API, IndexedDB to remember the folder, polling for Claude's edits, demo mode), `js/ui.js` (helpers and icons), bundled fonts and images.
+- `apps/server/`: `server.js` (Node, no libraries) and `server.py` (Python 3 fallback). Serves `apps/` on 127.0.0.1:4747 and reads and saves `apps/task-list/data/tasks.json` through `/api/tasks`, plus each attached tool's data files (listed in `apps/installed.json`) through `/api/data/<tool>/<file>.json` (backup and atomic save; refuses other hosts, other origins, unlisted files and paths outside `apps/`). `http://localhost:4747` opens the first tool in `apps/installed.json`. `setup/scripts/start-task-list.*` starts it; `autostart-mac.sh` and `autostart-windows.ps1` make it start at login.
+- `apps/shared/`: `theme.css` (every design token), `base.css` (components and animation), `sidebar.css` (the sidebar every tool shares), `js/store.js` (helper mode, File System Access fallback, polling for Claude's edits, demo mode), `js/ui.js` (helpers and icons), `js/toolkit-menu.js` ("Your tools" and "More tools"), `catalogue.json` (all 9 tools and the booking link), `VERSION` (the shared version), bundled fonts and images.
+- `apps/installed.json`: the tools in this folder. A fresh download lists only Task List OS. `toolkit.json` at the root describes Task List OS for attaching; `apps/task-list/ATTACH-CLAUDE.md` is what goes into another tool's `CLAUDE.md` when Task List OS is attached to it.
 - `apps/task-list/app/`: `model.js` (data shape, questions, every change, free-slot finder), `links.js` (Draft and Add to calendar links), `components.js`, one `view-*.js` per page (today, review, replies, calls, dump, week, calendar, lists, people), `drawer.js` (task, person, reply and call records), `app.js` (store, routing, actions, search, shortcuts), `demo-data.js`, `app.css`.
 - Claude's side: `START-HERE.md`, `CLAUDE.md`, `setup/` (steps, `connections/` guides, `scripts/save-key.*`), `.claude/skills/` (loaded automatically by Claude Code, each also a slash command), `.claude/settings.json` (narrow pre-approved permissions for unattended check-ins), `context/` templates.
 - `maintainers/research/`: the verified facts behind the connection guides, with sources and dates. Re-check them when a connector changes.
@@ -29,7 +30,9 @@ A kit a small business owner copies from GitHub (they ask Claude to clone it) an
 - Connection guides contain only verified facts with sources. Mark anything unverified as such.
 - Customer-facing words (app, setup, skills, docs, context templates) never say agent, repo, repository or artifact. British English, digits for numbers, no em dashes anywhere. Examples use made-up people and businesses (Sam, Priya, Tom at Greenway Café, Marlow Dental).
 - Look: neutral modern software (white and grey, system sans-serif, terracotta accent). The Get AI Powers slab-serif look can be restored from the note at the foot of `theme.css`.
-- Future tools go in `apps/<tool-name>/`, copying the task list's structure, with their own skills and a launcher at the root.
+- **The toolkit.** Task List OS is the first of 9 tools. `ATTACHING.md` (identical in every tool) is the spec for how they attach. The shared parts are at shared version 2 (`apps/shared/VERSION`); `maintainers/SHARED-V2-CHANGES.md` lists exactly what every other tool copies from here. Change a shared part here and the version goes up, then the change is copied into every other tool.
+- **The booking link lives only in `apps/shared/catalogue.json`.** The menu adds `utm_source` (this tool's repository name), `utm_medium=toolkit-app` and `utm_campaign` (the locked tool's id). No prices for Get AI Powers services anywhere in the kit.
+- The locked tools never nag: no pop-ups that appear by themselves, no countdowns. They only open when clicked.
 
 ## Gotchas
 

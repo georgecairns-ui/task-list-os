@@ -6,6 +6,8 @@ Claude reads your email and drafts the replies. It writes up your calls and pull
 
 Nothing goes out without you. Claude reads and drafts; you decide and you send.
 
+Task List OS is part of a toolkit of 9 free tools from Get AI Powers. The others (a pipeline, proposals, content, money and more) show in the app's menu, and Get AI Powers sets them up with you on a free call.
+
 ## What it does
 
 - **Sorts your inbox.** Every new email goes in a pile: needs a reply, a task, just so you know, or no action. The ones that need an answer appear on **Replies** with a draft in your voice. Press **Draft** and the email opens in Gmail or Outlook, written and addressed. Check it, press send.
@@ -63,6 +65,8 @@ Task List OS works on its own. If you'd like help building your folders, busines
 
 ```
 START-HERE.md          Claude reads this first and runs setup (/setup)
+toolkit.json           what this tool is, for attaching it to the others in the toolkit
+ATTACHING.md           how the toolkit's tools attach to each other
 CLAUDE.md              Claude's standing instructions in this folder
 Open Task List.html    double-click to open your task list (or use the link Claude gives you)
 setup/                 the 8 setup steps, a guide per app in connections/, and the key scripts

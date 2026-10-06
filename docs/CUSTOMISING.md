@@ -19,7 +19,13 @@ Task List OS comes with a clean, neutral look and a Get AI Powers terracotta acc
 | The logo in the sidebar | Replace `apps/shared/images/GAIP-logo-black-teal-pop-RGB.svg` with your own SVG under the same name, or ask Claude to point the app at a new file |
 | Your folders | `files/` |
 | How Claude writes for you | `context/voice.md` |
+| Hide the "More tools" list in the menu | Set `showMoreTools` to `false` in `apps/shared/catalogue.json`. The locked tools disappear; the tools you have stay |
+| Where "Book a free call" goes | `url` and `button` under `booking` in `apps/shared/catalogue.json`. It's the only place the link lives |
 | What Claude can do in your apps | `context/tools.md` |
+
+## A version for your own clients
+
+If Get AI Powers builds a version of the toolkit for your business or your clients, the menu can be made yours: switch off "More tools" so only the tools you've set up show, or point the booking button at your own calendar link. Both live in `apps/shared/catalogue.json`.
 
 ## Notes for Claude
 

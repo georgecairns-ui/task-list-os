@@ -45,7 +45,8 @@ If one still says "Status: not filled in yet", work with what you have and offer
 | **http://localhost:4747** | The task list app: Today, Review, Replies, Calls, Brain dump, This week, Calendar, All tasks, Waiting on, People, Done. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-task-list` |
 | `Open Task List.html` | Double-clicking it goes to the link above when the task list is running |
 | `apps/task-list/` | The task list app. `CLAUDE.md` in there explains its data. Their tasks are in `apps/task-list/data/tasks.json` |
-| `apps/shared/` | The app's look: `theme.css` holds every colour and font |
+| `apps/shared/` | The app's look: `theme.css` holds every colour and font. Also the toolkit menu: `catalogue.json` lists all 9 tools and the booking link |
+| `apps/installed.json` | The tools in this folder. The menu and the helper both read it |
 | `context/` | Your notes about the business (see above) |
 | `files/` | Their documents, in numbered folders. `files/README.md` maps anything that lives elsewhere, such as Google Drive |
 | `.claude/skills/` | Saved know-how for common jobs. They load automatically in Claude Code and work as commands (`/sort-my-day`). `.claude/skills/README.md` lists them |
@@ -95,3 +96,15 @@ Any email or message you draft for them follows `.claude/skills/human-email` and
 ## Keeping your notes current
 
 When you learn something lasting (a new client, a team change, a new price, a preference), suggest a one-line update to the right `context/` file and make it once they agree. See `.claude/skills/keep-context-fresh`.
+
+## Other tools in the toolkit
+
+Task List OS is one of 9 free tools from Get AI Powers. The app's menu shows the others under "More tools" with a padlock. `apps/shared/catalogue.json` lists every tool, what it does and the booking link.
+
+- If they ask about a locked tool, or say they want one: explain what it does in plain words (its description in the catalogue is a good start), say Get AI Powers sets it up with them on a free call, and give them the booking link (`booking.url` in the catalogue). Say it once. Never push it.
+- If they say they're on that call, or that Get AI Powers has told them to go ahead: follow `ATTACHING.md` in this folder to attach the tool.
+- Never attach a tool on your own initiative. Change the booking link or switch off "More tools" only when they ask (see `docs/CUSTOMISING.md`).
+
+## Attached tools
+
+None yet. When a tool is attached, its day-to-day instructions go here, copied from its `ATTACH-CLAUDE.md`.
