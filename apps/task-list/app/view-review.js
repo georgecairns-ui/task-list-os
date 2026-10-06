@@ -10,7 +10,7 @@
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui, esc = ui.esc, icon = ui.icon;
+  const ui = window.TaskListOS.ui, esc = ui.esc, icon = ui.icon;
   const M = window.TL.model, C = window.TL.c;
 
   // One suggestion awaiting a decision. kind is "plan", "new" or "schedule".

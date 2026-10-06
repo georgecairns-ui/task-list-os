@@ -175,8 +175,8 @@
     return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
-  window.Toolkit = window.Toolkit || {};
-  window.Toolkit.ui = {
+  window.TaskListOS = window.TaskListOS || {};
+  window.TaskListOS.ui = {
     esc, icon, toast, isoDate, parseDate, addDays, startOfWeek, longDate, friendlyDue,
     greeting, minutesLabel, makeId, copyText, prefersReducedMotion
   };

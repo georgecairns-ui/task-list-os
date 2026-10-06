@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui;
+  const ui = window.TaskListOS.ui;
   const esc = ui.esc;
   const icon = ui.icon;
   const M = window.TL.model;

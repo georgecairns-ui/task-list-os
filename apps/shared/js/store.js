@@ -23,12 +23,12 @@
   "use strict";
 
   const POLL_MS = 2500;
-  const DEMO_KEY = "toolkit-demo-mode";
+  const DEMO_KEY = "task-list-os-demo-mode";
 
   // ---------- Tiny wrapper around the browser's built-in IndexedDB, used only to remember the folder ----------
   function idb() {
     return new Promise(function (resolve, reject) {
-      const req = indexedDB.open("small-business-toolkit", 1);
+      const req = indexedDB.open("task-list-os", 1);
       req.onupgradeneeded = function () { req.result.createObjectStore("folders"); };
       req.onsuccess = function () { resolve(req.result); };
       req.onerror = function () { reject(req.error); };
@@ -275,7 +275,7 @@
     async function connect() {
       let folder;
       try {
-        folder = await window.showDirectoryPicker({ id: "toolkit-" + opts.moduleId, mode: "readwrite" });
+        folder = await window.showDirectoryPicker({ id: "task-list-os-" + opts.moduleId, mode: "readwrite" });
       } catch (e) {
         if (e && e.name === "AbortError") return false; // they closed the picker, no harm done
         throw e;
@@ -401,6 +401,6 @@
     };
   }
 
-  window.Toolkit = window.Toolkit || {};
-  window.Toolkit.createStore = createStore;
+  window.TaskListOS = window.TaskListOS || {};
+  window.TaskListOS.createStore = createStore;
 })();

@@ -18,7 +18,7 @@
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui;
+  const ui = window.TaskListOS.ui;
 
   const CATEGORIES = [
     { key: "today",     label: "Do today",           icon: "sun" },
