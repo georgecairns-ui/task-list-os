@@ -1,6 +1,6 @@
 # Start here
 
-> **If you're a person reading this:** you don't need to do anything in this file. Open this folder in Claude Code and type **/setup** (or say "Read START-HERE.md and set me up"). Claude asks a few quick questions, connects your email, calendar and the apps you use, and fills your task list with your real work. Most people are done in 15 to 20 minutes.
+> **If you're a person reading this:** you don't need to do anything in this file. Open this folder in Claude Code and type **/setup** (or say "Read START-HERE.md and set me up"). Claude asks a few quick questions, connects your email, calendar and the apps you use, and fills your task list with your real work. Most people are done in 15 to 20 minutes. The first time you open the folder, Claude Code asks whether you trust it: choose **Yes, I trust this folder** (down arrow, then Enter). That lets Claude update your task list and notes without asking every time; it still can't send or delete anything.
 
 ---
 

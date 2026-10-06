@@ -31,7 +31,8 @@ Nothing goes out without you. Claude reads and drafts; you decide and you send.
    claude
    ```
    Or, in the Claude desktop app, open the Code tab and choose the folder.
-3. **Type `/setup`.**
+3. **Choose "Yes, I trust this folder".** The first time, Claude Code asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps. Press the down arrow, then Enter.
+4. **Type `/setup`.**
 
 Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. Then it opens your task list and gives you its link, **http://localhost:4747**. Bookmark it. That's it.
 
