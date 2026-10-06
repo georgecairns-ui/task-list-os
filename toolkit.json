@@ -17,7 +17,9 @@
     "wrap-up-my-day",
     "weekly-review",
     "meeting-follow-up",
-    "delegate-it"
+    "delegate-it",
+    "draft-a-reply",
+    "research-task"
   ],
   "setupSteps": [
     "setup/02-connect-email-and-calendar.md",

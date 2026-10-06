@@ -121,7 +121,7 @@ def installed_tools():
             tools = json.load(f).get("tools")
     except (OSError, ValueError, AttributeError):
         tools = None
-    return tools if isinstance(tools, list) else [{"id": "task-list", "dataFiles": ["apps/task-list/data/tasks.json"]}]
+    return tools if isinstance(tools, list) else [{"id": "task-list", "app": "apps/task-list/", "dataFiles": ["apps/task-list/data/tasks.json"]}]
 
 
 def data_file_for(tool_id, file_name):
@@ -129,8 +129,12 @@ def data_file_for(tool_id, file_name):
     for tool in installed_tools():
         if not isinstance(tool, dict) or tool.get("id") != tool_id or not isinstance(tool.get("dataFiles"), list):
             continue
+        # A tool may only save inside its own app folder, never another tool's data or the shared parts
+        app = tool.get("app") if isinstance(tool.get("app"), str) else ""
+        if not re.match(r"^apps/[a-z0-9-]+/$", app) or app in ("apps/shared/", "apps/server/"):
+            continue
         for rel in tool["dataFiles"]:
-            if not isinstance(rel, str) or not DATA_FILE_RE.match(rel) or rel.endswith(".backup.json"):
+            if not isinstance(rel, str) or not DATA_FILE_RE.match(rel) or rel.endswith(".backup.json") or not rel.startswith(app + "data/"):
                 continue
             if rel.rsplit("/", 1)[-1] == file_name:
                 return os.path.join(ROOT, *rel.split("/"))

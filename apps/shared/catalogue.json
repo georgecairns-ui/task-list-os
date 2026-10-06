@@ -5,7 +5,7 @@
       "id": "task-list",
       "name": "Task List OS",
       "description": "The task list that does itself. Claude sorts your inbox, calls and brain dump into tasks with drafts and times, and every other tool's actions land here for you to approve.",
-      "icon": "check",
+      "icon": "checkSquare",
       "app": "apps/task-list/",
       "repository": "task-list-os"
     },
@@ -13,7 +13,7 @@
       "id": "pipeline",
       "name": "Pipeline OS",
       "description": "The pipeline that chases itself, with every deal on one board by stage. Claude spots the chases that are due and drafts each follow-up in your voice, ready for you to send.",
-      "icon": "trending",
+      "icon": "trendingUp",
       "app": "apps/pipeline/",
       "repository": "pipeline-os"
     },
@@ -53,7 +53,7 @@
       "id": "file-finder",
       "name": "File Finder OS",
       "description": "Find any document in seconds by asking for it in plain words. Claude also suggests tidy-ups for your folders, and you approve each one with a click.",
-      "icon": "search",
+      "icon": "folder",
       "app": "apps/file-finder/",
       "repository": "file-finder-os"
     },
@@ -61,7 +61,7 @@
       "id": "whats-new",
       "name": "What's New in Claude OS",
       "description": "Claude's latest updates, translated into what they mean for your business. Each one comes with a plain suggestion of what to try, so you never miss something useful.",
-      "icon": "sparkle",
+      "icon": "newspaper",
       "app": "apps/whats-new/",
       "repository": "whats-new-in-claude-os"
     },
@@ -69,14 +69,15 @@
       "id": "ads",
       "name": "Ads Dashboard OS",
       "description": "Your Google and Meta ads on one plain-English screen. See what each pound brings in and approve the changes Claude suggests before anything is touched.",
-      "icon": "chart",
+      "icon": "barChart",
       "app": "apps/ads/",
       "repository": "ads-dashboard-os"
     }
   ],
   "booking": {
     "url": "https://calendly.com/d/d2bq-8jx-r39/claudit-audit",
-    "buttonLabel": "Book a free call",
+    "button": "Book a free call",
+    "line": "Get AI Powers sets this up with you on a free call.",
     "showMoreTools": true
   }
 }

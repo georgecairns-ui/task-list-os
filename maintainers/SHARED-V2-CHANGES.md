@@ -47,7 +47,7 @@ A fresh download lists only the tool itself. The first entry is the page http://
 
 - `id`: the tool's id from `catalogue.json`. Lowercase letters, digits and hyphens.
 - `app`: `apps/<folder>/`, ending in a slash.
-- `dataFiles`: every file the helper may save for this tool. Each must be `apps/<folder>/data/<name>.json` (lowercase letters, digits and hyphens in the name, never ending `.backup.json`). Anything else is ignored. The helper only ever saves listed files, and re-reads this list on every request, so attaching needs no restart.
+- `dataFiles`: every file the helper may save for this tool. Each must be in the tool's own `data/` folder, `<app>data/<name>.json` (lowercase letters, digits and hyphens in the name, never ending `.backup.json`), so a tool can never save over another tool's data or the shared parts (`apps/shared/`, `apps/server/`). Anything else is ignored. The helper only ever saves listed files, and re-reads this list on every request, so attaching needs no restart.
 - When attaching, Claude appends the new tool's entry (taken from its `toolkit.json`). An attached tool not in the catalogue still shows under "Your tools", using its `name` and an optional `icon`.
 
 ### `toolkit.json` at the root
@@ -120,7 +120,7 @@ Copy the "Other tools in the toolkit" and "Attached tools" sections from Task Li
 | `GET /api/data/<id>/<file>.json/meta` | When it last changed, for polling |
 | `GET /api/claude/status`, `POST /api/claude/sort-brain-dump` | Task List OS's voice notes only |
 
-Anything else is refused: other websites, disguised addresses, files a tool doesn't list, tools not in `apps/installed.json`, paths outside `apps/`, backup files, and every other request type.
+Anything else is refused: other websites, disguised addresses, files a tool doesn't list, files outside a tool's own `data/` folder, tools not in `apps/installed.json`, paths outside `apps/`, backup files, and every other request type.
 
 ## 4. `catalogue.json`
 
@@ -152,5 +152,5 @@ On a scratch copy, never the shipped data:
 - The menu shows the tool unlocked under "Your tools" and the other 8 locked under "More tools", in catalogue order.
 - Each locked tool opens the panel, the button's link carries the right tracking, and Escape and a click outside close it. Keyboard and phone width both work.
 - `showMoreTools: false` hides the locked tools.
-- The helper saves the tool's data with a backup, refuses an unlisted file and refuses the tool once it's removed from `apps/installed.json`. Check Node and Python.
+- The helper saves the tool's data with a backup, refuses an unlisted file, refuses a listed file outside the tool's own `data/` folder, and refuses the tool once it's removed from `apps/installed.json`. Check Node and Python.
 - Attach it to a copy of Task List OS (following `ATTACHING.md`): both tools show under "Your tools", each opens, both save.

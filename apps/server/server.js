@@ -126,15 +126,18 @@ function modified(file) {
 function installedTools() {
   let list = null;
   try { list = JSON.parse(fs.readFileSync(INSTALLED, "utf8")).tools; } catch (e) { /* use the default */ }
-  return Array.isArray(list) ? list : [{ id: "task-list", dataFiles: ["apps/task-list/data/tasks.json"] }];
+  return Array.isArray(list) ? list : [{ id: "task-list", app: "apps/task-list/", dataFiles: ["apps/task-list/data/tasks.json"] }];
 }
 
 // The file behind /api/data/<tool>/<file>, or null if that tool isn't installed or the file isn't one of its own
 function dataFileFor(toolId, fileName) {
   for (const tool of installedTools()) {
     if (!tool || tool.id !== toolId || !Array.isArray(tool.dataFiles)) continue;
+    // A tool may only save inside its own app folder, never another tool's data or the shared parts
+    const app = typeof tool.app === "string" ? tool.app : "";
+    if (!/^apps\/[a-z0-9-]+\/$/.test(app) || app === "apps/shared/" || app === "apps/server/") continue;
     for (const rel of tool.dataFiles) {
-      if (typeof rel !== "string" || !DATA_FILE_RE.test(rel) || /\.backup\.json$/.test(rel)) continue;
+      if (typeof rel !== "string" || !DATA_FILE_RE.test(rel) || /\.backup\.json$/.test(rel) || !rel.startsWith(app + "data/")) continue;
       if (path.posix.basename(rel) === fileName) return path.join(ROOT, ...rel.split("/"));
     }
   }
