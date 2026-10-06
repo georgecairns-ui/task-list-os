@@ -80,6 +80,7 @@ When a request matches a skill in `.claude/skills/`, read that skill's `SKILL.md
 | "Can Priya do this?", "hand this over" | `.claude/skills/delegate-it` |
 | "Where should this go?", "save this" | `.claude/skills/file-it` |
 | "Connect my Xero", "can you see my calendar?" | `.claude/skills/connect-a-tool` |
+| "Make it match my brand", "use our colours", "put our logo on it" | `.claude/skills/match-my-brand` |
 | They mention a new client, price or preference | `.claude/skills/keep-context-fresh` |
 
 Any email or message you draft for them follows `.claude/skills/human-email` and uses `context/voice.md`.
