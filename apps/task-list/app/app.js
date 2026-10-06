@@ -536,8 +536,44 @@
       (e.location ? '<div class="event-detail">' + icon("mapPin") + "<span>" + esc(e.location) + "</span></div>" : "") +
       (e.calendar ? '<div class="event-detail">' + icon("calendar") + "<span>" + esc(e.calendar) + "</span></div>" : "") +
       (e.notes ? '<p class="muted">' + esc(e.notes) + "</p>" : "") +
+      (e.guests ? '<div class="event-detail">' + icon("users") + "<span>" + esc(e.guests) + "</span></div>" : "") +
+      (e.source === "app" ? '<p class="field__hint">You added this here. If you haven\'t saved it in your calendar yet, press "Open in calendar". Once it\'s there, Claude\'s next calendar copy replaces this one.</p></div>' +
+        '<div class="modal__foot"><button type="button" class="btn btn--ghost btn--danger" data-action="remove-meeting" data-event="' + esc(e.id) + '">Remove</button><span class="spacer"></span>' +
+        '<button type="button" class="btn" data-action="prep-event" data-title="' + esc(e.title) + '">' + icon("plus") + 'Prep task</button><button type="button" class="btn btn--primary" data-action="meeting-calendar" data-event="' + esc(e.id) + '">' + icon("calendar") + "Open in calendar</button></div>" :
       '<p class="field__hint">From your calendar. To change it, change it there; Claude copies it in again next time it sorts your day.</p></div>' +
-      '<div class="modal__foot"><button type="button" class="btn" data-action="prep-event" data-title="' + esc(e.title) + '">' + icon("plus") + 'Add a prep task</button><button type="button" class="btn btn--primary" data-close>Close</button></div>');
+      '<div class="modal__foot"><button type="button" class="btn" data-action="prep-event" data-title="' + esc(e.title) + '">' + icon("plus") + 'Add a prep task</button><button type="button" class="btn btn--primary" data-close>Close</button></div>'));
+  }
+
+  // ---------- Adding a meeting ----------
+  function meetingEvent(e) {
+    const st = M.splitLocal(e.start), en = M.splitLocal(e.end);
+    return { title: e.title, date: st.date, time: M.fromMinutes(st.minutes), minutes: Math.max(15, (en.minutes || st.minutes + 30) - st.minutes),
+      location: e.location, guests: e.guests, details: [e.notes, "Added from Task List OS"].filter(Boolean).join("\n\n") };
+  }
+  function openInCalendar(e) {
+    const ev = meetingEvent(e);
+    const url = L.calendarUrl(ev, data.settings.calendarProvider || "google");
+    if (url) L.open(url); else L.downloadIcs(ev);
+  }
+  function openAddMeeting(date) {
+    const day = date || (state.calDate && state.calDate >= M.todayISO() ? state.calDate : M.todayISO());
+    const emails = data.people.filter(function (p) { return p.email; });
+    const where = L.calendarLabel ? L.calendarLabel(data.settings.calendarProvider || "google") : "your calendar";
+    openGeneric('<form data-form="add-meeting" autocomplete="off"><div class="modal__head"><h2 id="genericTitle">Add meeting</h2><button type="button" class="icon-btn" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+      '<div class="modal__body">' +
+      '<label class="field"><span class="field__label">What is it?</span><input class="input input--title" name="title" required maxlength="160" placeholder="Call with Tom about the menu boards"></label>' +
+      '<div class="field-row field-row--3"><label class="field"><span class="field__label">Day</span><input class="input" type="date" name="date" required value="' + esc(day) + '"></label>' +
+      '<label class="field"><span class="field__label">Starts</span><input class="input" type="time" name="time" required step="900" value="10:00"></label>' +
+      '<label class="field"><span class="field__label">How long</span><select class="select" name="minutes">' +
+      [[15, "15 minutes"], [30, "30 minutes"], [45, "45 minutes"], [60, "1 hour"], [90, "1 and a half hours"], [120, "2 hours"]].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === 30 ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
+      "</select></label></div>" +
+      '<label class="field"><span class="field__label">Who\'s coming</span><input class="input" name="guests" list="meetingPeople" maxlength="400" placeholder="tom@greenway.example, priya@example.com">' +
+      '<span class="field__hint">Email addresses, separated by commas. They go on the invite; nothing is sent until you save it.</span></label>' +
+      (emails.length ? '<datalist id="meetingPeople">' + emails.map(function (p) { return '<option value="' + esc(p.email) + '">' + esc(p.name) + "</option>"; }).join("") + "</datalist>" : "") +
+      '<label class="field"><span class="field__label">Where</span><input class="input" name="location" maxlength="200" placeholder="Video call, an address, or a meeting link"></label>' +
+      '<label class="field"><span class="field__label">Notes (optional)</span><textarea class="textarea" name="notes" maxlength="2000" rows="2"></textarea></label>' +
+      '<p class="field__hint">It shows in your task list straight away, and opens in ' + esc(where) + ' ready to save. Nothing goes into your real calendar until you press save there.</p></div>' +
+      '<div class="modal__foot"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn--primary">' + icon("calendar") + "Add meeting</button></div></form>");
   }
 
   function openAddPerson() {
@@ -744,6 +780,9 @@
       case "all-view": state.allView = btn.getAttribute("data-view-key"); renderView(); break;
       case "filter-role": state.filterRole = btn.getAttribute("data-role"); renderView(); break;
       case "add-person": openAddPerson(); break;
+      case "add-meeting": openAddMeeting(btn.getAttribute("data-date")); break;
+      case "meeting-calendar": { const ev = data.events.find(function (x) { return x.id === btn.getAttribute("data-event"); }); if (ev) openInCalendar(ev); break; }
+      case "remove-meeting": { const id = btn.getAttribute("data-event"); generic.close(); change(function (d) { mut.removeMeeting(d, id); }).then(function () { ui.toast("Meeting removed from your task list"); }); break; }
 
       // everything else
       case "summary": openGeneric(V.today.summary(ctx())); break;
@@ -797,6 +836,21 @@
       if (!date) return f.date.focus();
       generic.close();
       change(function (d) { mut.schedule(d, id, date, time || null, minutes); }).then(function () { if (time) scheduled(id, date, time); else ui.toast("Planned for " + ui.parseDate(date).toLocaleDateString("en-GB", { weekday: "long" })); });
+    }
+    if (kind === "add-meeting") {
+      const f = form.elements;
+      const m = { title: f.title.value.trim(), date: f.date.value, time: f.time.value, minutes: f.minutes.value, guests: f.guests.value.trim(), location: f.location.value.trim(), notes: f.notes.value.trim() };
+      if (!m.title) return f.title.focus();
+      if (!m.date) return f.date.focus();
+      if (!m.time) return f.time.focus();
+      generic.close();
+      let made = null;
+      // Open the calendar now, while the click still counts as the person's own (browsers block it later)
+      openInCalendar({ title: m.title, start: m.date + "T" + m.time, end: m.date + "T" + M.fromMinutes(M.toMinutes(m.time) + Number(m.minutes)), location: m.location, guests: m.guests, notes: m.notes });
+      change(function (d) { made = mut.addMeeting(d, m); }).then(function () {
+        ui.toast("Added. Press save in your calendar to keep it there", { icon: "calendar", duration: 7000 });
+        if (made) { state.calDate = m.date; }
+      });
     }
     if (kind === "add-person") {
       const f = form.elements;

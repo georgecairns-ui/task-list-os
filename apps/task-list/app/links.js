@@ -64,12 +64,12 @@
     const r = range(ev.date, ev.time, ev.minutes);
     if (provider === "google") {
       return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + enc(ev.title) +
-        "&dates=" + stamp(r.start) + "/" + stamp(r.end) + "&details=" + enc(ev.details || "") + (ev.location ? "&location=" + enc(ev.location) : "");
+        "&dates=" + stamp(r.start) + "/" + stamp(r.end) + "&details=" + enc(ev.details || "") + (ev.location ? "&location=" + enc(ev.location) : "") + (ev.guests ? "&add=" + enc(ev.guests) : "");
     }
     if (provider === "outlook-work" || provider === "outlook-personal") {
       const host = provider === "outlook-work" ? "https://outlook.office.com" : "https://outlook.live.com";
       return host + "/calendar/deeplink/compose?subject=" + enc(ev.title) + "&startdt=" + enc(localIso(r.start)) + "&enddt=" + enc(localIso(r.end)) +
-        "&body=" + enc(ev.details || "") + (ev.location ? "&location=" + enc(ev.location) : "");
+        "&body=" + enc(ev.details || "") + (ev.location ? "&location=" + enc(ev.location) : "") + (ev.guests ? "&to=" + enc(ev.guests) : "");
     }
     return null; // other calendars use the .ics download below
   }

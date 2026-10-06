@@ -57,7 +57,7 @@
       '<button type="button" class="btn btn--sm" data-action="week-today"' + (isThisWeek ? " disabled" : "") + ">This week</button>" +
       '<button type="button" class="icon-btn" data-action="week-next" aria-label="Next week">' + icon("chevronRight") + "</button>" +
       '<h2 class="toolbar__label">' + esc(label) + "</h2></div>" +
-      '<div class="toolbar__group">' + C.say("Plan my week") + "</div></div>";
+      '<div class="toolbar__group">' + C.say("Plan my week") + '<button type="button" class="btn" data-action="add-meeting">' + icon("plus") + "Add meeting</button></div></div>";
 
     // Goals (this week only)
     if (isThisWeek) {

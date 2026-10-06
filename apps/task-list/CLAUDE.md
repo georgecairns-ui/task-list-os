@@ -106,6 +106,7 @@ Copies of the person's real calendar, so the app can show their day and week. Re
 
 - `start` and `end` are the person's local time, without a time zone. For all-day events use `"start": "2026-10-10"`, `"end": "2026-10-10"`, `"allDay": true`.
 - Copy events from yesterday to 14 days ahead. Replace the whole `events` list each time you copy (it is a mirror, not a record), then set `eventsSyncedAt` to now.
+- **Meetings the person added in the app** have `"source": "app"` (plus `guests` and `notes`). The app opened them in their calendar to save. When you copy the calendar, keep each one until the real calendar has an event with the same title on the same day, then drop the app copy. Never remove one otherwise: they may not have saved it yet.
 - Leave out events they've declined and anything marked private, unless they ask. Keep titles as they are; don't copy attendee lists or descriptions into the file.
 
 ### People

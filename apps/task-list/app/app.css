@@ -571,3 +571,6 @@ body.has-drawer .main { margin-right: 0; }
 .dump-item__voice svg { width: 13px; height: 13px; }
 .dump-item__text.is-voice { white-space: pre-wrap; }
 .composer__tip { flex: 1; }
+
+/* A meeting added in the app, not yet saved in the real calendar */
+.cal-block--pending { border-style: dashed; border-left-style: solid; opacity: 0.9; }

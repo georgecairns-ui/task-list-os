@@ -32,7 +32,7 @@
   function blocksFor(d, iso, range) {
     const items = M.eventsForDate(d, iso).filter(function (e) { return !e.allDay; }).map(function (e) {
       const s = M.splitLocal(e.start).minutes, en = M.splitLocal(e.end).minutes;
-      return { kind: "event", id: e.id, title: e.title, sub: e.location || "", start: s, end: Math.max(s + 15, en == null ? s + 30 : en) };
+      return { kind: "event", id: e.id, title: e.title, sub: e.location || "", start: s, end: Math.max(s + 15, en == null ? s + 30 : en), pending: e.source === "app" };
     }).concat(M.timedTasksForDate(d, iso).map(function (t) {
       const s = M.toMinutes(t.scheduledTime);
       return { kind: "task", id: t.id, title: t.title, start: s, end: s + (t.durationMinutes || 30), done: t.status === "done", cat: t.category };
@@ -66,7 +66,7 @@
       const time = short ? M.timeLabel(M.fromMinutes(b.start)) : M.timeLabel(M.fromMinutes(b.start)) + " to " + M.timeLabel(M.fromMinutes(b.end));
       const inner = '<span class="cal-block__title">' + esc(b.title) + '</span><span class="cal-block__time">' + esc(time) + "</span>";
       if (b.kind === "event") {
-        return '<button type="button" class="cal-block cal-block--event' + short + '" style="' + style + '" data-event="' + esc(b.id) + '" data-action="open-event" title="' + esc(b.title) + '">' + inner + "</button>";
+        return '<button type="button" class="cal-block cal-block--event' + (b.pending ? " cal-block--pending" : "") + short + '" style="' + style + '" data-event="' + esc(b.id) + '" data-action="open-event" title="' + esc(b.title) + '">' + inner + "</button>";
       }
       return '<div class="cal-block cal-block--task cat-edge--' + esc(b.cat) + (b.done ? " is-done" : "") + short + '" style="' + style + '" data-task="' + esc(b.id) + '" draggable="true" title="' + esc(b.title) + '">' +
         '<button type="button" class="cal-block__open" data-action="open-task">' + inner + "</button></div>";
@@ -174,7 +174,7 @@
       '<button type="button" class="btn btn--sm" data-action="cal-today">Today</button>' +
       '<button type="button" class="icon-btn" data-action="cal-next" aria-label="Next">' + icon("chevronRight") + "</button>" +
       '<h2 class="toolbar__label">' + esc(label(st)) + "</h2></div>" +
-      '<div class="segmented" role="group" aria-label="Calendar view">' + modes + "</div></div>";
+      '<div class="toolbar__group"><div class="segmented" role="group" aria-label="Calendar view">' + modes + '</div><button type="button" class="btn" data-action="add-meeting" data-date="' + esc(st.calDate || "") + '">' + icon("plus") + "Add meeting</button></div></div>";
     if (mode === "month") return html + monthGrid(ctx) + "</div>";
     const dates = visibleDates(st);
     return html + '<div class="cal-layout">' + toScheduleList(ctx, dates) + timeGrid(ctx, dates) + "</div></div>";

@@ -522,6 +522,20 @@
       if (t) t.calendarAddedAt = nowISO();
     },
 
+    // A meeting the person adds in the app. It shows straight away; they save it in their real
+    // calendar from the link the app opens, and Claude's next calendar copy brings in the real one.
+    addMeeting: function (d, m) {
+      const start = m.date + "T" + m.time;
+      const end = fromMinutes(Math.min(toMinutes(m.time) + (Number(m.minutes) || 30), 23 * 60 + 59));
+      const ev = { id: ui.makeId("ev-app"), title: m.title, start: start, end: m.date + "T" + end, allDay: false,
+        location: m.location || "", guests: m.guests || "", notes: m.notes || "", source: "app", addedAt: nowISO() };
+      d.events.push(ev);
+      return ev;
+    },
+    removeMeeting: function (d, id) {
+      d.events = d.events.filter(function (e) { return !(e.id === id && e.source === "app"); });
+    },
+
     setSettings: function (d, values) { Object.assign(d.settings, values); }
   };
 
