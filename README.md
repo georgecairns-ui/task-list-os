@@ -24,14 +24,12 @@ Nothing goes out without you. Claude reads and drafts; you decide and you send.
 
 ## Get started
 
-1. **Get the kit.** Click the green **Code** button on this page, then **Download ZIP**. Unzip it and move the **Task List OS** folder somewhere permanent, such as Documents. (Or, if you use git, clone it.)
-2. **Open it in Claude Code.** Open the Terminal (on Windows, PowerShell), go into the folder and start Claude:
-   ```bash
-   cd ~/Documents/"Task List OS"
-   claude
-   ```
-   Or, in the Claude desktop app, open the Code tab and choose the folder.
-3. **Choose "Yes, I trust this folder".** The first time, Claude Code asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps. Press the down arrow, then Enter.
+1. **Open Claude Code** in the Claude desktop app (the Code tab) or in the Terminal (on Windows, PowerShell). Any folder will do for this first step.
+2. **Ask Claude to fetch the kit.** Paste this:
+   > Copy https://github.com/georgecairns-ui/task-list-os into a folder called "Task List OS" in my Documents, then tell me how to open it.
+
+   Claude copies everything onto your computer and gives you one line to open the new folder. In the desktop app, you choose the folder instead. (If your computer asks to install "command line developer tools" or Git, say yes; it's free and takes a few minutes.)
+3. **Open the Task List OS folder in Claude Code and choose "Yes, I trust this folder".** The first time, Claude Code asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps. Press the down arrow, then Enter.
 4. **Type `/setup`.**
 
 Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. Then it opens your task list and gives you its link, **http://localhost:4747**. Bookmark it. That's it.

@@ -4,7 +4,9 @@
 
 ---
 
-**Claude, this file is for you.** The person you work for has downloaded Task List OS and wants it set up. Follow this file, then the step files in `setup/`, in order.
+**Claude, this file is for you.** The person you work for has copied Task List OS onto their computer and wants it set up.
+
+**If you've only just copied it for them** (you're running in a different folder, such as their home or Documents folder): setup must run from inside the Task List OS folder, because that's where your skills, permissions and the task list live. Copy it with `git clone https://github.com/georgecairns-ui/task-list-os.git "$HOME/Documents/Task List OS"` (on Windows, into their Documents folder the same way). If git isn't installed, tell them in one sentence and help them install it. Then give them the one line to open it, `cd ~/Documents/"Task List OS" && claude` (in the Claude desktop app: open the Code tab and choose that folder), tell them to pick "Yes, I trust this folder", then type `/setup`. Stop there; don't start the setup from the wrong folder. Follow this file, then the step files in `setup/`, in order.
 
 ## What Task List OS is
 
