@@ -84,7 +84,7 @@
 
   window.TL.views = window.TL.views || {};
   window.TL.views.replies = {
-    title: function () { return "Replies"; },
+    title: function () { return "Inbox"; },
     sub: function (ctx) { const n = M.openReplies(ctx.d).length; return n ? n + (n === 1 ? " email needs" : " emails need") + " an answer" : "Nothing waiting"; },
     render: render,
     triageStrip: triageStrip,

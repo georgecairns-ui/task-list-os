@@ -19,7 +19,8 @@
   const mut = M.mut;
   const $ = function (sel, root) { return (root || document).querySelector(sel); };
 
-  const VIEW_ORDER = ["today", "review", "replies", "calls", "dump", "week", "calendar", "all", "waiting", "people", "done"];
+  // Number keys 1 to 9 follow the sidebar: Today, This week, Inbox, Review, All tasks, Waiting on, Done, Calls, Brain dump
+  const VIEW_ORDER = ["today", "week", "replies", "review", "all", "waiting", "done", "calls", "dump"];
   const L = window.TL.links;
   const narrow = function () { return window.matchMedia("(max-width: 760px)").matches; };
 
