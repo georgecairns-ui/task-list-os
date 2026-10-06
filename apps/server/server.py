@@ -31,6 +31,7 @@ APPS = os.path.join(ROOT, "apps")
 DATA = os.path.join(APPS, "task-list", "data", "tasks.json")
 INSTALLED = os.path.join(APPS, "installed.json")
 # A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
+HOME_LAYOUT = os.path.join(APPS, "home", "data", "layout.json")
 DATA_FILE_RE = re.compile(r"^apps/[a-z0-9-]+/data/[a-z0-9-]+\.json$")
 DATA_URL_RE = re.compile(r"^/api/data/([a-z0-9-]+)/([a-z0-9-]+\.json)(/meta)?$")
 MAX_BODY = 10 * 1024 * 1024
@@ -126,6 +127,9 @@ def installed_tools():
 
 def data_file_for(tool_id, file_name):
     """The file behind /api/data/<tool>/<file>, or None if that tool isn't installed or the file isn't one of its own."""
+    # Home's own file: which boxes show, in what order and how wide
+    if tool_id == "home":
+        return HOME_LAYOUT if file_name == "layout.json" else None
     for tool in installed_tools():
         if not isinstance(tool, dict) or tool.get("id") != tool_id or not isinstance(tool.get("dataFiles"), list):
             continue
@@ -142,7 +146,9 @@ def data_file_for(tool_id, file_name):
 
 
 def home_page():
-    """The page http://localhost:4747 opens: the first tool in apps/installed.json (the task list in a fresh download)."""
+    """The page http://localhost:4747 opens: Home, or (in an older copy without it) the first tool in apps/installed.json."""
+    if os.path.exists(os.path.join(APPS, "home", "index.html")):
+        return "/home/"
     tools = installed_tools()
     app = tools[0].get("app") if tools and isinstance(tools[0], dict) else None
     return "/" + app[5:] if isinstance(app, str) and re.match(r"^apps/[a-z0-9-]+/$", app) else "/task-list/"
@@ -150,6 +156,7 @@ def home_page():
 
 def save_file(path, text):
     """Keep a backup, write a temporary file, then swap it in, so a save is never half-written."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
         with open(path, "rb") as src, open(path[:-5] + ".backup.json", "wb") as dst:
             dst.write(src.read())

@@ -17,6 +17,17 @@
 .sidebar__brand-text { min-width: 0; }
 .sidebar__product { font-weight: 700; font-size: var(--text-md); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* The Home link at the top of every sidebar */
+.side-home {
+  display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px 0 6px; border: 1px solid transparent; border-radius: var(--radius-sm);
+  color: var(--color-ink); font-weight: 650; text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.side-home svg { width: 24px; height: 24px; padding: 4px; flex: none; border-radius: 7px; border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-muted); }
+.side-home:hover { background: var(--color-sunk); }
+.side-home.is-active { background: var(--color-surface); border-color: var(--color-line); }
+.side-home.is-active svg { color: var(--color-accent); }
+
 /* Small section headings: "Your tools", "More tools" */
 .side-label { padding: var(--space-3) 10px 6px; font-size: var(--text-xs); font-weight: 600; color: var(--color-faint); }
 

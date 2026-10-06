@@ -150,7 +150,8 @@
     const othersEl = document.querySelector('[data-toolkit-menu="others"]');
     if (othersEl) {
       othersEl.innerHTML = others.map(function (t) { return otherGroup(t, menus[t.id] || []); }).join("");
-      othersEl.querySelectorAll(".tool-group").forEach(function (g) { wireGroup(g, false); });
+      // On Home every tool starts open; inside a tool, the others start folded
+      othersEl.querySelectorAll(".tool-group").forEach(function (g) { wireGroup(g, currentId === "home"); });
     }
 
     const moreEl = document.querySelector('[data-toolkit-menu="more"]');

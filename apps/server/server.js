@@ -39,6 +39,7 @@ const ROOT = path.resolve(__dirname, "..", "..");           // the Task List OS 
 const APPS = path.join(ROOT, "apps");                         // the only folder it serves
 const DATA = path.join(APPS, "task-list", "data", "tasks.json");
 const INSTALLED = path.join(APPS, "installed.json");
+const HOME_LAYOUT = path.join(APPS, "home", "data", "layout.json");
 // A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
 const DATA_FILE_RE = /^apps\/[a-z0-9-]+\/data\/[a-z0-9-]+\.json$/;
 const MAX_BODY = 10 * 1024 * 1024;
@@ -131,6 +132,8 @@ function installedTools() {
 
 // The file behind /api/data/<tool>/<file>, or null if that tool isn't installed or the file isn't one of its own
 function dataFileFor(toolId, fileName) {
+  // Home's own file: which boxes show, in what order and how wide
+  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : null;
   for (const tool of installedTools()) {
     if (!tool || tool.id !== toolId || !Array.isArray(tool.dataFiles)) continue;
     // A tool may only save inside its own app folder, never another tool's data or the shared parts
@@ -160,6 +163,7 @@ function readBody(req) {
 
 // Save safely: keep a backup of the current file, write a temporary file, then swap it in
 function saveFile(file, text) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   if (fs.existsSync(file)) fs.copyFileSync(file, file.replace(/\.json$/, ".backup.json"));
   const tmp = file + ".saving";
   fs.writeFileSync(tmp, text);
@@ -219,8 +223,9 @@ async function handleApi(req, res, url) {
   return sendJson(res, 404, { error: "not found" });
 }
 
-// The page http://localhost:4747 opens: the first tool in apps/installed.json (the task list in a fresh download)
+// The page http://localhost:4747 opens: Home, or (in an older copy without it) the first tool in apps/installed.json
 function homePage() {
+  if (fs.existsSync(path.join(APPS, "home", "index.html"))) return "/home/";
   const first = installedTools()[0];
   const app = first && typeof first.app === "string" ? first.app : "";
   return /^apps\/[a-z0-9-]+\/$/.test(app) ? "/" + app.slice(5) : "/task-list/";
