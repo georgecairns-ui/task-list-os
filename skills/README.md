@@ -10,6 +10,8 @@ Each skill is a folder with a `SKILL.md` inside. Claude reads them from here whe
 |---|---|---|
 | `sort-my-day` | "Sort my day" | Claude checks your list, inbox and calendar and proposes today's plan in the app |
 | `inbox-to-tasks` | "Anything in my inbox I need to do?" | New actions from email and calendar appear as suggestions for you to approve |
+| `plan-my-week` | "Plan my week" | Goals for the week, and a suggested day for each task that needs one, around your meetings |
+| `sort-my-brain-dump` | "Sort my brain dump" | Everything you typed into Brain dump becomes proper tasks for you to approve |
 | `wrap-up-my-day` | "Wrap up my day" | A short summary of what got done and what rolls over |
 | `weekly-review` | "Let's do the weekly review" | What got done, what slipped, and next week's priorities |
 

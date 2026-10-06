@@ -11,7 +11,8 @@ Lives at `~/Repos/getaipowers/task-list-os`. Phase 1 was built in `~/Claude/05_M
 ## Stack
 
 - No framework, no build step. The app is `index.html` plus plain JavaScript and CSS, opened by double-clicking.
-- `apps/shared/`: `theme.css` (every brand token), `base.css` (components and animation), `js/store.js` (File System Access API, IndexedDB to remember the folder, polling for Claude's edits, demo mode), `js/ui.js` (helpers), bundled WOFF2 fonts and images.
+- `apps/shared/`: `theme.css` (every token), `base.css` (components and animation), `js/store.js` (File System Access API, IndexedDB to remember the folder, polling for Claude's edits, demo mode), `js/ui.js` (helpers and icons), bundled fonts and images.
+- `apps/task-list/app/`: `model.js` (data shape, questions and every change), `components.js` (rows, chips, avatars), one `view-*.js` per page (today, review, dump, week, calendar, lists, people), `drawer.js` (task and person records), `app.js` (store, routing, actions, search, shortcuts), `demo-data.js`, `app.css`.
 - Plain JavaScript only. No TypeScript, no libraries, nothing loaded from the internet.
 - Setup, context, skills and docs are Markdown.
 
@@ -27,7 +28,7 @@ Lives at `~/Repos/getaipowers/task-list-os`. Phase 1 was built in `~/Claude/05_M
 - Every data change in the app goes through `store.update()`, which re-reads the file, applies the change, writes a backup, then saves.
 - Human in the loop: Claude proposes, the person approves. Read and draft only in connected apps. Never add a path that sends, pays, deletes or posts on the customer's behalf.
 - Customer-facing words (app, setup, skills, docs, context templates) never say agent, repo, repository or artifact. British English, digits, no em dashes anywhere, no George or other real people in examples (use Sam, Priya, Tom at Greenway Café, Marlow Dental).
-- Brand: Get AI Powers warm palette, Zilla Slab and Source Serif 4, Claude character on every app screen. All values in `apps/shared/theme.css`.
+- Look: neutral modern software (white and grey, system sans-serif, terracotta accent), chosen by George on 6 October 2026 so it reads as real software. This deliberately departs from the brand rule against sans-serif body text. The brand fonts stay bundled; the note at the foot of `theme.css` restores slab headings. The Get AI Powers logo sits in the sidebar and the Claude character appears in empty states and the welcome screen. All values in `apps/shared/theme.css`.
 - Future tools go in `apps/<tool-name>/`, copying the task list's structure (`index.html`, `app/`, `data/`, `CLAUDE.md`), with their own setup step and skills. Add a launcher HTML at the root for each.
 - Git: feature branches `claude/<name>`, focused commits. Never delete files; move to `~/Claude/99_Archive` and ask George first.
 

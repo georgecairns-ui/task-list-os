@@ -3,6 +3,8 @@ name: keep-context-fresh
 description: Notices new facts that come up in conversation, such as a new client, a new team member, a price change or a preference about tone, and proposes a one-line update to the right context file. Also runs a quarterly check of whether the context files are still accurate. Use whenever something worth remembering comes up, or when the person asks "is my context still right" or "update my notes".
 ---
 
+<!-- People appear in 2 places: the `people` list in apps/task-list/data/tasks.json (facts the app shows: name, organisation, type, email) and context/people.md (softer notes: tone, history). When you add or change someone, propose updating both. -->
+
 # Keep context fresh
 
 ## When to use

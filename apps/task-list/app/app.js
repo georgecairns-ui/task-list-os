@@ -1,1006 +1,583 @@
 /*
-  TASK LIST: the app
-  ------------------
-  What this file does, top to bottom:
-  1. Settings and the 5 categories Claude sorts tasks into.
-  2. Starts the shared "store", which connects to data/tasks.json (or Demo mode).
-  3. Draws whichever screen fits: welcome, loading, problem, or your day.
-  4. Handles the buttons: approve, edit, skip, done, add, delete, summary, settings.
+  TASK LIST OS: the app
+  ---------------------
+  Ties everything together:
+  1. Connects to data/tasks.json through the shared store (or Demo mode).
+  2. Shows the welcome screen until a folder is connected, then the app.
+  3. Moves between pages (Today, Review, Brain dump, This week, Calendar, All tasks,
+     Waiting on, People, Done) using the address bar, so Back and Forward work.
+  4. Handles every button, form, drag and keyboard shortcut. Every change goes through
+     change(), which saves it into the task file for Claude to read.
 
-  The rule throughout: Claude proposes, the person approves. Nothing Claude suggests
-  counts until someone clicks Approve. Every change goes through store.update(), which
-  saves it straight back into data/tasks.json for Claude to read.
+  The rule throughout: Claude proposes, the person approves.
 */
 (function () {
   "use strict";
 
-  const ui = window.Toolkit.ui;
-  const esc = ui.esc;
-  const icon = ui.icon;
+  const ui = window.Toolkit.ui, esc = ui.esc, icon = ui.icon;
+  const M = window.TL.model, C = window.TL.c, V = window.TL.views, Drawer = window.TL.drawer;
+  const mut = M.mut;
+  const $ = function (sel, root) { return (root || document).querySelector(sel); };
 
-  const MODULE_ID = "task-list";
-  const DATA_FILE = "tasks.json";
+  const VIEW_ORDER = ["today", "review", "dump", "week", "calendar", "all", "waiting", "people", "done"];
+  const narrow = function () { return window.matchMedia("(max-width: 760px)").matches; };
 
-  // Work out where the shared folder is (it moves when the module is zipped on its own)
-  const SHARED = document.querySelector('link[href$="theme.css"]').getAttribute("href").replace("theme.css", "");
-  const ART = {
-    welcome: SHARED + "images/claude-welcome.jpg",
-    thinking: SHARED + "images/claude-thinking.jpg",
-    celebrate: SHARED + "images/claude-celebrate.jpg",
-    shrug: SHARED + "images/claude-shrug.jpg",
-    trophy: SHARED + "images/claude-trophy.jpg"
+  // ---------- Screen state (not saved to the file) ----------
+  const state = {
+    view: "today",
+    calMode: narrow() ? "day" : "week",
+    calDate: M.todayISO(),
+    calScroll: null,
+    weekStart: null,
+    filterCat: "all", filterPerson: "", sortBy: "date", filterRole: "all",
+    drawer: null
   };
 
-  // The 5 places a task can go, in the order they appear on screen
-  const CATEGORIES = [
-    { key: "today",     label: "Do today",           icon: "sun",       hint: "Needs you today" },
-    { key: "quick-win", label: "Quick wins",         icon: "zap",       hint: "Under 10 minutes each" },
-    { key: "delegate",  label: "Delegate",           icon: "users",     hint: "Someone else can do these" },
-    { key: "waiting",   label: "Waiting on someone", icon: "hourglass", hint: "The ball is in their court" },
-    { key: "later",     label: "Can wait",           icon: "calendar",  hint: "Fine to leave for now" }
-  ];
-  const CAT = {};
-  CATEGORIES.forEach(function (c) { CAT[c.key] = c; });
-
-  const DEFAULT_SETTINGS = { yourName: "", businessName: "", minutesSavedPerTask: 6, minutesSavedPerPlan: 20 };
-
-  // ---------- Element shortcuts ----------
-  const $ = function (sel, root) { return (root || document).querySelector(sel); };
-  const screenEl = $("#screen");
-  const bannerEl = $("#banner");
-  const demoToggle = $("#demoToggle");
-  const saveStatus = $("#saveStatus");
-  const settingsBtn = $("#settingsBtn");
-
-  let data = null;            // the current contents of tasks.json
-  let status = "checking";    // what the store last told us
+  let data = null;
+  let status = "checking";
   let statusDetail = {};
-  let layoutBuilt = false;    // the day view frame is drawn once, then its parts refresh
-  const seen = new Set();     // things already on screen, so only new ones animate in
+  const seen = new Set();
+  let stagger = 0;
 
   // ============================================================
-  // 1. Reading the file safely
-  // ============================================================
-
-  // Throws if tasks.json is not the shape we expect (the store then shows a friendly message)
-  function validate(d) {
-    if (!d || typeof d !== "object") throw new Error("The file is empty.");
-    if (!Array.isArray(d.tasks)) throw new Error('The file has no "tasks" list.');
-  }
-
-  // Fill in anything missing so the screens never trip over a half-written file.
-  // This only tidies what is shown. It does not save anything.
-  function normalise(d) {
-    d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
-    d.tasks = d.tasks.filter(function (t) { return t && t.id && t.title; });
-    d.tasks.forEach(function (t) {
-      if (!CAT[t.category]) t.category = "later";
-      if (t.status !== "done" && t.status !== "dismissed") t.status = "open";
-    });
-    if (!d.plan || typeof d.plan !== "object") d.plan = { date: null, preparedAt: null, note: "", items: [] };
-    if (!Array.isArray(d.plan.items)) d.plan.items = [];
-    d.plan.items = d.plan.items.filter(function (i) { return i && i.taskId; });
-    if (!Array.isArray(d.activity)) d.activity = [];
-    return d;
-  }
-
-  // ============================================================
-  // 2. Small questions the screens ask about the data
-  // ============================================================
-
-  function todayISO() { return ui.isoDate(); }
-  function taskById(d, id) { return d.tasks.find(function (t) { return t.id === id; }); }
-  function planIsToday(d) { return d.plan && d.plan.date === todayISO(); }
-  function claudeHasPlanned(d) { return planIsToday(d) && !!d.plan.preparedAt; }
-
-  // Claude's suggestions still waiting for a yes or no
-  function proposals(d) {
-    if (!claudeHasPlanned(d)) return [];
-    return d.plan.items.filter(function (i) { return i.status === "proposed" && taskById(d, i.taskId); });
-  }
-  // What is on today's list (approved by the person)
-  function approvedToday(d) {
-    if (!planIsToday(d)) return [];
-    return d.plan.items.filter(function (i) { return i.status === "approved" && taskById(d, i.taskId); });
-  }
-  // A task Claude spotted (in email, the calendar and so on) that the person has not approved yet
-  function isSuggestion(t) { return !!t.suggested && t.status === "open"; }
-  // Tasks that are really on the list: open, and not an unapproved suggestion
-  function isOnList(t) { return t.status === "open" && !t.suggested; }
-
-  // Open tasks that are not on today's plan in any form
-  function everythingElse(d) {
-    const onPlan = new Set(planIsToday(d) ? d.plan.items.filter(function (i) { return i.status !== "skipped"; }).map(function (i) { return i.taskId; }) : []);
-    return d.tasks.filter(function (t) { return isOnList(t) && !onPlan.has(t.id); });
-  }
-  function waitingList(d) {
-    return d.tasks.filter(function (t) { return isOnList(t) && t.category === "waiting"; });
-  }
-  function doneToday(d) {
-    const today = todayISO();
-    return d.tasks.filter(function (t) { return t.status === "done" && t.doneAt && ui.isoDate(new Date(t.doneAt)) === today; });
-  }
-
-  // Time saved: an estimate from the activity log (tasks done and plans approved)
-  function timeSaved(d, fromDate, toDate) {
-    let minutes = 0, tasksDone = 0, plans = 0;
-    d.activity.forEach(function (a) {
-      const when = new Date(a.at);
-      if (isNaN(when) || when < fromDate || (toDate && when >= toDate)) return;
-      if (a.type === "task-done") { tasksDone++; minutes += num(a.minutes, d.settings.minutesSavedPerTask); }
-      if (a.type === "plan-approved") { plans++; minutes += num(a.minutes, d.settings.minutesSavedPerPlan); }
-    });
-    return { minutes: minutes, tasksDone: tasksDone, plans: plans };
-  }
-  function num(v, fallback) { return typeof v === "number" && isFinite(v) ? v : Number(fallback) || 0; }
-
-  // ============================================================
-  // 3. The store: connects the app to data/tasks.json
+  // 1. The store
   // ============================================================
 
   const store = window.Toolkit.createStore({
-    moduleId: MODULE_ID,
-    fileName: DATA_FILE,
-    // Where tasks.json can be, depending on which folder the person picks:
-    // this app's folder, its data folder, or the main Task List OS folder
+    moduleId: "task-list",
+    fileName: "tasks.json",
+    // Where tasks.json can be, depending on which folder the person picks
     dataPaths: ["data", "", "apps/task-list/data"],
     makeDemoData: window.makeTaskDemoData,
-    validate: validate,
+    validate: M.validate,
     onStatus: function (s, detail) {
       const previous = status;
       status = s;
       statusDetail = detail || {};
       renderChrome();
-      // Only redraw the whole screen when we move between screens
-      const needsScreen = !(data && (s === "ready" || s === "demo" || s === "error"));
-      if (needsScreen || previous !== s) render();
+      if (!(data && (s === "ready" || s === "demo" || s === "error")) || previous !== s) render();
     },
     onData: function (d, reason) {
-      data = normalise(d);
-      if (reason === "load" || reason === "demo") { layoutBuilt = false; seen.clear(); }
+      data = M.normalise(d);
+      // A different set of data (a folder opened, or Demo switched): start with a clean screen
+      if (reason === "load" || reason === "demo") { seen.clear(); state.drawer = null; }
       render();
       if (reason === "external") ui.toast("Claude updated your list", { icon: "sparkle" });
     }
   });
 
-  // Every change goes through here. If saving fails, the store shows the problem
-  // and we put the screen back to what is really in the file.
   function change(fn) {
-    return store.update(function (d) { normalise(d); fn(d); }).catch(function (err) {
+    return store.update(function (d) { M.normalise(d); fn(d); }).catch(function (err) {
       ui.toast(friendlyError(err).short, { icon: "alert", duration: 6000 });
       render();
       err.shownToPerson = true;
-      throw err; // still rejected, so follow-up steps (like "Saved" messages) do not run
+      throw err;
     });
   }
   // A failed save has already been explained on screen, so it is not an unexpected error
-  window.addEventListener("unhandledrejection", function (e) {
-    if (e.reason && e.reason.shownToPerson) e.preventDefault();
-  });
+  window.addEventListener("unhandledrejection", function (e) { if (e.reason && e.reason.shownToPerson) e.preventDefault(); });
 
-  // ============================================================
-  // 4. Drawing the screens
-  // ============================================================
-
-  function render() {
-    if ((status === "demo" || status === "ready" || status === "error") && data) return renderDay();
-    layoutBuilt = false;
-    if (status === "checking" || status === "demo" || status === "ready") return renderLoading();
-    if (status === "unsupported") return renderUnsupported();
-    if (status === "needs-connect") return renderConnect();
-    if (status === "needs-permission") return renderReconnect();
-    if (status === "error") return renderProblem(statusDetail.error);
-  }
-
-  // Top bar, demo banner and problem banner
-  function renderChrome() {
-    demoToggle.checked = status === "demo";
-    settingsBtn.hidden = !(status === "ready" || status === "demo");
-
-    if (status === "ready") {
-      saveStatus.hidden = false;
-      saveStatus.className = "pill pill--success save-status";
-      const justSaved = statusDetail.savedAt && (Date.now() - statusDetail.savedAt < 4000);
-      saveStatus.innerHTML = '<span class="pill__dot"></span><span class="save-status__text">' + (justSaved ? "Saved just now" : "Saved to your folder") + "</span>";
-      saveStatus.title = "Connected to the folder " + (statusDetail.folderName || "");
-      if (justSaved) setTimeout(function () { if (status === "ready") renderChrome(); }, 4200);
-    } else if (status === "error" && data) {
-      saveStatus.hidden = false;
-      saveStatus.className = "pill pill--danger save-status";
-      saveStatus.innerHTML = '<span class="pill__dot"></span><span class="save-status__text">Not saved</span>';
-    } else {
-      saveStatus.hidden = true;
-    }
-
-    if (status === "demo") {
-      bannerEl.innerHTML =
-        '<div class="banner"><span class="sticker">Demo</span><span><strong>Demo mode.</strong> This is sample data for a made-up business. Nothing you do here is saved.</span>' +
-        '<button type="button" class="btn btn--small" data-action="demo-off">Turn off demo</button></div>';
-    } else if (status === "error" && data) {
-      const f = friendlyError(statusDetail.error);
-      bannerEl.innerHTML =
-        '<div class="banner banner--problem">' + icon("alert", "banner__icon") + "<span><strong>" + esc(f.title) + "</strong> " + esc(f.body) + "</span>" +
-        '<button type="button" class="btn btn--small" data-action="retry">' + icon("refresh") + "Try again</button></div>";
-    } else {
-      bannerEl.innerHTML = "";
-    }
-  }
-
-  function art(name, alt) {
-    return '<div class="state__art"><img src="' + ART[name] + '" alt="' + esc(alt || "") + '" width="220" height="220"></div>';
-  }
-
-  function renderLoading() {
-    screenEl.innerHTML =
-      '<div class="loading" aria-busy="true" aria-label="Opening your task list">' +
-      '<div class="skeleton" style="height:18px;width:180px"></div>' +
-      '<div class="skeleton" style="height:44px;width:min(520px,90%);margin-top:14px"></div>' +
-      '<div class="loading__grid"><div class="skeleton" style="height:320px"></div><div class="skeleton" style="height:220px"></div></div>' +
-      "</div>";
-  }
-
-  // First visit: connect the folder
-  function renderConnect(message) {
-    screenEl.innerHTML =
-      '<section class="welcome card card--raised">' +
-      '<div class="welcome__art"><img src="' + ART.welcome + '" alt="The Claude character waving hello" width="440" height="440"></div>' +
-      '<div class="welcome__body">' +
-      '<span class="eyebrow eyebrow--accent">Task List OS / one-time setup</span>' +
-      '<h1>Connect your <span class="accent">task list.</span></h1>' +
-      "<p>Your tasks live in a file on your own computer, in the same folder Claude works from. Connect it once and everything you approve here is saved straight into it.</p>" +
-      '<ol class="steps">' +
-      "<li><span>Click <strong>Connect your task list</strong>.</span></li>" +
-      "<li><span>Choose your <strong>Task List OS</strong> folder. It's the main folder you set up with Claude, the one with START-HERE.md in it.</span></li>" +
-      "<li><span>When Chrome asks to let the page edit files, click <strong>Allow</strong>.</span></li>" +
-      "</ol>" +
-      (message ? '<p class="inline-error" role="alert">' + icon("alert") + esc(message) + "</p>" : "") +
-      '<div class="welcome__actions">' +
-      '<button type="button" class="btn btn--primary btn--large" data-action="connect">' + icon("folder") + "Connect your task list</button>" +
-      '<button type="button" class="btn btn--ghost" data-action="demo-on">Look around with sample data first</button>' +
-      "</div>" +
-      '<p class="welcome__small">Your tasks never leave your computer. There is no account and nothing to install.</p>' +
-      "</div></section>";
-  }
-
-  // Returning visit where Chrome wants a click before opening the folder again
-  function renderReconnect() {
-    const name = statusDetail.folderName || MODULE_ID;
-    screenEl.innerHTML =
-      '<section class="card card--raised state-card">' +
-      '<div class="state">' + art("welcome", "The Claude character waving hello") +
-      '<div class="state__body"><span class="eyebrow">Welcome back</span>' +
-      "<h1>Pick up where you <span class=\"accent\">left off.</span></h1>" +
-      "<p>Chrome asks for one click each visit before this page can open your files. It's there to keep your computer safe.</p>" +
-      '<div class="welcome__actions"><button type="button" class="btn btn--primary btn--large" data-action="reconnect">' + icon("folder") + "Open my task list</button>" +
-      '<button type="button" class="btn btn--ghost" data-action="change-folder">Use a different folder</button></div>' +
-      '<p class="welcome__small">Folder: ' + esc(name) + "</p>" +
-      "</div></div></section>";
-  }
-
-  function renderUnsupported() {
-    screenEl.innerHTML =
-      '<section class="card card--raised state-card">' +
-      '<div class="state">' + art("shrug", "The Claude character shrugging") +
-      '<div class="state__body"><span class="eyebrow">One small thing</span>' +
-      "<h1>This works in Chrome or <span class=\"accent\">Microsoft Edge.</span></h1>" +
-      "<p>This browser can't save changes to files on your computer yet. Open this same file in Google Chrome or Microsoft Edge and it will work. Both are free.</p>" +
-      '<div class="welcome__actions"><button type="button" class="btn btn--primary" data-action="demo-on">Look around with sample data</button></div>' +
-      "</div></div></section>";
-  }
-
-  function renderProblem(err) {
-    const f = friendlyError(err);
-    screenEl.innerHTML =
-      '<section class="card card--raised state-card">' +
-      '<div class="state">' + art("shrug", "The Claude character shrugging") +
-      '<div class="state__body"><span class="eyebrow">Something needs a look</span>' +
-      "<h1>" + esc(f.title) + "</h1><p>" + esc(f.body) + "</p>" +
-      (f.say ? sayChip(f.say) : "") +
-      '<div class="welcome__actions"><button type="button" class="btn btn--primary" data-action="retry">' + icon("refresh") + "Try again</button>" +
-      '<button type="button" class="btn btn--ghost" data-action="change-folder">Choose the folder again</button></div>' +
-      "</div></div></section>";
-  }
-
-  // Turn technical problems into plain English, with something the customer can say to Claude
   function friendlyError(err) {
     const kind = err && err.kind;
-    if (kind === "bad-file") return {
-      title: "Your task file has a small mistake in it.",
-      body: "Nothing new can show or save until it's fixed. Claude can sort it in a few seconds, and the last good version is kept in data/tasks.backup.json.",
-      say: "Please check my tasks.json file and fix it",
-      short: "Your task file needs a quick fix"
-    };
-    if (kind === "missing") return {
-      title: "Your task file has gone missing.",
-      body: "It may have been moved or renamed. Check the data folder still has tasks.json in it, or ask Claude to put it back.",
-      say: "My task list file seems to be missing, please check the data folder",
-      short: "Your task file can't be found"
-    };
-    if (kind === "needs-permission") return {
-      title: "Chrome needs your permission again.",
-      body: "Click Try again and allow access to your folder.",
-      short: "Chrome needs your permission again"
-    };
-    return {
-      title: "That change didn't save.",
-      body: "Nothing is lost. Check your computer is not short of space and try again.",
-      short: "That change didn't save. Please try again"
-    };
+    if (kind === "bad-file") return { title: "Your task file has a small mistake in it.", body: "Nothing new can show or save until it's fixed. Claude can sort it in a few seconds, and the last good version is kept in tasks.backup.json next to it.", say: "Please check my tasks.json file and fix it", short: "Your task file needs a quick fix" };
+    if (kind === "missing") return { title: "Your task file has gone missing.", body: "It may have been moved or renamed. Ask Claude to check, or choose your folder again.", say: "My task list file seems to be missing, please check it", short: "Your task file can't be found" };
+    if (kind === "needs-permission") return { title: "Chrome needs your permission again.", body: "Click Try again and allow access to your folder.", short: "Chrome needs your permission again" };
+    return { title: "That change didn't save.", body: "Nothing is lost. Try again in a moment.", short: "That change didn't save. Please try again" };
   }
 
-  function sayChip(text) {
-    return '<span class="say">"' + esc(text) + '"<button type="button" class="say__copy" data-action="copy" data-text="' + esc(text) + '">Copy</button></span>';
+  // ============================================================
+  // 2. Before a folder is connected: welcome, loading, problems
+  // ============================================================
+
+  function showGate(html) {
+    $("#shell").hidden = true;
+    const gate = $("#gate");
+    gate.hidden = false;
+    gate.innerHTML = html;
   }
 
-  // ---------- The main daily view ----------
-  function buildDayLayout() {
-    screenEl.innerHTML =
-      '<section class="hero" id="hero"></section>' +
-      '<div class="day-grid">' +
-      '<div class="day-main">' +
-      '  <section class="panel" id="planPanel" aria-labelledby="planHeading"></section>' +
-      '  <section class="panel" aria-labelledby="dayHeading">' +
-      '    <div class="panel__head">' +
-      '      <div><span class="eyebrow">Your day</span><h2 id="dayHeading" tabindex="-1">Today\'s list.</h2></div>' +
-      '      <div id="dayProgress" class="progress"></div>' +
-      "    </div>" +
-      '    <form class="add-task" id="addForm" autocomplete="off">' +
-      '      <label class="sr-only" for="addTitle">New task</label>' +
-      '      <input class="input add-task__input" id="addTitle" name="title" maxlength="200" placeholder="Add a task, for example Call the bank about the card machine">' +
-      '      <label class="sr-only" for="addCategory">Where it goes</label>' +
-      '      <select class="select add-task__select" id="addCategory" name="category">' + categoryOptions("today") + "</select>" +
-      '      <button type="submit" class="btn btn--dark add-task__btn">' + icon("plus") + "Add</button>" +
-      "    </form>" +
-      '    <div id="dayList"></div>' +
-      "  </section>" +
-      '  <details class="panel backlog" id="backlog"><summary class="backlog__summary" id="backlogSummary"></summary><div id="backlogList"></div></details>' +
-      "</div>" +
-      '<aside class="day-side" aria-label="This week">' +
-      '  <section class="card card--dark saved" id="savedCard"></section>' +
-      '  <section class="card side-card" id="waitingCard"></section>' +
-      '  <section class="card side-card wrap-up" id="wrapCard"></section>' +
-      "</aside>" +
-      "</div>";
-    layoutBuilt = true;
+  function gateCard(art, eyebrow, title, body, actions, small) {
+    return '<div class="gate__card">' +
+      '<div class="gate__text"><div class="gate__brand"><img src="../shared/images/GAIP-emblem-black-teal-pop-RGB.svg" alt="" width="28" height="28"><span>Task List OS</span></div>' +
+      (eyebrow ? '<span class="label">' + esc(eyebrow) + "</span>" : "") + "<h1>" + title + "</h1>" + body +
+      '<div class="gate__actions">' + actions + "</div>" + (small ? '<p class="gate__small">' + small + "</p>" : "") + "</div>" +
+      '<div class="gate__art"><img src="' + C.ART[art] + '" alt="" width="440" height="440"></div></div>';
   }
 
-  function renderDay() {
-    const first = !layoutBuilt;
-    if (first) buildDayLayout();
-    let stagger = 0;
-    // Only things that were not on screen before get the gentle entrance animation
-    const anim = function (key) {
-      if (seen.has(key)) return "";
-      seen.add(key);
-      return ' enter" style="--i:' + Math.min(stagger++, 10);
-    };
-    renderHero(anim);
-    renderPlan(anim);
-    renderDayList(anim);
-    renderBacklog(anim);
-    renderSaved(anim);
-    renderWaiting(anim);
-    renderWrap(anim);
-  }
-
-  function renderHero(anim) {
-    const name = data.settings.yourName;
-    const props = proposals(data);
-    const approved = approvedToday(data);
-    const doneCount = approved.filter(function (i) { const t = taskById(data, i.taskId); return t.status === "done"; }).length;
-    let line;
-    if (props.length) {
-      const mins = Math.max(2, Math.round(props.length * 0.75));
-      const fresh = props.filter(function (i) { return isSuggestion(taskById(data, i.taskId)); }).length;
-      line = "Claude has sorted your day. " + props.length + (props.length === 1 ? " suggestion" : " suggestions") +
-        " to look over, about " + mins + " minutes." +
-        (fresh ? " " + fresh + (fresh === 1 ? " is new, spotted" : " are new, spotted") + " in your inbox or calendar." : "");
-    } else if (approved.length) {
-      const left = approved.length - doneCount;
-      line = left === 0 ? "Everything on today's list is done. Nicely handled." : doneCount + " of " + approved.length + " done. " + left + " to go.";
-    } else if (claudeHasPlanned(data)) {
-      line = "You've been through Claude's suggestions. Add anything else below.";
-    } else {
-      line = "Claude hasn't sorted today yet. Ask it to and the plan appears here.";
+  function renderGate(message) {
+    if (status === "checking" || ((status === "ready" || status === "demo") && !data)) {
+      return showGate('<div class="gate__loading" aria-busy="true" aria-label="Opening your task list"><div class="skeleton" style="width:220px;height:14px"></div><div class="skeleton" style="width:320px;height:28px"></div><div class="skeleton" style="width:260px;height:14px"></div></div>');
     }
-    $("#hero").innerHTML =
-      '<div class="hero__text' + anim("hero") + '">' +
-      '<span class="eyebrow">' + esc(ui.longDate()) + (data.settings.businessName ? " / " + esc(data.settings.businessName) : "") + "</span>" +
-      "<h1>" + esc(ui.greeting()) + (name ? ', <span class="accent">' + esc(name) + ".</span>" : '<span class="accent">.</span>') + "</h1>" +
-      '<p class="hero__line">' + esc(line) + "</p>" +
-      "</div>" +
-      // The Claude character sits here whenever the plan panel below is not already showing it
-      (props.length ? '<div class="hero__art' + anim("hero-art") + '"><img src="' + ART.welcome + '" alt="The Claude character waving" width="220" height="220"></div>' : "");
+    if (status === "unsupported") {
+      return showGate(gateCard("shrug", "One small thing", "This works in Chrome or Microsoft Edge.",
+        "<p>This browser can't save changes to files on your computer. Open this same file in Google Chrome or Microsoft Edge and it will work. Both are free.</p>",
+        '<button type="button" class="btn btn--lg" data-action="demo-on">Look around with sample data</button>'));
+    }
+    if (status === "needs-permission") {
+      return showGate(gateCard("welcome", "Welcome back", "Pick up where you left off.",
+        "<p>Chrome asks for one click each visit before this page can open your files. It keeps your computer safe. If Chrome offers <strong>Allow on every visit</strong>, choose it and this step disappears.</p>",
+        '<button type="button" class="btn btn--primary btn--lg" data-action="reconnect">' + icon("folder") + "Open my task list</button>" +
+        '<button type="button" class="btn btn--ghost" data-action="change-folder">Use a different folder</button>',
+        "Folder: " + esc(statusDetail.folderName || "")));
+    }
+    if (status === "error" && !data) {
+      const f = friendlyError(statusDetail.error);
+      return showGate(gateCard("shrug", "Something needs a look", esc(f.title), "<p>" + esc(f.body) + "</p>" + (f.say ? C.say(f.say) : ""),
+        '<button type="button" class="btn btn--primary btn--lg" data-action="retry">' + icon("refresh") + "Try again</button>" +
+        '<button type="button" class="btn btn--ghost" data-action="change-folder">Choose the folder again</button>'));
+    }
+    // needs-connect: the first visit
+    showGate(gateCard("welcome", "One-time setup", "Your day, sorted by Claude. <span class=\"accent\">Approved by you.</span>",
+      "<p>Your tasks live in a file on your own computer, in the same folder Claude works from. Connect it once and everything you do here is saved straight into it.</p>" +
+      '<ol class="gate__steps"><li>Click <strong>Connect your task list</strong>.</li><li>Choose your <strong>Task List OS</strong> folder, the one with START-HERE.md in it.</li><li>When Chrome asks to let this page edit files, click <strong>Allow</strong>.</li></ol>' +
+      (message ? '<p class="gate__error" role="alert">' + icon("alert") + esc(message) + "</p>" : ""),
+      '<button type="button" class="btn btn--primary btn--lg" data-action="connect">' + icon("folder") + "Connect your task list</button>" +
+      '<button type="button" class="btn btn--ghost btn--lg" data-action="demo-on">See it with sample data</button>',
+      "No account, nothing to install. Your tasks never leave your computer."));
   }
 
-  function renderPlan(anim) {
-    const panel = $("#planPanel");
-    const props = proposals(data);
+  // ============================================================
+  // 3. The app
+  // ============================================================
 
-    // No plan yet today
-    if (!claudeHasPlanned(data)) {
-      panel.innerHTML =
-        '<div class="panel__head"><div><span class="eyebrow eyebrow--accent">Claude\'s plan</span><h2 id="planHeading">No plan for today <span class="accent">yet.</span></h2></div></div>' +
-        '<div class="state state--inline' + anim("plan-empty") + '">' + art("thinking", "The Claude character thinking") +
-        '<div class="state__body"><p>Each morning, ask Claude to sort your day. It reads your list, puts everything in order and suggests a plan. You approve it here, one click per task.</p>' +
-        sayChip("Sort my day") + "</div></div>";
-      return;
-    }
+  function inApp() { return !!data && (status === "ready" || status === "demo" || status === "error"); }
 
-    // Plan exists and every suggestion has been answered
-    if (!props.length) {
-      const approvedCount = data.plan.items.filter(function (i) { return i.status === "approved"; }).length;
-      panel.innerHTML =
-        '<div class="panel__head"><div><span class="eyebrow eyebrow--accent">Claude\'s plan</span><h2 id="planHeading">All <span class="accent">reviewed.</span></h2></div></div>' +
-        '<div class="state state--inline' + anim("plan-done") + '">' + art("celebrate", "The Claude character celebrating") +
-        "<div class=\"state__body\"><p>You've said yes to " + approvedCount + (approvedCount === 1 ? " task" : " tasks") + " and they're on today's list below. If anything changes, ask Claude to take another look.</p>" +
-        sayChip("Re-sort my day") + "</div></div>";
-      return;
-    }
+  function render() {
+    if (!inApp()) { renderChrome(); return renderGate(); }
+    $("#gate").hidden = true;
+    $("#shell").hidden = false;
+    renderChrome();
+    renderView();
+    renderDrawer();
+  }
 
-    let html =
-      '<div class="panel__head"><div><span class="eyebrow eyebrow--accent">Claude\'s plan / ' + props.length + " to review</span>" +
-      '<h2 id="planHeading">Here\'s how Claude would <span class="accent">run today.</span></h2></div>' +
-      '<button type="button" class="btn btn--approve" data-action="approve-all">' + icon("check") + "Approve all</button></div>";
+  function anim(key) {
+    if (seen.has(key)) return "";
+    seen.add(key);
+    return ' enter" style="--i:' + Math.min(stagger++, 12);
+  }
 
-    if (data.plan.note) {
-      html += '<blockquote class="claude-note' + anim("note-" + data.plan.preparedAt) + '"><span class="eyebrow">Claude\'s read on today</span><p>' + esc(data.plan.note) + "</p></blockquote>";
-    }
-    html += '<ul class="proposals" role="list">';
-    props.forEach(function (item) {
-      const t = taskById(data, item.taskId);
-      const c = CAT[item.category] || CAT[t.category];
-      html +=
-        '<li class="proposal-wrap' + anim("p-" + t.id) + '" data-task="' + esc(t.id) + '">' +
-        '<article class="proposal" aria-label="' + esc(t.title) + '"><div class="proposal__inner">' +
-        '<div class="proposal__top">' + (t.suggested ? '<span class="sticker sticker--new">New</span>' : "") + catChip(c) + metaBits(t) + "</div>" +
-        '<h3 class="proposal__title">' + esc(t.title) + "</h3>" +
-        (t.suggested && t.source ? sourceLine(t.source) : "") +
-        (item.reason ? '<p class="proposal__reason">' + esc(item.reason) + "</p>" : "") +
-        '<div class="proposal__actions">' +
-        '<button type="button" class="btn btn--approve btn--small" data-action="approve">' + icon("check") + "<span>Approve</span></button>" +
-        '<button type="button" class="btn btn--small" data-action="edit-proposal">' + icon("pencil") + "Edit</button>" +
-        '<button type="button" class="btn btn--ghost btn--small" data-action="skip">' + icon("x") + "Skip</button>" +
-        "</div></div></article></li>";
+  function ctx() {
+    return { d: data, state: state, anim: anim, actions: viewActions };
+  }
+
+  // Sidebar counts, top bar, banners
+  function renderChrome() {
+    $("#demoToggle").checked = status === "demo";
+    const pill = $("#saveStatus");
+    if (status === "ready") {
+      const just = statusDetail.savedAt && Date.now() - statusDetail.savedAt < 3000;
+      pill.hidden = false;
+      pill.className = "save-status" + (just ? " is-saving" : "");
+      pill.innerHTML = '<span class="save-status__dot"></span><span class="save-status__text">' + (just ? "Saved" : "All changes saved") + "</span>";
+      pill.title = "Connected to " + (statusDetail.folderName || "your folder");
+      if (just) setTimeout(function () { if (status === "ready") renderChrome(); }, 3100);
+    } else if (status === "error" && data) {
+      pill.hidden = false; pill.className = "save-status is-error";
+      pill.innerHTML = '<span class="save-status__dot"></span><span class="save-status__text">Not saved</span>';
+    } else pill.hidden = true;
+
+    const banner = $("#banner");
+    if (status === "demo") {
+      banner.innerHTML = '<div class="banner banner--demo">' + icon("info") + "<span><strong>Demo mode.</strong> Sample data for a made-up business. Nothing is saved.</span>" +
+        '<button type="button" class="btn btn--sm" data-action="demo-off">Turn off demo</button></div>';
+    } else if (status === "error" && data) {
+      const f = friendlyError(statusDetail.error);
+      banner.innerHTML = '<div class="banner banner--error">' + icon("alert") + "<span><strong>" + esc(f.title) + "</strong> " + esc(f.body) + "</span>" +
+        '<button type="button" class="btn btn--sm" data-action="retry">Try again</button></div>';
+    } else banner.innerHTML = "";
+
+    if (!data) return;
+    $("#businessName").textContent = data.settings.businessName || (data.settings.yourName ? data.settings.yourName + "'s workspace" : "Your workspace");
+    const counts = {
+      today: V.today.todaysTasks(data).filter(function (t) { return t.status === "open"; }).length,
+      review: M.reviewCount(data),
+      dump: M.unsortedDump(data).length,
+      all: M.openTasks(data).length,
+      waiting: M.waitingList(data).length,
+      people: data.people.length
+    };
+    document.querySelectorAll("[data-count]").forEach(function (el) {
+      const n = counts[el.getAttribute("data-count")];
+      el.textContent = n ? n : "";
     });
-    html += "</ul>";
-    panel.innerHTML = html;
-  }
-
-  // "From your inbox Tom at Greenway Café, "Signed contract attached""
-  function sourceLine(src) {
-    const kinds = {
-      email:    { icon: "mail",     label: "From your inbox" },
-      calendar: { icon: "calendar", label: "From your calendar" },
-      meeting:  { icon: "users",    label: "From a meeting" }
-    };
-    const k = kinds[src.type] || { icon: "sparkle", label: src.label || "Spotted by Claude" };
-    const detail = [src.from, src.subject ? "\u201c" + src.subject + "\u201d" : ""].filter(Boolean).join(", ");
-    return '<p class="proposal__source">' + icon(k.icon) + "<span><strong>" + esc(k.label) + "</strong>" + (detail ? " " + esc(detail) : "") + "</span></p>";
-  }
-
-  function catChip(c) {
-    return '<span class="cat-chip cat--' + c.key + '">' + icon(c.icon) + esc(c.label) + "</span>";
-  }
-
-  function metaBits(t) {
-    const bits = [];
-    if (t.due && t.status !== "done") {
-      const label = ui.friendlyDue(t.due);
-      const overdue = /Overdue|yesterday/.test(label);
-      bits.push('<span class="meta' + (overdue ? " meta--overdue" : "") + '">' + icon("clock") + esc(label) + "</span>");
-    }
-    if (t.category === "waiting" && t.waitingOn) bits.push('<span class="meta">' + icon("hourglass") + "Waiting on " + esc(t.waitingOn) + "</span>");
-    if (t.category === "delegate" && t.delegateTo) bits.push('<span class="meta">' + icon("users") + "For " + esc(t.delegateTo) + "</span>");
-    return bits.join("");
-  }
-
-  function renderDayList(anim) {
-    const items = approvedToday(data);
-    const list = $("#dayList");
-    const doneCount = items.filter(function (i) { return taskById(data, i.taskId).status === "done"; }).length;
-
-    const progress = $("#dayProgress");
-    if (items.length) {
-      const pct = Math.round((doneCount / items.length) * 100);
-      progress.innerHTML =
-        '<span class="progress__label"><strong>' + doneCount + "</strong> of " + items.length + " done</span>" +
-        '<span class="progress__bar" role="progressbar" aria-label="Today\'s progress" aria-valuemin="0" aria-valuemax="' + items.length + '" aria-valuenow="' + doneCount + '"><span style="width:' + pct + '%"></span></span>';
-    } else {
-      progress.innerHTML = "";
-    }
-
-    if (!items.length) {
-      list.innerHTML =
-        '<div class="empty-line' + anim("day-empty") + '">' + icon("sun") +
-        "<p>Nothing on today's list yet. Approve Claude's suggestions above, or add your own task.</p></div>";
-      return;
-    }
-
-    let html = "";
-    CATEGORIES.forEach(function (c) {
-      const group = items.filter(function (i) { return (i.category || taskById(data, i.taskId).category) === c.key; });
-      if (!group.length) return;
-      // Unfinished first, done at the bottom of each group
-      group.sort(function (a, b) {
-        return (taskById(data, a.taskId).status === "done") - (taskById(data, b.taskId).status === "done");
-      });
-      html += '<div class="group group--' + c.key + '"><h3 class="group__head"><span class="group__dot"></span>' + esc(c.label) +
-        '<span class="group__count">' + group.length + "</span></h3><ul class=\"tasks\" role=\"list\">";
-      group.forEach(function (i) { html += taskRow(taskById(data, i.taskId), anim, { inToday: true }); });
-      html += "</ul></div>";
+    document.querySelectorAll(".nav__item").forEach(function (a) {
+      const on = a.getAttribute("data-view") === state.view;
+      a.classList.toggle("is-active", on);
+      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    list.innerHTML = html;
-  }
-
-  function taskRow(t, anim, opts) {
-    const done = t.status === "done";
-    return '<li class="task' + (done ? " is-done" : "") + anim("t-" + t.id + (opts.inToday ? "-today" : "-other")) + '" data-task="' + esc(t.id) + '">' +
-      '<button type="button" class="check" role="checkbox" aria-checked="' + done + '" data-action="toggle-done" aria-label="' + (done ? "Mark as not done: " : "Mark as done: ") + esc(t.title) + '">' +
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg></button>' +
-      '<div class="task__body"><span class="task__title">' + esc(t.title) + "</span>" +
-      (t.notes || metaBits(t) || opts.showCategory ? '<span class="task__meta">' + (opts.showCategory ? catChip(CAT[t.category]) : "") + metaBits(t) + (t.notes ? '<span class="task__notes">' + esc(t.notes) + "</span>" : "") + "</span>" : "") +
-      "</div>" +
-      (opts.showAddToday ? '<button type="button" class="btn btn--small task__add" data-action="add-today">' + icon("plus") + "Today</button>" : "") +
-      '<button type="button" class="icon-btn task__edit" data-action="edit" aria-label="Edit ' + esc(t.title) + '">' + icon("pencil") + "</button>" +
-      "</li>";
-  }
-
-  function renderBacklog(anim) {
-    const rest = everythingElse(data);
-    $("#backlogSummary").innerHTML =
-      '<span><span class="eyebrow">Everything else</span><span class="backlog__title">The rest of your list <span class="group__count">' + rest.length + "</span></span></span>" +
-      '<span class="backlog__chev" aria-hidden="true">' + icon("arrowRight") + "</span>";
-    $("#backlogList").innerHTML = rest.length
-      ? '<ul class="tasks" role="list">' + rest.map(function (t) { return taskRow(t, anim, { showCategory: true, showAddToday: true }); }).join("") + "</ul>"
-      : '<p class="muted backlog__empty">Nothing else on your list. Lovely.</p>';
-  }
-
-  function renderSaved(anim) {
-    const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
-    const firstDay = ui.addDays(startToday, -6);
-    const week = timeSaved(data, firstDay);
-    // One bar per day: the 6 days before today, then today on the right
-    let max = 1;
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const from = ui.addDays(firstDay, i), to = ui.addDays(firstDay, i + 1);
-      const m = timeSaved(data, from, to).minutes;
-      max = Math.max(max, m);
-      days.push({ label: from.toLocaleDateString("en-GB", { weekday: "narrow" }), minutes: m, today: i === 6, future: false });
-    }
-    $("#savedCard").innerHTML =
-      '<div class="saved__head"><span class="eyebrow">Time saved, last 7 days</span><span class="sticker sticker--small">Estimate</span></div>' +
-      '<p class="saved__value' + anim("saved-" + week.minutes) + '">' + esc(ui.minutesLabel(week.minutes)) + "</p>" +
-      '<div class="bars" aria-hidden="true">' + days.map(function (d) {
-        const h = d.minutes ? Math.max(8, Math.round((d.minutes / max) * 100)) : 4;
-        return '<span class="bar' + (d.today ? " is-today" : "") + (d.future ? " is-future" : "") + '"><span style="height:' + h + '%"></span><em>' + d.label + "</em></span>";
-      }).join("") + "</div>" +
-      '<p class="saved__how">Based on ' + week.tasksDone + (week.tasksDone === 1 ? " task" : " tasks") + " done and " + week.plans + (week.plans === 1 ? " plan" : " plans") +
-      " approved, at about " + data.settings.minutesSavedPerTask + " and " + data.settings.minutesSavedPerPlan + " minutes each. A rough guide, not a stopwatch.</p>";
-  }
-
-  function renderWaiting(anim) {
-    const list = waitingList(data);
-    let html = '<div class="side-card__head"><span class="eyebrow">Waiting on</span><span class="group__count">' + list.length + "</span></div>";
-    if (!list.length) {
-      html += '<p class="muted side-card__empty">Nobody owes you anything right now.</p>';
-    } else {
-      html += '<ul class="waiting" role="list">' + list.map(function (t) {
-        const since = t.waitingSince ? ui.parseDate(t.waitingSince) : null;
-        const days = since ? Math.round((ui.parseDate(todayISO()) - since) / 86400000) : null;
-        return '<li class="waiting__item' + anim("w-" + t.id) + '" data-task="' + esc(t.id) + '">' +
-          '<button type="button" class="check check--small" role="checkbox" aria-checked="false" data-action="toggle-done" aria-label="Arrived: ' + esc(t.title) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg></button>' +
-          '<div><span class="waiting__title">' + esc(t.title) + "</span>" +
-          '<span class="waiting__who">' + esc(t.waitingOn || "Someone") + (days != null && days > 0 ? " / " + days + (days === 1 ? " day" : " days") : "") + "</span></div></li>";
-      }).join("") + "</ul>";
-    }
-    $("#waitingCard").innerHTML = html;
-  }
-
-  function renderWrap() {
-    const h = new Date().getHours();
-    $("#wrapCard").innerHTML =
-      '<span class="eyebrow">' + (h >= 15 ? "Nearly done for the day" : "End of the day") + "</span>" +
-      "<h3>Wrap up the day.</h3>" +
-      '<p class="muted">See what got done and what rolls over to tomorrow.</p>' +
-      '<button type="button" class="btn" data-action="summary">' + icon("moon") + "See today's summary</button>";
-  }
-
-  // ---------- End of day summary ----------
-  function openSummary() {
-    const done = doneToday(data);
-    const open = approvedToday(data).map(function (i) { return taskById(data, i.taskId); }).filter(function (t) { return t.status === "open"; });
-    const waiting = waitingList(data);
     const start = new Date(); start.setHours(0, 0, 0, 0);
-    const saved = timeSaved(data, start);
-    const name = data.settings.yourName;
-    const title = done.length >= 3 ? "Good day's work" : done.length ? "Steady progress today" : "A quiet one today";
-
-    $("#summaryContent").innerHTML =
-      '<div class="summary__hero"><div class="summary__art"><img src="' + (done.length ? ART.trophy : ART.thinking) + '" alt="" width="220" height="220"></div>' +
-      '<div><span class="eyebrow">' + esc(ui.longDate()) + "</span><h2 id=\"summaryTitle\">" + esc(title) + (name ? ', <span class="accent">' + esc(name) + ".</span>" : ".") + "</h2></div>" +
-      '<button type="button" class="icon-btn summary__close" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-      '<div class="modal__body">' +
-      '<div class="stats">' +
-      stat(done.length, "done") + stat(open.length, "still open") + stat(waiting.length, "waiting on others") + stat(ui.minutesLabel(saved.minutes), "saved today (estimate)") +
-      "</div>" +
-      summaryList("Done today", done, true) +
-      summaryList("Rolls over to tomorrow", open, false) +
-      '<div class="summary__next"><p>Tomorrow morning, say this to Claude and it will carry the unfinished ones over:</p>' + sayChip("Sort my day") + "</div>" +
-      "</div>" +
-      '<div class="modal__foot"><button type="button" class="btn btn--primary" data-close>Close</button></div>';
-    $("#summaryDialog").showModal();
-  }
-  function stat(value, label) {
-    return '<div class="stat"><span class="stat__value">' + esc(value) + '</span><span class="stat__label">' + esc(label) + "</span></div>";
-  }
-  function summaryList(title, tasks, isDone) {
-    if (!tasks.length) return "";
-    return '<div class="summary__list"><span class="eyebrow">' + esc(title) + '</span><ul role="list">' +
-      tasks.map(function (t) { return "<li>" + icon(isDone ? "check" : "arrowRight", isDone ? "is-done" : "") + esc(t.title) + "</li>"; }).join("") +
-      "</ul></div>";
+    const week = M.timeSaved(data, ui.addDays(start, -6));
+    $("#savedMini").innerHTML = '<span class="saved-mini__value num">' + esc(ui.minutesLabel(week.minutes)) + '</span><span class="saved-mini__label">saved in the last 7 days (estimate)</span>';
   }
 
-  function categoryOptions(selected) {
-    return CATEGORIES.map(function (c) {
-      return '<option value="' + c.key + '"' + (c.key === selected ? " selected" : "") + ">" + esc(c.label) + "</option>";
-    }).join("");
-  }
+  function renderView() {
+    const view = V[state.view] || V.today;
+    const root = $("#view");
+    const c = ctx();
+    // Keep anything typed in a box (brain dump, quick add lines) while the page redraws
+    const kept = {};
+    root.querySelectorAll("[data-keep]").forEach(function (el) { kept[el.id] = { value: el.value, start: el.selectionStart, end: el.selectionEnd }; });
+    const focusedId = document.activeElement && root.contains(document.activeElement) ? document.activeElement.id : null;
+    const scroll = root.scrollTop;
 
-  // ============================================================
-  // 5. Actions: what each button does
-  // ============================================================
+    stagger = 0;
+    root.innerHTML = view.render(c);
+    root.setAttribute("data-view", state.view);
+    if (view.bind) view.bind(root, c);
 
-  // Make sure today's plan exists before adding to it (used when the person adds a task themselves)
-  function ensureTodayPlan(d) {
-    if (!planIsToday(d)) d.plan = { date: todayISO(), preparedAt: null, note: "", items: [] };
-  }
-  function nowISO() { return new Date().toISOString(); }
-
-  // When the last suggestion is answered, log that the plan was approved (counts towards time saved)
-  function logPlanApproved(d) {
-    if (!claudeHasPlanned(d)) return;
-    const pending = d.plan.items.some(function (i) { return i.status === "proposed"; });
-    const anyApproved = d.plan.items.some(function (i) { return i.status === "approved"; });
-    const already = d.activity.some(function (a) { return a.type === "plan-approved" && a.planDate === d.plan.date; });
-    if (!pending && anyApproved && !already) {
-      d.activity.push({ at: nowISO(), type: "plan-approved", planDate: d.plan.date, minutes: num(d.settings.minutesSavedPerPlan, 20) });
-    }
-  }
-  function trimActivity(d) { if (d.activity.length > 1000) d.activity = d.activity.slice(-1000); }
-
-  function setProposal(taskId, newStatus, edits) {
-    return change(function (d) {
-      const item = d.plan.items.find(function (i) { return i.taskId === taskId; });
-      const t = taskById(d, taskId);
-      if (!item || !t) return;
-      if (edits) applyEdits(t, edits, item);
-      item.status = newStatus;
-      if (newStatus === "approved") {
-        t.category = item.category || t.category;
-        item.approvedAt = nowISO();
-        if (t.suggested) { delete t.suggested; t.addedBy = "claude"; t.approvedAt = nowISO(); } // now a real task
-      }
-      // Skipping a brand-new suggestion dismisses it, so Claude knows not to suggest it again
-      if (newStatus === "skipped" && t.suggested) { t.status = "dismissed"; t.dismissedAt = nowISO(); }
-      if (newStatus === "proposed" && t.status === "dismissed") { t.status = "open"; delete t.dismissedAt; } // undo
-      logPlanApproved(d);
+    Object.keys(kept).forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) { el.value = kept[id].value; if (id === focusedId) { el.focus(); try { el.setSelectionRange(kept[id].start, kept[id].end); } catch (e) { /* not a text box */ } } }
     });
+    root.scrollTop = scroll;
+    $("#viewTitle").textContent = view.title(c);
+    $("#viewSub").textContent = view.sub ? view.sub(c) : "";
+    document.title = view.title(c) + " · Task List OS";
   }
 
-  function applyEdits(t, edits, planItem) {
-    t.title = edits.title;
-    t.notes = edits.notes;
-    t.category = edits.category;
-    t.due = edits.due || null;
-    t.waitingOn = edits.waitingOn || "";
-    t.delegateTo = edits.delegateTo || "";
-    if (t.category === "waiting" && !t.waitingSince) t.waitingSince = todayISO();
-    if (planItem) planItem.category = edits.category;
+  // The record panel
+  let drawerKey = null;
+  function renderDrawer() {
+    const el = $("#drawer");
+    if (!state.drawer) { el.hidden = true; document.body.classList.remove("has-drawer"); drawerKey = null; return; }
+    const key = state.drawer.kind + ":" + state.drawer.id;
+    const active = document.activeElement;
+    // Don't redraw under someone's fingers while they type in the panel
+    if (key === drawerKey && active && el.contains(active) && (active.tagName === "TEXTAREA" || (active.tagName === "INPUT" && /text|email|tel|search/.test(active.type)))) return;
+    const html = Drawer.render(ctx(), state.drawer);
+    if (!html) { state.drawer = null; return renderDrawer(); }
+    const focusField = active && el.contains(active) ? (active.getAttribute("data-field") || active.getAttribute("data-pfield")) : null;
+    el.innerHTML = html;
+    Drawer.bind(el, ctx(), state.drawer);
+    const opening = el.hidden;
+    el.hidden = false;
+    document.body.classList.add("has-drawer");
+    if (opening) { el.classList.remove("is-open"); void el.offsetWidth; el.classList.add("is-open"); }
+    if (focusField) { const f = el.querySelector('[data-field="' + focusField + '"],[data-pfield="' + focusField + '"]'); if (f) f.focus(); }
+    drawerKey = key;
   }
+  function openDrawer(kind, id) {
+    if (!id) return;
+    state.drawer = { kind: kind, id: id };
+    drawerKey = null;
+    renderDrawer();
+    // Put keyboard users inside the panel
+    setTimeout(function () { const b = $("#drawer [data-action='close-drawer']"); if (b) b.focus({ preventScroll: true }); }, 40);
+  }
+  function closeDrawer() { state.drawer = null; renderDrawer(); }
 
-  // Approve with a small, satisfying moment: the button ticks, the card settles, then it slides away
-  function approve(taskId, button) {
-    const wrap = button.closest(".proposal-wrap");
-    const nextFocusIndex = Array.prototype.indexOf.call(document.querySelectorAll(".proposal-wrap"), wrap);
-    button.disabled = true;
-    button.innerHTML = icon("check") + "<span>Approved</span>";
-    wrap.classList.add("is-approved");
-    const delay = ui.prefersReducedMotion() ? 0 : 520;
-    setTimeout(function () { wrap.classList.add("is-leaving"); }, delay * 0.55);
+  // ============================================================
+  // 4. Moving between pages
+  // ============================================================
+
+  function go(view) {
+    if (!V[view]) view = "today";
+    if (view !== state.view) seen.clear();
+    state.view = view;
+    try { localStorage.setItem("tlos-view", view); } catch (e) { /* not remembered, fine */ }
+    if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
+    document.body.classList.remove("sidebar-open");
+    if (inApp()) { renderChrome(); renderView(); $("#view").scrollTop = 0; }
+  }
+  window.addEventListener("hashchange", function () { const v = location.hash.slice(1); if (v && v !== state.view) go(v); });
+
+  // ============================================================
+  // 5. What the pages ask the app to do
+  // ============================================================
+
+  const viewActions = {
+    planForDay: function (taskId, date) {
+      change(function (d) {
+        const t = M.taskById(d, taskId);
+        if (!t) return;
+        if (!date) { t.scheduledDate = null; t.scheduledTime = null; }
+        else mut.schedule(d, taskId, date, t.scheduledDate === date ? t.scheduledTime : null);
+      }).then(function () {
+        ui.toast(date ? "Planned for " + ui.parseDate(date).toLocaleDateString("en-GB", { weekday: "long" }) : "Moved to unplanned");
+      });
+    },
+    scheduleAt: function (taskId, date, time) {
+      change(function (d) { mut.schedule(d, taskId, date, time); }).then(function () {
+        ui.toast(time ? "Scheduled for " + M.timeLabel(time) + ", " + ui.parseDate(date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "Planned for " + ui.parseDate(date).toLocaleDateString("en-GB", { weekday: "long" }));
+      });
+    },
+    updateTask: function (taskId, fields) {
+      change(function (d) { mut.updateTask(d, taskId, fields); });
+    },
+    updatePerson: function (personId, fields) {
+      change(function (d) { mut.updatePerson(d, personId, fields); });
+    }
+  };
+
+  // Approve or skip with a small, satisfying moment, then save. Undo puts it back.
+  function decide(taskId, how, holder) {
+    const t = M.taskById(data, taskId);
+    if (!t) return;
+    const wasNew = M.isSuggestion(t);
+    const delay = holder && !ui.prefersReducedMotion() ? (how === "approve" ? 420 : 260) : 0;
+    if (holder) {
+      holder.classList.add(how === "approve" ? "is-approved" : "is-skipped");
+      setTimeout(function () { holder.classList.add("is-leaving"); }, delay * 0.5);
+    }
     setTimeout(function () {
-      setProposal(taskId, "approved").then(function () {
-        focusNextProposal(nextFocusIndex);
-        ui.toast("Added to today's list", { actionLabel: "Undo", onAction: function () { setProposal(taskId, "proposed"); } });
+      change(function (d) { if (how === "approve") mut.approve(d, taskId); else mut.skip(d, taskId); }).then(function () {
+        focusNextDecision();
+        const msg = how === "approve" ? (wasNew ? "Added to your list" : "Added to today's list") : (wasNew ? "Skipped. Claude won't suggest it again" : "Skipped. It stays on your list for another day");
+        ui.toast(msg, { icon: how === "approve" ? "check" : "info", actionLabel: "Undo", onAction: function () { change(function (d) { mut.unreview(d, taskId, wasNew); }); } });
       });
     }, delay);
   }
-
-  function skip(taskId, button) {
-    const isNew = isSuggestion(taskById(data, taskId) || {});
-    const wrap = button.closest(".proposal-wrap");
-    const index = Array.prototype.indexOf.call(document.querySelectorAll(".proposal-wrap"), wrap);
-    wrap.classList.add("is-leaving", "is-skipped");
+  function decideSchedule(taskId, how, holder) {
+    const t = M.taskById(data, taskId);
+    if (!t) return;
+    const before = { proposedDate: t.proposedDate, proposedTime: t.proposedTime, proposedReason: t.proposedReason, scheduledDate: t.scheduledDate, scheduledTime: t.scheduledTime };
+    if (holder) holder.classList.add(how === "approve" ? "is-approved" : "is-skipped", "is-leaving");
     setTimeout(function () {
-      setProposal(taskId, "skipped").then(function () {
-        focusNextProposal(index);
-        ui.toast(isNew ? "Skipped. Claude won't suggest it again" : "Skipped. It stays on your list for another day",
-          { icon: "info", actionLabel: "Undo", onAction: function () { setProposal(taskId, "proposed"); } });
+      change(function (d) { if (how === "approve") mut.approveSchedule(d, taskId); else mut.skipSchedule(d, taskId); }).then(function () {
+        focusNextDecision();
+        ui.toast(how === "approve" ? "Planned" : "Suggestion skipped", { actionLabel: "Undo", onAction: function () { change(function (d) { mut.updateTask(d, taskId, before); }); } });
       });
-    }, ui.prefersReducedMotion() ? 0 : 300);
+    }, holder && !ui.prefersReducedMotion() ? 300 : 0);
   }
-
-  function approveAll() {
-    const ids = proposals(data).map(function (i) { return i.taskId; });
-    const newIds = ids.filter(function (id) { return isSuggestion(taskById(data, id)); }); // so Undo can put them back
-    if (!ids.length) return;
-    document.querySelectorAll(".proposal-wrap").forEach(function (w, n) {
-      setTimeout(function () { w.classList.add("is-approved"); }, n * 60);
-    });
+  function focusNextDecision() {
+    const next = $('#view [data-action="approve"], #view [data-action="approve-schedule"]');
+    if (next) next.focus({ preventScroll: true });
+  }
+  function approveMany(ids, scheduleIds) {
+    const total = ids.length + (scheduleIds || []).length;
+    if (!total) return;
+    document.querySelectorAll("#view .proposal").forEach(function (el, n) { setTimeout(function () { el.classList.add("is-approved"); }, n * 40); });
     setTimeout(function () {
+      const newOnes = ids.filter(function (id) { return M.isSuggestion(M.taskById(data, id)); });
       change(function (d) {
-        d.plan.items.forEach(function (i) {
-          if (i.status === "proposed") {
-            i.status = "approved"; i.approvedAt = nowISO();
-            const t = taskById(d, i.taskId);
-            if (t) { t.category = i.category || t.category; if (t.suggested) { delete t.suggested; t.addedBy = "claude"; t.approvedAt = nowISO(); } }
-          }
-        });
-        logPlanApproved(d);
+        mut.approveAll(d, ids);
+        (scheduleIds || []).forEach(function (id) { mut.approveSchedule(d, id); });
       }).then(function () {
-        const h = $("#dayHeading"); if (h) h.focus({ preventScroll: true });
-        ui.toast("Plan approved. " + ids.length + (ids.length === 1 ? " task" : " tasks") + " added to today", {
+        ui.toast("Approved " + total + (total === 1 ? " suggestion" : " suggestions"), {
           actionLabel: "Undo",
-          onAction: function () {
-            change(function (d) {
-              d.plan.items.forEach(function (i) { if (ids.indexOf(i.taskId) > -1) i.status = "proposed"; });
-              ids.forEach(function (id) { const t = taskById(d, id); if (t && newIds.indexOf(id) > -1) { t.suggested = true; delete t.approvedAt; } });
-              d.activity = d.activity.filter(function (a) { return !(a.type === "plan-approved" && a.planDate === d.plan.date); });
-            });
-          }
+          onAction: function () { change(function (d) { ids.forEach(function (id) { mut.unreview(d, id, newOnes.indexOf(id) > -1); }); }); }
         });
       });
-    }, ui.prefersReducedMotion() ? 0 : 420 + ids.length * 60);
+    }, ui.prefersReducedMotion() ? 0 : 300 + Math.min(total, 10) * 40);
   }
 
-  function focusNextProposal(index) {
-    const buttons = document.querySelectorAll('.proposal [data-action="approve"]');
-    const target = buttons[Math.min(index, buttons.length - 1)] || $("#dayHeading");
-    if (target) target.focus({ preventScroll: true });
-  }
-
-  function toggleDone(taskId, button) {
-    const t = taskById(data, taskId);
+  function toggleDone(taskId) {
+    const t = M.taskById(data, taskId);
     if (!t) return;
     const nowDone = t.status !== "done";
-    // Show it straight away; the save happens in the background
-    const row = button.closest(".task, .waiting__item");
-    button.setAttribute("aria-checked", String(nowDone));
-    if (row) row.classList.toggle("is-done", nowDone);
-    if (nowDone) button.classList.add("is-popping");
-    const wait = ui.prefersReducedMotion() ? 0 : (row && row.classList.contains("waiting__item") ? 450 : 260);
+    document.querySelectorAll('[data-task="' + taskId + '"] .check').forEach(function (b) {
+      b.setAttribute("aria-checked", String(nowDone));
+      if (nowDone) b.classList.add("is-popping");
+    });
+    document.querySelectorAll('.row[data-task="' + taskId + '"], .wcard[data-task="' + taskId + '"]').forEach(function (r) { r.classList.toggle("is-done", nowDone); });
     setTimeout(function () {
-      change(function (d) {
-        const task = taskById(d, taskId);
-        if (!task) return;
-        if (nowDone) {
-          task.status = "done"; task.doneAt = nowISO();
-          d.activity.push({ at: task.doneAt, type: "task-done", taskId: taskId, minutes: num(task.minutesSaved, d.settings.minutesSavedPerTask) });
-          trimActivity(d);
-        } else {
-          task.status = "open"; task.doneAt = null;
-          // Remove the most recent "done" entry for this task so the estimate stays honest
-          for (let i = d.activity.length - 1; i >= 0; i--) {
-            if (d.activity[i].type === "task-done" && d.activity[i].taskId === taskId) { d.activity.splice(i, 1); break; }
-          }
-        }
-      }).then(function () {
-        if (nowDone && allTodayDone()) ui.toast("That's everything on today's list. Nice work", { icon: "sparkle" });
+      change(function (d) { mut.setDone(d, taskId, nowDone); }).then(function () {
+        if (!nowDone) return;
+        const today = V.today.todaysTasks(data);
+        if (today.length && today.every(function (x) { return x.status === "done"; })) ui.toast("That's everything on today's list. Nice work", { icon: "sparkle" });
+        else ui.toast("Done", { actionLabel: "Undo", onAction: function () { change(function (d) { mut.setDone(d, taskId, false); }); } });
       });
-    }, wait);
-  }
-  function allTodayDone() {
-    const items = approvedToday(data);
-    return items.length > 0 && items.every(function (i) { return taskById(data, i.taskId).status === "done"; });
+    }, ui.prefersReducedMotion() ? 0 : 240);
   }
 
-  function addTask(title, category) {
-    const id = ui.makeId("t");
-    return change(function (d) {
-      d.tasks.push({
-        id: id, title: title, notes: "", category: category, status: "open", due: null,
-        waitingOn: "", delegateTo: "", waitingSince: category === "waiting" ? todayISO() : null,
-        addedBy: "you", created: nowISO(), doneAt: null
-      });
-      ensureTodayPlan(d);
-      d.plan.items.push({ taskId: id, category: category, reason: "", status: "approved", addedBy: "you", approvedAt: nowISO() });
-      d.activity.push({ at: nowISO(), type: "task-added", taskId: id, minutes: 0 });
-      trimActivity(d);
-    });
+  // ---------- Pop-ups ----------
+  const quickAdd = $("#quickAdd"), quickForm = $("#quickAddForm");
+  function openQuickAdd(preset) {
+    const p = preset || {};
+    quickForm.reset();
+    quickForm.category.innerHTML = C.categoryOptions(p.category || "today");
+    quickForm.personId.innerHTML = C.personOptions(data, p.personId || "");
+    quickForm.today.checked = p.today !== false;
+    if (p.title) quickForm.title.value = p.title;
+    quickAdd.showModal();
+    quickForm.title.focus();
   }
-
-  function addToToday(taskId) {
-    return change(function (d) {
-      const t = taskById(d, taskId);
-      if (!t) return;
-      ensureTodayPlan(d);
-      if (t.category === "later") t.category = "today";
-      const existing = d.plan.items.find(function (i) { return i.taskId === taskId; });
-      if (existing) { existing.status = "approved"; existing.category = t.category; }
-      else d.plan.items.push({ taskId: taskId, category: t.category, reason: "", status: "approved", addedBy: "you", approvedAt: nowISO() });
-    }).then(function () { ui.toast("Moved to today's list"); });
-  }
-
-  function deleteTask(taskId) {
-    let removed = null, removedItems = [];
-    return change(function (d) {
-      const idx = d.tasks.findIndex(function (t) { return t.id === taskId; });
-      if (idx < 0) return;
-      removed = d.tasks.splice(idx, 1)[0];
-      removedItems = d.plan.items.filter(function (i) { return i.taskId === taskId; });
-      d.plan.items = d.plan.items.filter(function (i) { return i.taskId !== taskId; });
-    }).then(function () {
-      if (!removed) return;
-      ui.toast("Task deleted", {
-        icon: "trash", actionLabel: "Undo",
-        onAction: function () {
-          change(function (d) {
-            d.tasks.push(removed);
-            if (planIsToday(d)) removedItems.forEach(function (i) { d.plan.items.push(i); });
-          });
-        }
-      });
-    });
-  }
-
-  // ---------- Edit pop-up ----------
-  const editDialog = $("#editDialog");
-  const editForm = $("#editForm");
-  let editing = null; // { taskId, fromProposal }
-
-  function openEdit(taskId, fromProposal) {
-    const t = taskById(data, taskId);
-    if (!t) return;
-    const item = fromProposal ? data.plan.items.find(function (i) { return i.taskId === taskId; }) : null;
-    editing = { taskId: taskId, fromProposal: !!fromProposal };
-    editForm.title.value = t.title;
-    editForm.notes.value = t.notes || "";
-    editForm.category.innerHTML = categoryOptions((item && item.category) || t.category);
-    editForm.due.value = t.due || "";
-    editForm.waitingOn.value = t.waitingOn || "";
-    editForm.delegateTo.value = t.delegateTo || "";
-    $("#editTitle").textContent = fromProposal ? "Tweak, then approve." : "Edit task.";
-    $("#editSaveBtn").textContent = fromProposal ? "Save and approve" : "Save";
-    $("#deleteTaskBtn").hidden = !!fromProposal;
-    syncEditFields();
-    editDialog.showModal();
-    editForm.title.focus();
-    editForm.title.select();
-  }
-  function syncEditFields() {
-    const cat = editForm.category.value;
-    editDialog.querySelectorAll("[data-show-for]").forEach(function (el) { el.hidden = el.getAttribute("data-show-for") !== cat; });
-  }
-  editForm.category.addEventListener("change", syncEditFields);
-  editForm.addEventListener("submit", function (e) {
+  quickForm.addEventListener("submit", function (e) {
     e.preventDefault();
-    if (!editing) return;
-    const edits = {
-      title: editForm.title.value.trim(),
-      notes: editForm.notes.value.trim(),
-      category: editForm.category.value,
-      due: editForm.due.value,
-      waitingOn: editForm.waitingOn.value.trim(),
-      delegateTo: editForm.delegateTo.value.trim()
-    };
-    if (!edits.title) { editForm.title.focus(); return; }
-    const target = editing;
-    editDialog.close();
-    if (target.fromProposal) {
-      setProposal(target.taskId, "approved", edits).then(function () { ui.toast("Updated and added to today's list"); focusNextProposal(0); });
-    } else {
-      change(function (d) {
-        const t = taskById(d, target.taskId);
-        if (!t) return;
-        const item = planIsToday(d) ? d.plan.items.find(function (i) { return i.taskId === t.id && i.status === "approved"; }) : null;
-        applyEdits(t, edits, item);
-      }).then(function () { ui.toast("Saved"); });
-    }
-  });
-  $("#deleteTaskBtn").addEventListener("click", function () {
-    if (!editing) return;
-    const id = editing.taskId;
-    editDialog.close();
-    deleteTask(id);
+    const title = quickForm.title.value.trim();
+    if (!title) return quickForm.title.focus();
+    const fields = { title: title, category: quickForm.category.value, personId: quickForm.personId.value || null, scheduledDate: quickForm.scheduledDate.value || null, due: quickForm.due.value || null };
+    const today = quickForm.today.checked;
+    quickAdd.close();
+    let made = null;
+    change(function (d) { made = mut.addTask(d, fields, { today: today }); }).then(function () {
+      ui.toast(today ? "Added to today's list" : "Task added", { actionLabel: "Open", onAction: function () { openDrawer("task", made.id); } });
+    });
   });
 
-  // ---------- Settings pop-up ----------
-  const settingsDialog = $("#settingsDialog");
-  const settingsForm = $("#settingsForm");
-  settingsBtn.innerHTML = icon("settings");
-  settingsBtn.addEventListener("click", function () {
+  // A general pop-up for summaries, event details and the add-person form
+  const generic = document.createElement("dialog");
+  generic.className = "modal";
+  generic.id = "genericDialog";
+  generic.setAttribute("aria-labelledby", "genericTitle");
+  document.body.appendChild(generic);
+  function openGeneric(html) { generic.innerHTML = html; generic.showModal(); const f = generic.querySelector("input, .btn--primary"); if (f) f.focus(); }
+
+  function openEvent(eventId) {
+    const e = data.events.find(function (x) { return x.id === eventId; });
+    if (!e) return;
+    const s = M.splitLocal(e.start), en = M.splitLocal(e.end);
+    const when = ui.parseDate(s.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) + (e.allDay || s.minutes == null ? ", all day" : ", " + M.timeLabel(M.fromMinutes(s.minutes)) + (en.minutes != null ? " to " + M.timeLabel(M.fromMinutes(en.minutes)) : ""));
+    openGeneric('<div class="modal__head"><h2 id="genericTitle">' + esc(e.title) + '</h2><button type="button" class="icon-btn" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+      '<div class="modal__body"><div class="event-detail">' + icon("clock") + "<span>" + esc(when) + "</span></div>" +
+      (e.location ? '<div class="event-detail">' + icon("mapPin") + "<span>" + esc(e.location) + "</span></div>" : "") +
+      (e.calendar ? '<div class="event-detail">' + icon("calendar") + "<span>" + esc(e.calendar) + "</span></div>" : "") +
+      (e.notes ? '<p class="muted">' + esc(e.notes) + "</p>" : "") +
+      '<p class="field__hint">From your calendar. To change it, change it there; Claude copies it in again next time it sorts your day.</p></div>' +
+      '<div class="modal__foot"><button type="button" class="btn" data-action="prep-event" data-title="' + esc(e.title) + '">' + icon("plus") + 'Add a prep task</button><button type="button" class="btn btn--primary" data-close>Close</button></div>');
+  }
+
+  function openAddPerson() {
+    openGeneric('<form data-form="add-person" autocomplete="off"><div class="modal__head"><h2 id="genericTitle">Add person</h2><button type="button" class="icon-btn" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+      '<div class="modal__body"><div class="field-row"><label class="field"><span class="field__label">Name</span><input class="input" name="name" required maxlength="80"></label>' +
+      '<label class="field"><span class="field__label">Business or organisation</span><input class="input" name="organisation" maxlength="80"></label></div>' +
+      '<div class="field-row"><label class="field"><span class="field__label">Type</span><select class="select" name="role">' + M.ROLES.map(function (r) { return '<option value="' + r.key + '">' + r.label + "</option>"; }).join("") + "</select></label>" +
+      '<label class="field"><span class="field__label">Email</span><input class="input" type="email" name="email" maxlength="120"></label></div></div>' +
+      '<div class="modal__foot"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn--primary">Add person</button></div></form>');
+  }
+
+  const settingsDialog = $("#settingsDialog"), settingsForm = $("#settingsForm");
+  function openSettings() {
     const s = data.settings;
-    settingsForm.yourName.value = s.yourName || "";
-    settingsForm.businessName.value = s.businessName || "";
-    settingsForm.minutesSavedPerTask.value = s.minutesSavedPerTask;
-    settingsForm.minutesSavedPerPlan.value = s.minutesSavedPerPlan;
-    $("#settingsFolderName").textContent = store.isDemo() ? "Demo mode (no folder in use)" : store.folderName();
+    ["yourName", "businessName", "dayStarts", "dayEnds", "minutesSavedPerTask", "minutesSavedPerPlan"].forEach(function (k) { settingsForm[k].value = s[k] == null ? "" : s[k]; });
+    $("#settingsFolder").textContent = store.isDemo() ? "Demo mode (no folder in use)" : store.folderName();
     $("#changeFolderBtn").hidden = store.isDemo();
     settingsDialog.showModal();
-  });
+  }
   settingsForm.addEventListener("submit", function (e) {
     e.preventDefault();
-    const values = {
-      yourName: settingsForm.yourName.value.trim(),
-      businessName: settingsForm.businessName.value.trim(),
+    const v = {
+      yourName: settingsForm.yourName.value.trim(), businessName: settingsForm.businessName.value.trim(),
+      dayStarts: settingsForm.dayStarts.value || "08:00", dayEnds: settingsForm.dayEnds.value || "18:00",
       minutesSavedPerTask: Math.max(0, Number(settingsForm.minutesSavedPerTask.value) || 0),
       minutesSavedPerPlan: Math.max(0, Number(settingsForm.minutesSavedPerPlan.value) || 0)
     };
     settingsDialog.close();
-    change(function (d) { Object.assign(d.settings, values); }).then(function () { ui.toast("Settings saved"); });
+    change(function (d) { mut.setSettings(d, v); }).then(function () { ui.toast("Settings saved"); });
   });
-  $("#changeFolderBtn").addEventListener("click", function () { settingsDialog.close(); store.forget(); });
+  $("#changeFolderBtn").addEventListener("click", function () { settingsDialog.close(); data = null; store.forget(); });
 
-  // Close buttons inside any pop-up
+  // ============================================================
+  // 6. Clicks, forms and changes
+  // ============================================================
+
   document.addEventListener("click", function (e) {
     const closer = e.target.closest("[data-close]");
-    if (closer) { const dlg = closer.closest("dialog"); if (dlg) dlg.close(); }
-  });
-  document.querySelectorAll("dialog [data-close].icon-btn").forEach(function (b) { if (!b.innerHTML.trim()) b.innerHTML = icon("x"); });
-  // Clicking the dimmed area outside a pop-up closes it
-  document.querySelectorAll("dialog.modal").forEach(function (dlg) {
-    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
-  });
-
-  // ---------- Add task form ----------
-  document.addEventListener("submit", function (e) {
-    if (e.target.id !== "addForm") return;
-    e.preventDefault();
-    const input = $("#addTitle");
-    const title = input.value.trim();
-    if (!title) { input.focus(); return; }
-    const category = $("#addCategory").value;
-    input.value = "";
-    addTask(title, category).then(function () { ui.toast("Added to today's list"); input.focus(); }).catch(function () { input.value = title; });
-  });
-
-  // ---------- Demo switch ----------
-  demoToggle.addEventListener("change", function () {
-    data = null;
-    store.setDemo(demoToggle.checked);
-  });
-
-  // ---------- One listener for every button with data-action ----------
-  document.addEventListener("click", function (e) {
+    if (closer) { const dlg = closer.closest("dialog"); if (dlg) dlg.close(); return; }
     const btn = e.target.closest("[data-action]");
     if (!btn) return;
     const action = btn.getAttribute("data-action");
     const holder = btn.closest("[data-task]");
     const taskId = holder && holder.getAttribute("data-task");
+    const proposal = btn.closest(".proposal, .wcard--ghost");
 
     switch (action) {
+      // getting in
       case "connect":
         store.connect().catch(function (err) {
-          if (err && err.kind === "wrong-folder") return renderConnect("That folder doesn't have your task list in it. Please choose your Task List OS folder, the one with START-HERE.md in it.");
-          renderConnect("That didn't work. Please try again, and click Allow when Chrome asks.");
+          renderGate(err && err.kind === "wrong-folder" ? "That folder doesn't have your task list in it. Choose your Task List OS folder, the one with START-HERE.md in it." : "That didn't work. Please try again, and click Allow when Chrome asks.");
         });
         break;
-      case "reconnect":
-        store.reconnect().catch(function () { renderReconnect(); });
-        break;
-      case "change-folder": store.forget(); break;
+      case "reconnect": store.reconnect().catch(function () { renderGate(); }); break;
+      case "change-folder": data = null; store.forget(); break;
       case "retry": store.retry(); break;
       case "demo-on": data = null; store.setDemo(true); break;
       case "demo-off": data = null; store.setDemo(false); break;
-      case "approve": approve(taskId, btn); break;
-      case "approve-all": approveAll(); break;
-      case "skip": skip(taskId, btn); break;
-      case "edit-proposal": openEdit(taskId, true); break;
-      case "edit": openEdit(taskId, false); break;
-      case "toggle-done": toggleDone(taskId, btn); break;
-      case "add-today": addToToday(taskId); break;
-      case "summary": openSummary(); break;
+
+      // tasks
+      case "toggle-done": toggleDone(taskId); break;
+      case "open-task": openDrawer("task", taskId); break;
+      case "open-person": openDrawer("person", btn.getAttribute("data-person") || (btn.closest("[data-person]") || btn).getAttribute("data-person")); break;
+      case "close-drawer": closeDrawer(); break;
+      case "approve": decide(taskId, "approve", proposal); break;
+      case "skip": decide(taskId, "skip", proposal); break;
+      case "approve-schedule": decideSchedule(taskId, "approve", proposal); break;
+      case "skip-schedule": decideSchedule(taskId, "skip", proposal); break;
+      case "approve-plan": approveMany(M.proposals(data).map(function (i) { return i.taskId; }), []); break;
+      case "approve-everything": {
+        const q = M.reviewQueue(data);
+        approveMany(q.plan.map(function (i) { return i.taskId; }).concat(q.newTasks.map(function (t) { return t.id; })), q.schedule.map(function (t) { return t.id; }));
+        break;
+      }
+      case "add-today": change(function (d) { mut.addToToday(d, taskId); }).then(function () { ui.toast("Added to today's list"); }); break;
+      case "remove-today": change(function (d) { mut.removeFromToday(d, taskId); }).then(function () { ui.toast("Taken off today's list"); }); break;
+      case "delete-task": {
+        let removed = null;
+        closeDrawer();
+        change(function (d) { removed = mut.deleteTask(d, taskId); }).then(function () {
+          ui.toast("Task deleted", { icon: "trash", actionLabel: "Undo", onAction: function () { change(function (d) { mut.restoreTask(d, removed); }); } });
+        });
+        break;
+      }
+      case "quick-add": openQuickAdd(); break;
+      case "quick-add-person": openQuickAdd({ personId: (btn.closest("[data-person]") || btn).getAttribute("data-person"), today: false }); break;
+      case "prep-event": generic.close(); openQuickAdd({ title: "Prepare for " + btn.getAttribute("data-title") }); break;
+
+      // brain dump
+      case "dump-add": {
+        const ta = $("#dumpText");
+        if (!ta) break;
+        const text = ta.value;
+        const lines = text.split(/\r?\n/);
+        if (!lines.some(function (l) { return l.trim(); })) { ta.focus(); break; }
+        let made = [];
+        ta.value = "";
+        change(function (d) { made = mut.addDump(d, lines); }).then(function () {
+          ui.toast(made.length + (made.length === 1 ? " item" : " items") + " added. Say “sort my brain dump” when you're ready", { duration: 5000 });
+          const t = $("#dumpText"); if (t) t.focus();
+        }).catch(function () { const t = $("#dumpText"); if (t) t.value = text; });
+        break;
+      }
+      case "dump-to-task": {
+        const id = btn.closest("[data-dump]").getAttribute("data-dump");
+        let made = null;
+        change(function (d) { made = mut.dumpToTask(d, id); }).then(function () {
+          ui.toast("Made a task", { actionLabel: "Open", onAction: function () { openDrawer("task", made.id); } });
+        });
+        break;
+      }
+      case "dump-remove": {
+        const id = btn.closest("[data-dump]").getAttribute("data-dump");
+        change(function (d) { mut.removeDump(d, id); }).then(function () {
+          ui.toast("Removed", { actionLabel: "Undo", onAction: function () { change(function (d) { mut.restoreDump(d, id); }); } });
+        });
+        break;
+      }
+
+      // week and goals
+      case "goal-toggle": { const id = btn.closest("[data-goal]").getAttribute("data-goal"); btn.setAttribute("aria-checked", String(btn.getAttribute("aria-checked") !== "true")); change(function (d) { mut.toggleGoal(d, id); }); break; }
+      case "goal-remove": { const id = btn.closest("[data-goal]").getAttribute("data-goal"); change(function (d) { mut.removeGoal(d, id); }); break; }
+      case "week-prev": case "week-next": case "week-today": {
+        const base = state.weekStart ? ui.parseDate(state.weekStart) : M.mondayOf();
+        state.weekStart = action === "week-today" ? null : ui.isoDate(ui.addDays(base, action === "week-prev" ? -7 : 7));
+        seen.clear(); renderView(); break;
+      }
+
+      // calendar
+      case "cal-mode": state.calMode = btn.getAttribute("data-mode"); seen.clear(); renderView(); break;
+      case "cal-today": state.calDate = M.todayISO(); renderView(); break;
+      case "cal-prev": case "cal-next": {
+        const dir = action === "cal-prev" ? -1 : 1;
+        const cur = ui.parseDate(state.calDate);
+        if (state.calMode === "month") state.calDate = ui.isoDate(new Date(cur.getFullYear(), cur.getMonth() + dir, 1));
+        else state.calDate = ui.isoDate(ui.addDays(cur, dir * (state.calMode === "day" ? 1 : 7)));
+        renderView(); break;
+      }
+      case "go-calendar-day": state.calDate = btn.getAttribute("data-date"); state.calMode = "day"; state.calScroll = null; if (state.view === "calendar") renderView(); else go("calendar"); break;
+      case "open-event": openEvent(btn.getAttribute("data-event") || (btn.closest("[data-event]") || btn).getAttribute("data-event")); break;
+
+      // lists and people
+      case "filter-cat": state.filterCat = btn.getAttribute("data-cat"); renderView(); break;
+      case "filter-role": state.filterRole = btn.getAttribute("data-role"); renderView(); break;
+      case "add-person": openAddPerson(); break;
+
+      // everything else
+      case "summary": openGeneric(V.today.summary(ctx())); break;
+      case "settings": openSettings(); break;
+      case "shortcuts": $("#shortcutsDialog").showModal(); break;
+      case "open-sidebar": document.body.classList.add("sidebar-open"); break;
+      case "close-sidebar": document.body.classList.remove("sidebar-open"); break;
       case "copy":
         ui.copyText(btn.getAttribute("data-text")).then(function (ok) {
           ui.toast(ok ? "Copied. Paste it to Claude" : "Couldn't copy. Type it to Claude instead", { icon: ok ? "check" : "info" });
@@ -1009,7 +586,134 @@
     }
   });
 
+  // Moving between pages from the sidebar
+  document.addEventListener("click", function (e) {
+    const link = e.target.closest(".nav__item, a[href^='#']");
+    if (!link) return;
+    const v = link.getAttribute("href").slice(1);
+    if (V[v]) { e.preventDefault(); go(v); }
+  });
+
+  document.addEventListener("submit", function (e) {
+    const form = e.target.closest("[data-form]");
+    if (!form) return;
+    e.preventDefault();
+    const kind = form.getAttribute("data-form");
+    if (kind === "add-today") {
+      const input = form.querySelector("input");
+      const title = input.value.trim();
+      if (!title) return;
+      input.value = "";
+      change(function (d) { mut.addTask(d, { title: title, category: "today" }, { today: true }); }).then(function () { ui.toast("Added to today's list"); const i = $("#todayAdd"); if (i) i.focus(); })
+        .catch(function () { input.value = title; });
+    }
+    if (kind === "add-goal") {
+      const input = form.querySelector("input");
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      change(function (d) { mut.addGoal(d, text); }).then(function () { const i = $("#goalAdd"); if (i) i.focus(); });
+    }
+    if (kind === "add-person") {
+      const f = form.elements;
+      const fields = { name: f.name.value.trim(), organisation: f.organisation.value.trim(), role: f.role.value, email: f.email.value.trim() };
+      if (!fields.name) return f.name.focus();
+      generic.close();
+      let made = null;
+      change(function (d) { made = mut.addPerson(d, fields); }).then(function () { if (state.view !== "people") go("people"); openDrawer("person", made.id); });
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    const el = e.target.closest("[data-change]");
+    if (!el) return;
+    const kind = el.getAttribute("data-change");
+    if (kind === "filter-person") state.filterPerson = el.value;
+    if (kind === "sort-by") state.sortBy = el.value;
+    renderView();
+  });
+
+  $("#demoToggle").addEventListener("change", function () { data = null; store.setDemo(this.checked); });
+  document.querySelectorAll("dialog.modal").forEach(function (dlg) { dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); }); });
+  generic.addEventListener("click", function (e) { if (e.target === generic) generic.close(); });
+
+  // ============================================================
+  // 7. Search
+  // ============================================================
+
+  const searchInput = $("#searchInput"), results = $("#searchResults");
+  function renderResults() {
+    const r = M.search(data, searchInput.value);
+    if (!searchInput.value.trim()) { results.hidden = true; return; }
+    const items = r.tasks.map(function (t) {
+      return '<button type="button" class="menu-item" role="option" data-result-task="' + esc(t.id) + '">' + icon(t.status === "done" ? "check" : "list") + '<span class="menu-item__text">' + esc(t.title) + "</span></button>";
+    }).concat(r.people.map(function (p) {
+      return '<button type="button" class="menu-item" role="option" data-result-person="' + esc(p.id) + '">' + C.avatar(p) + '<span class="menu-item__text">' + esc(C.personLabel(p)) + "</span></button>";
+    }));
+    results.innerHTML = items.length ? items.join("") : '<p class="search-results__none">Nothing matches “' + esc(searchInput.value.trim()) + "”</p>";
+    results.hidden = false;
+  }
+  searchInput.addEventListener("input", function () { if (data) renderResults(); });
+  searchInput.addEventListener("focus", function () { if (data && searchInput.value) renderResults(); });
+  searchInput.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { searchInput.value = ""; results.hidden = true; searchInput.blur(); }
+    if (e.key === "Enter") { e.preventDefault(); const first = results.querySelector(".menu-item"); if (first) first.click(); }
+    if (e.key === "ArrowDown") { const first = results.querySelector(".menu-item"); if (first) { e.preventDefault(); first.focus(); } }
+  });
+  results.addEventListener("keydown", function (e) {
+    const items = Array.prototype.slice.call(results.querySelectorAll(".menu-item"));
+    const i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown" && i < items.length - 1) { e.preventDefault(); items[i + 1].focus(); }
+    if (e.key === "ArrowUp") { e.preventDefault(); if (i > 0) items[i - 1].focus(); else searchInput.focus(); }
+  });
+  results.addEventListener("click", function (e) {
+    const b = e.target.closest(".menu-item");
+    if (!b) return;
+    results.hidden = true;
+    searchInput.value = "";
+    if (b.dataset.resultTask) openDrawer("task", b.dataset.resultTask);
+    if (b.dataset.resultPerson) openDrawer("person", b.dataset.resultPerson);
+  });
+  document.addEventListener("click", function (e) { if (!e.target.closest(".topbar__search")) results.hidden = true; });
+
+  // ============================================================
+  // 8. Keyboard shortcuts
+  // ============================================================
+
+  document.addEventListener("keydown", function (e) {
+    if (!inApp()) return;
+    const el = document.activeElement;
+    const typing = /INPUT|TEXTAREA|SELECT/.test(el.tagName) || el.isContentEditable;
+    if (e.key === "Escape") {
+      if (document.querySelector("dialog[open]")) return;
+      if (state.drawer) { closeDrawer(); return; }
+      document.body.classList.remove("sidebar-open");
+      return;
+    }
+    if (typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector("dialog[open]")) return;
+    if (e.key === "n" || e.key === "N") { e.preventDefault(); openQuickAdd(); }
+    else if (e.key === "/") { e.preventDefault(); searchInput.focus(); }
+    else if (e.key === "a" || e.key === "A") { const b = $('#view [data-action="approve"], #view [data-action="approve-schedule"]'); if (b) b.click(); }
+    else if (/^[1-9]$/.test(e.key)) { const v = VIEW_ORDER[Number(e.key) - 1]; if (v) go(v); }
+  });
+
+  // ============================================================
   // Start
-  render();
+  // ============================================================
+
+  // Draw the icons in the fixed parts of the page
+  document.querySelectorAll("[data-icon]").forEach(function (el) {
+    const tmp = document.createElement("span");
+    tmp.innerHTML = icon(el.getAttribute("data-icon"), el.className || "");
+    el.replaceWith(tmp.firstChild);
+  });
+
+  const fromHash = location.hash.slice(1);
+  let remembered = null;
+  try { remembered = localStorage.getItem("tlos-view"); } catch (e) { remembered = null; }
+  state.view = V[fromHash] ? fromHash : V[remembered] ? remembered : "today";
+  if (location.hash !== "#" + state.view) history.replaceState(null, "", "#" + state.view);
+
+  renderGate();
   store.start();
 })();

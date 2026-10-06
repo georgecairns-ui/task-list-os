@@ -1,6 +1,6 @@
 # Make it yours
 
-Task List OS comes in Get AI Powers colours, but it's your workspace. The easiest way to change anything is to ask Claude, for example:
+Task List OS comes with a clean, neutral look and a Get AI Powers terracotta accent, but it's your workspace. The easiest way to change anything is to ask Claude, for example:
 
 - "Make the task list use our brand colours: navy and orange."
 - "Change the font to something rounder."
@@ -13,9 +13,10 @@ Task List OS comes in Get AI Powers colours, but it's your workspace. The easies
 | You want to change | Claude edits |
 |---|---|
 | Colours, fonts, corner roundness, spacing | `apps/shared/theme.css` (every look-and-feel setting is in this one file) |
+| The Get AI Powers slab-serif headings | `apps/shared/theme.css`: follow the note at the bottom of the file |
 | Your name, business name, time saved per task and per plan | The Settings button (the cog) in the app, or `settings` in your task file |
-| The words on the category labels | `CATEGORIES` near the top of `apps/task-list/app/app.js` |
-| The logo in the top bar | Replace `apps/shared/images/GAIP-logo-black-teal-pop-RGB.svg` with your own SVG under the same name, or ask Claude to point the app at a new file |
+| The words on the category labels | `CATEGORIES` near the top of `apps/task-list/app/model.js` |
+| The logo in the sidebar | Replace `apps/shared/images/GAIP-logo-black-teal-pop-RGB.svg` with your own SVG under the same name, or ask Claude to point the app at a new file |
 | Your folders | `files/` |
 | How Claude writes for you | `context/voice.md` |
 | What Claude can do in your apps | `context/tools.md` |

@@ -1,16 +1,18 @@
 {
   "about": [
-    "This is your task list. The app (index.html) and Claude both read and write this file.",
-    "Claude: read CLAUDE.md in the folder above before changing anything here.",
-    "Categories: today, quick-win, delegate, waiting, later. Plan item status: proposed, approved, skipped.",
+    "This is your task list. The app (Open Task List.html) and Claude both read and write this file.",
+    "Claude: read apps/task-list/CLAUDE.md before changing anything here.",
+    "Sections: settings, tasks, plan (today), week (goals), events (calendar copy), people, dump (brain dump), activity.",
     "Tasks marked \"example\": true are samples. Replace them with the person's real tasks during setup."
   ],
-  "formatVersion": 1,
+  "formatVersion": 2,
   "settings": {
     "yourName": "",
     "businessName": "",
     "minutesSavedPerTask": 6,
-    "minutesSavedPerPlan": 20
+    "minutesSavedPerPlan": 20,
+    "dayStarts": "08:00",
+    "dayEnds": "18:00"
   },
   "tasks": [
     {
@@ -25,7 +27,11 @@
       "addedBy": "you",
       "created": "2026-10-06T08:00:00.000Z",
       "doneAt": null,
-      "example": true
+      "example": true,
+      "scheduledDate": null,
+      "scheduledTime": null,
+      "durationMinutes": null,
+      "personId": null
     },
     {
       "id": "t-ex002",
@@ -39,7 +45,11 @@
       "addedBy": "you",
       "created": "2026-10-06T08:00:00.000Z",
       "doneAt": null,
-      "example": true
+      "example": true,
+      "scheduledDate": null,
+      "scheduledTime": null,
+      "durationMinutes": null,
+      "personId": null
     },
     {
       "id": "t-ex003",
@@ -53,7 +63,11 @@
       "addedBy": "you",
       "created": "2026-10-06T08:00:00.000Z",
       "doneAt": null,
-      "example": true
+      "example": true,
+      "scheduledDate": null,
+      "scheduledTime": null,
+      "durationMinutes": null,
+      "personId": null
     },
     {
       "id": "t-ex004",
@@ -68,7 +82,11 @@
       "addedBy": "you",
       "created": "2026-10-06T08:00:00.000Z",
       "doneAt": null,
-      "example": true
+      "example": true,
+      "scheduledDate": null,
+      "scheduledTime": null,
+      "durationMinutes": null,
+      "personId": null
     },
     {
       "id": "t-ex005",
@@ -82,7 +100,11 @@
       "addedBy": "you",
       "created": "2026-10-06T08:00:00.000Z",
       "doneAt": null,
-      "example": true
+      "example": true,
+      "scheduledDate": null,
+      "scheduledTime": null,
+      "durationMinutes": null,
+      "personId": null
     }
   ],
   "plan": {
@@ -91,5 +113,14 @@
     "note": "",
     "items": []
   },
+  "week": {
+    "start": null,
+    "goals": [],
+    "note": ""
+  },
+  "events": [],
+  "eventsSyncedAt": null,
+  "people": [],
+  "dump": [],
   "activity": []
 }

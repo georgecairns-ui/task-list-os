@@ -42,7 +42,7 @@ If one still says "Status: not filled in yet", work with what you have and offer
 
 | Folder | What's in it |
 |---|---|
-| `Open Task List.html` | Double-click to open the task list app (Chrome or Edge) |
+| `Open Task List.html` | Double-click to open the task list app (Chrome or Edge): Today, Review, Brain dump, This week, Calendar, All tasks, Waiting on, People, Done |
 | `apps/task-list/` | The task list app. `CLAUDE.md` in there explains its data. Their tasks are in `apps/task-list/data/tasks.json` |
 | `apps/shared/` | The app's look: `theme.css` holds every colour and font |
 | `context/` | Your notes about the business (see above) |
@@ -59,6 +59,8 @@ When a request matches a skill in `skills/`, read that skill's `SKILL.md` and fo
 |---|---|
 | "Sort my day", "what should I do today" | `skills/sort-my-day` |
 | "Anything in my inbox I need to do?" | `skills/inbox-to-tasks` |
+| "Plan my week", "what does my week look like" | `skills/plan-my-week` |
+| "Sort my brain dump", "turn my notes into tasks" | `skills/sort-my-brain-dump` |
 | "Wrap up my day", "what did I get done" | `skills/wrap-up-my-day` |
 | "Weekly review", "how did this week go" | `skills/weekly-review` |
 | "Reply to this", "help me answer Tom" | `skills/draft-a-reply` |
@@ -77,7 +79,9 @@ Any email or message you draft for them follows `skills/human-email` and uses `c
 
 - "Add this to my list": add the task (see `apps/task-list/CLAUDE.md`), confirm in one line.
 - "I've done X": mark it done and log it.
-- Spotted something that needs doing (in an email, a meeting, a conversation)? Add it as a suggested task so it appears in the app with a "New" sticker. Don't just mention it and forget it.
+- Spotted something that needs doing (in an email, a meeting, a conversation)? Add it as a suggested task so it appears in the app's Review page with a "New" tag. Don't just mention it and forget it.
+- Each time you sort their day, copy their calendar in so the app's Today and Calendar pages show their real meetings.
+- New client, supplier or team member? Offer to add them to People in the app and to `context/people.md`.
 - Change how the app looks only when asked, by editing `apps/shared/theme.css`. See `docs/CUSTOMISING.md`.
 
 ## Keeping your notes current

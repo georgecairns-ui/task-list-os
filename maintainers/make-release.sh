@@ -35,6 +35,11 @@ if any(not t.get("example") for t in data.get("tasks", [])):
     problems.append("apps/task-list/data/tasks.json has tasks that are not the examples")
 if data.get("plan", {}).get("date") or data.get("activity"):
     problems.append("apps/task-list/data/tasks.json has a plan or activity in it")
+for key in ("events", "people", "dump"):
+    if data.get(key):
+        problems.append("apps/task-list/data/tasks.json has " + key + " in it")
+if (data.get("week") or {}).get("goals"):
+    problems.append("apps/task-list/data/tasks.json has weekly goals in it")
 if any(data.get("settings", {}).get(k) for k in ("yourName", "businessName")):
     problems.append("apps/task-list/data/tasks.json has a name in its settings")
 for f in sorted((root / "context").glob("*.md")):

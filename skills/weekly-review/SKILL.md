@@ -13,7 +13,7 @@ Fridays, or whenever the person asks for a weekly review, "how did this week go"
 
 - `apps/task-list/data/tasks.json`, especially `activity` for the week and tasks in the `waiting` category.
 - `context/priorities.md`, to compare against what actually happened and to propose updates.
-- The `polite-chaser` approach (within `inbox-to-tasks` or drafted directly) for anything waited on too long.
+- The `polite-chaser` skill for anything waited on too long.
 
 ## Steps
 
@@ -21,9 +21,10 @@ Fridays, or whenever the person asks for a weekly review, "how did this week go"
    - Done this week: tasks with `doneAt` in the last 7 days.
    - Slipped: open tasks that were due this week, or carried over more than twice in plans.
    - Waiting too long: `waiting` category tasks where `waitingSince` is more than 5 days ago.
+   - This week's goals: `week.goals` (see `apps/task-list/CLAUDE.md`), and which are ticked.
 2. For each item waiting too long, offer a polite chaser message, a short draft the person can send, not something you send yourself.
 3. Look at `context/priorities.md` if it is filled in. Note anything that seems to have changed, based on what actually happened this week.
-4. Propose next week's top 3 to 5 priorities, in plain English, based on what is open, due soon or waited on.
+4. Say how the week's goals went, honestly and briefly. Then propose next week's top 3 to 5 priorities, in plain English, based on what is open, due soon or waited on. If they agree, offer `plan-my-week` on Monday to turn them into goals and planned days.
 5. If you think `context/priorities.md` should change, say exactly what you'd write and ask for a yes before touching the file.
 6. Change nothing in the task list or context files until the person says yes to something specific.
 

@@ -31,14 +31,20 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 
 **The app**
 - [ ] Open Task List.html opens the app in Chrome. Connect, pick the main folder, Allow.
-- [ ] "Good morning, [name]" with Claude's suggestions, including some with a **New** sticker and "From your inbox".
+- [ ] "Good morning, [name]" with Claude's suggestions, including some with a **New** tag and "From your inbox".
 - [ ] Approve: the card ticks and slides away, the task lands on today's list. Undo works.
 - [ ] Skip a **New** suggestion: it disappears for good. Run "sort my day" again; Claude must not suggest it again.
 - [ ] Tick a task done. The time saved panel (last 7 days) goes up.
 - [ ] Ask Claude "add call the bank to my list" with the app open: it appears within a few seconds with "Claude updated your list".
 - [ ] Reload the page: everything is still there.
 - [ ] Demo switch on and off: demo shows Fern & Finch, and switching off returns your real list untouched.
-- [ ] Phone width (Chrome's device toolbar): readable, no sideways scrolling.
+- [ ] Review: approve, edit and skip all work; Approve all clears the page.
+- [ ] This week: drag a task from Unplanned onto a day, and back. Approve one of Claude's dashed suggested days. Add and tick a goal.
+- [ ] Calendar: your real meetings show (after "sort my day"). Drag a task from To schedule onto a time slot; drag it to a new time. Day, Week and Month all work.
+- [ ] Brain dump: type 3 lines, press Cmd or Ctrl and Enter. Say "sort my brain dump" to Claude; the lines become New suggestions in Review.
+- [ ] People: add a person, open their record, add a task for them, see it in their record.
+- [ ] Search (press /) finds tasks and people. N opens New task.
+- [ ] Phone width (Chrome's device toolbar): the menu button opens the sidebar, pages stack, no sideways scrolling.
 
 **Skills**
 - [ ] "Help me reply to [an email in the test inbox]": a draft in your voice, offered as a draft, never sent.

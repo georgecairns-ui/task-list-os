@@ -12,6 +12,8 @@ Check these yourself first. Fix anything that fails, then check again.
 - [ ] Every task has a unique `id`, a `title`, a valid `category` and a valid `status`.
 - [ ] Every plan item's `taskId` matches a real task. `plan.date` is today and `plan.preparedAt` is set.
 - [ ] Every suggested task has a `source`.
+- [ ] `people` lists their key people, and tasks about them have `personId` set.
+- [ ] If their calendar is connected, `events` covers this week and `eventsSyncedAt` is set.
 - [ ] `settings.yourName` and `settings.businessName` are filled in.
 
 **Context and connections**
