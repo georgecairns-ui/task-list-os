@@ -4,10 +4,11 @@ TASK LIST OS: the little helper that runs your task list on this computer (Pytho
 -----------------------------------------------------------------------------------------
 The same as server.js, for computers that have Python 3 but not Node. Claude uses whichever
 is available. It serves the task list app at http://localhost:4747 and lets it read and save
-apps/task-list/data/tasks.json.
+apps/task-list/data/tasks.json, plus the data files of any attached tools listed in apps/installed.json.
 
 Safety: only listens on this computer (127.0.0.1), only serves the apps folder, only ever saves
-the one task file, keeps tasks.backup.json before every save, refuses requests from other websites.
+the task file and attached tools' listed data files, keeps a backup (for example tasks.backup.json)
+before every save, refuses requests from other websites.
 
 Run it:      python3 apps/server/server.py
 Other port:  TLOS_PORT=4848 python3 apps/server/server.py
@@ -28,7 +29,11 @@ HOST = "127.0.0.1"
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 APPS = os.path.join(ROOT, "apps")
 DATA = os.path.join(APPS, "task-list", "data", "tasks.json")
-BACKUP = DATA[:-5] + ".backup.json"
+INSTALLED = os.path.join(APPS, "installed.json")
+# A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
+HOME_LAYOUT = os.path.join(APPS, "home", "data", "layout.json")
+DATA_FILE_RE = re.compile(r"^apps/[a-z0-9-]+/data/[a-z0-9-]+\.json$")
+DATA_URL_RE = re.compile(r"^/api/data/([a-z0-9-]+)/([a-z0-9-]+\.json)(/meta)?$")
 MAX_BODY = 10 * 1024 * 1024
 # Asking Claude to sort a voice note (see server.js for the plain-English explanation)
 AUTO_CLAUDE = os.environ.get("TLOS_AUTO_CLAUDE", "on") != "off"
@@ -103,22 +108,62 @@ TYPES = {
 }
 
 
-def modified():
+def modified(path=DATA):
     try:
-        return os.stat(DATA).st_mtime * 1000
+        return os.stat(path).st_mtime * 1000
     except OSError:
         return 0
 
 
-def save_tasks(text):
+def installed_tools():
+    """The tools in this folder, from apps/installed.json. If it's missing or unreadable, just the task list."""
+    try:
+        with open(INSTALLED, "r", encoding="utf-8") as f:
+            tools = json.load(f).get("tools")
+    except (OSError, ValueError, AttributeError):
+        tools = None
+    return tools if isinstance(tools, list) else [{"id": "task-list", "app": "apps/task-list/", "dataFiles": ["apps/task-list/data/tasks.json"]}]
+
+
+def data_file_for(tool_id, file_name):
+    """The file behind /api/data/<tool>/<file>, or None if that tool isn't installed or the file isn't one of its own."""
+    # Home's own file: which boxes show, in what order and how wide
+    if tool_id == "home":
+        return HOME_LAYOUT if file_name == "layout.json" else None
+    for tool in installed_tools():
+        if not isinstance(tool, dict) or tool.get("id") != tool_id or not isinstance(tool.get("dataFiles"), list):
+            continue
+        # A tool may only save inside its own app folder, never another tool's data or the shared parts
+        app = tool.get("app") if isinstance(tool.get("app"), str) else ""
+        if not re.match(r"^apps/[a-z0-9-]+/$", app) or app in ("apps/shared/", "apps/server/"):
+            continue
+        for rel in tool["dataFiles"]:
+            if not isinstance(rel, str) or not DATA_FILE_RE.match(rel) or rel.endswith(".backup.json") or not rel.startswith(app + "data/"):
+                continue
+            if rel.rsplit("/", 1)[-1] == file_name:
+                return os.path.join(ROOT, *rel.split("/"))
+    return None
+
+
+def home_page():
+    """The page http://localhost:4747 opens: Home, or (in an older copy without it) the first tool in apps/installed.json."""
+    if os.path.exists(os.path.join(APPS, "home", "index.html")):
+        return "/home/"
+    tools = installed_tools()
+    app = tools[0].get("app") if tools and isinstance(tools[0], dict) else None
+    return "/" + app[5:] if isinstance(app, str) and re.match(r"^apps/[a-z0-9-]+/$", app) else "/task-list/"
+
+
+def save_file(path, text):
     """Keep a backup, write a temporary file, then swap it in, so a save is never half-written."""
-    if os.path.exists(DATA):
-        with open(DATA, "rb") as src, open(BACKUP, "wb") as dst:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if os.path.exists(path):
+        with open(path, "rb") as src, open(path[:-5] + ".backup.json", "wb") as dst:
             dst.write(src.read())
-    tmp = DATA + ".saving"
+    tmp = path + ".saving"
     with open(tmp, "w", encoding="utf-8") as f:
         f.write(text)
-    os.replace(tmp, DATA)
+    os.replace(tmp, path)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -150,6 +195,14 @@ class Handler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin")
         return origin is None or origin in ("http://localhost:%d" % PORT, "http://127.0.0.1:%d" % PORT)
 
+    def read_file(self, path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                text = f.read()
+        except OSError:
+            return self.send_json(404, {"error": "missing"})
+        return self.send(200, text, TYPES[".json"], {"X-Modified": str(modified(path))})
+
     def do_GET(self):
         if not self.host_ok():
             return self.send(403, "Not allowed")
@@ -159,19 +212,22 @@ class Handler(BaseHTTPRequestHandler):
         if url == "/api/tasks/meta":
             return self.send_json(200, {"modified": modified()})
         if url == "/api/tasks":
-            try:
-                with open(DATA, "r", encoding="utf-8") as f:
-                    text = f.read()
-            except OSError:
-                return self.send_json(404, {"error": "missing"})
-            return self.send(200, text, TYPES[".json"], {"X-Modified": str(modified())})
+            return self.read_file(DATA)
+        m = DATA_URL_RE.match(url)
+        if m:
+            path = data_file_for(m.group(1), m.group(2))
+            if not path:
+                return self.send_json(404, {"error": "not an installed tool's data file"})
+            if m.group(3):
+                return self.send_json(200, {"modified": modified(path)})
+            return self.read_file(path)
         if url == "/api/claude/status":
             return self.send_json(200, dict(claude_run, available=AUTO_CLAUDE and bool(find_claude())))
         if url.startswith("/api/"):
             return self.send_json(404, {"error": "not found"})
         if url in ("/", ""):
             self.send_response(302)
-            self.send_header("Location", "/task-list/")
+            self.send_header("Location", home_page())
             self.end_headers()
             return
         rel = unquote(url)
@@ -210,8 +266,18 @@ class Handler(BaseHTTPRequestHandler):
     def do_PUT(self):
         if not self.host_ok() or not self.origin_ok():
             return self.send_json(403, {"error": "forbidden"})
-        if self.path.split("?")[0] != "/api/tasks":
-            return self.send_json(404, {"error": "not found"})
+        url = self.path.split("?")[0]
+        if url == "/api/tasks":
+            path = DATA
+        else:
+            m = DATA_URL_RE.match(url)
+            if not m:
+                return self.send_json(404, {"error": "not found"})
+            if m.group(3):
+                return self.send_json(405, {"error": "not allowed"})
+            path = data_file_for(m.group(1), m.group(2))
+            if not path:
+                return self.send_json(404, {"error": "not an installed tool's data file"})
         if "application/json" not in self.headers.get("Content-Type", ""):
             return self.send_json(415, {"error": "json only"})
         length = int(self.headers.get("Content-Length", "0") or 0)
@@ -221,13 +287,15 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length).decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
             return self.send_json(400, {"error": "not valid"})
-        if not isinstance(data, dict) or not isinstance(data.get("tasks"), list):
+        if not isinstance(data, dict):
+            return self.send_json(400, {"error": "not valid"})
+        if path == DATA and not isinstance(data.get("tasks"), list):
             return self.send_json(400, {"error": "no tasks list"})
         try:
-            save_tasks(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+            save_file(path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
         except OSError:
             return self.send_json(500, {"error": "save failed"})
-        self.send_json(200, {"modified": modified()})
+        self.send_json(200, {"modified": modified(path)})
 
 
 if __name__ == "__main__":

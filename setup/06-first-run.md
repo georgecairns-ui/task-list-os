@@ -29,6 +29,6 @@ Then tell them what's waiting, in this shape and in your own words:
 >
 > Your link is **http://localhost:4747**. Bookmark it.
 >
-> Start with **Replies**: press **Draft** on any of them and the email opens, written and addressed, ready for you to check and send. Then **Review** to approve the tasks I've suggested.
+> Start with your **Inbox**: press **Draft** on any of them and the email opens, written and addressed, ready for you to check and send. Then **Review** to approve the tasks I've suggested.
 
 Tick step 6.

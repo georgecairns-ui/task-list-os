@@ -6,12 +6,15 @@
     1. Serves the task list app at http://localhost:4747 so it opens like any web page.
     2. Lets the app read and save your task file (apps/task-list/data/tasks.json), so there's
        no folder to pick and nothing to allow. Claude's changes appear within seconds.
+       If other tools from the toolkit are attached, it saves their data files too, but only the
+       ones listed for each tool in apps/installed.json.
 
   Safety:
     - It only listens on this computer (127.0.0.1). Nothing on the internet or your network can reach it.
-    - It only serves the app (the apps folder) and only ever saves the one task file.
-    - It keeps a backup (tasks.backup.json) before every save, and saves in a way that can't leave
-      a half-written file.
+    - It only serves the app (the apps folder) and only ever saves the task file and the data files
+      of attached tools listed in apps/installed.json. Nothing else can be written.
+    - It keeps a backup (for example tasks.backup.json) before every save, and saves in a way that
+      can't leave a half-written file.
     - It refuses requests from other websites.
 
   It can also ask Claude to sort a new voice note straight away: it runs Claude Code on this
@@ -35,7 +38,10 @@ const HOST = "127.0.0.1";
 const ROOT = path.resolve(__dirname, "..", "..");           // the Task List OS folder
 const APPS = path.join(ROOT, "apps");                         // the only folder it serves
 const DATA = path.join(APPS, "task-list", "data", "tasks.json");
-const BACKUP = DATA.replace(/\.json$/, ".backup.json");
+const INSTALLED = path.join(APPS, "installed.json");
+const HOME_LAYOUT = path.join(APPS, "home", "data", "layout.json");
+// A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
+const DATA_FILE_RE = /^apps\/[a-z0-9-]+\/data\/[a-z0-9-]+\.json$/;
 const MAX_BODY = 10 * 1024 * 1024;
 
 // ---------- Asking Claude to sort a voice note ----------
@@ -113,8 +119,32 @@ function send(res, status, body, type, extra) {
 }
 function sendJson(res, status, obj) { send(res, status, JSON.stringify(obj), TYPES[".json"]); }
 
-function modified() {
-  try { return fs.statSync(DATA).mtimeMs; } catch (e) { return 0; }
+function modified(file) {
+  try { return fs.statSync(file || DATA).mtimeMs; } catch (e) { return 0; }
+}
+
+// The tools in this folder, from apps/installed.json. If it's missing or unreadable, just the task list.
+function installedTools() {
+  let list = null;
+  try { list = JSON.parse(fs.readFileSync(INSTALLED, "utf8")).tools; } catch (e) { /* use the default */ }
+  return Array.isArray(list) ? list : [{ id: "task-list", app: "apps/task-list/", dataFiles: ["apps/task-list/data/tasks.json"] }];
+}
+
+// The file behind /api/data/<tool>/<file>, or null if that tool isn't installed or the file isn't one of its own
+function dataFileFor(toolId, fileName) {
+  // Home's own file: which boxes show, in what order and how wide
+  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : null;
+  for (const tool of installedTools()) {
+    if (!tool || tool.id !== toolId || !Array.isArray(tool.dataFiles)) continue;
+    // A tool may only save inside its own app folder, never another tool's data or the shared parts
+    const app = typeof tool.app === "string" ? tool.app : "";
+    if (!/^apps\/[a-z0-9-]+\/$/.test(app) || app === "apps/shared/" || app === "apps/server/") continue;
+    for (const rel of tool.dataFiles) {
+      if (typeof rel !== "string" || !DATA_FILE_RE.test(rel) || /\.backup\.json$/.test(rel) || !rel.startsWith(app + "data/")) continue;
+      if (path.posix.basename(rel) === fileName) return path.join(ROOT, ...rel.split("/"));
+    }
+  }
+  return null;
 }
 
 function readBody(req) {
@@ -132,11 +162,32 @@ function readBody(req) {
 }
 
 // Save safely: keep a backup of the current file, write a temporary file, then swap it in
-function saveTasks(text) {
-  if (fs.existsSync(DATA)) fs.copyFileSync(DATA, BACKUP);
-  const tmp = DATA + ".saving";
+function saveFile(file, text) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  if (fs.existsSync(file)) fs.copyFileSync(file, file.replace(/\.json$/, ".backup.json"));
+  const tmp = file + ".saving";
   fs.writeFileSync(tmp, text);
-  fs.renameSync(tmp, DATA);
+  fs.renameSync(tmp, file);
+}
+
+function readFile(res, file) {
+  let text;
+  try { text = fs.readFileSync(file, "utf8"); } catch (e) { return sendJson(res, 404, { error: "missing" }); }
+  return send(res, 200, text, TYPES[".json"], { "X-Modified": String(modified(file)) });
+}
+
+// Checks and saves a PUT. The task file must keep its task list; any other data file must be a JSON object.
+async function writeFile(req, res, file) {
+  if (!originOk(req)) return sendJson(res, 403, { error: "forbidden" });
+  if (!/application\/json/i.test(req.headers["content-type"] || "")) return sendJson(res, 415, { error: "json only" });
+  let text;
+  try { text = await readBody(req); } catch (e) { return sendJson(res, 413, { error: "too large" }); }
+  let data;
+  try { data = JSON.parse(text); } catch (e) { return sendJson(res, 400, { error: "not valid" }); }
+  if (!data || typeof data !== "object" || Array.isArray(data)) return sendJson(res, 400, { error: "not valid" });
+  if (file === DATA && !Array.isArray(data.tasks)) return sendJson(res, 400, { error: "no tasks list" });
+  try { saveFile(file, JSON.stringify(data, null, 2) + "\n"); } catch (e) { return sendJson(res, 500, { error: "save failed" }); }
+  return sendJson(res, 200, { modified: modified(file) });
 }
 
 async function handleApi(req, res, url) {
@@ -147,21 +198,17 @@ async function handleApi(req, res, url) {
   if (url === "/api/tasks/meta" && req.method === "GET") {
     return sendJson(res, 200, { modified: modified() });
   }
-  if (url === "/api/tasks" && req.method === "GET") {
-    let text;
-    try { text = fs.readFileSync(DATA, "utf8"); } catch (e) { return sendJson(res, 404, { error: "missing" }); }
-    return send(res, 200, text, TYPES[".json"], { "X-Modified": String(modified()) });
-  }
-  if (url === "/api/tasks" && req.method === "PUT") {
-    if (!originOk(req)) return sendJson(res, 403, { error: "forbidden" });
-    if (!/application\/json/i.test(req.headers["content-type"] || "")) return sendJson(res, 415, { error: "json only" });
-    let text;
-    try { text = await readBody(req); } catch (e) { return sendJson(res, 413, { error: "too large" }); }
-    let data;
-    try { data = JSON.parse(text); } catch (e) { return sendJson(res, 400, { error: "not valid" }); }
-    if (!data || typeof data !== "object" || !Array.isArray(data.tasks)) return sendJson(res, 400, { error: "no tasks list" });
-    try { saveTasks(JSON.stringify(data, null, 2) + "\n"); } catch (e) { return sendJson(res, 500, { error: "save failed" }); }
-    return sendJson(res, 200, { modified: modified() });
+  if (url === "/api/tasks" && req.method === "GET") return readFile(res, DATA);
+  if (url === "/api/tasks" && req.method === "PUT") return writeFile(req, res, DATA);
+  // Attached tools: /api/data/<tool>/<file>.json, and /meta for when it last changed
+  const m = /^\/api\/data\/([a-z0-9-]+)\/([a-z0-9-]+\.json)(\/meta)?$/.exec(url);
+  if (m) {
+    const file = dataFileFor(m[1], m[2]);
+    if (!file) return sendJson(res, 404, { error: "not an installed tool's data file" });
+    if (m[3] && req.method === "GET") return sendJson(res, 200, { modified: modified(file) });
+    if (!m[3] && req.method === "GET") return readFile(res, file);
+    if (!m[3] && req.method === "PUT") return writeFile(req, res, file);
+    return sendJson(res, 405, { error: "not allowed" });
   }
   if (url === "/api/claude/status" && req.method === "GET") {
     return sendJson(res, 200, { available: AUTO_CLAUDE && !!findClaude(), running: claudeRun.running, queued: claudeRun.queued,
@@ -176,8 +223,16 @@ async function handleApi(req, res, url) {
   return sendJson(res, 404, { error: "not found" });
 }
 
+// The page http://localhost:4747 opens: Home, or (in an older copy without it) the first tool in apps/installed.json
+function homePage() {
+  if (fs.existsSync(path.join(APPS, "home", "index.html"))) return "/home/";
+  const first = installedTools()[0];
+  const app = first && typeof first.app === "string" ? first.app : "";
+  return /^apps\/[a-z0-9-]+\/$/.test(app) ? "/" + app.slice(5) : "/task-list/";
+}
+
 function handleFile(req, res, url) {
-  if (url === "/" || url === "") { res.writeHead(302, { Location: "/task-list/" }); return res.end(); }
+  if (url === "/" || url === "") { res.writeHead(302, { Location: homePage() }); return res.end(); }
   let rel = decodeURIComponent(url);
   if (rel.endsWith("/")) rel += "index.html";
   const file = path.resolve(APPS, "." + rel);

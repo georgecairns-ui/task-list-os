@@ -1,0 +1,10 @@
+{
+  "tools": [
+    {
+      "id": "task-list",
+      "name": "Task List OS",
+      "app": "apps/task-list/",
+      "dataFiles": ["apps/task-list/data/tasks.json"]
+    }
+  ]
+}

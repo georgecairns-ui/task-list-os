@@ -51,7 +51,7 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] Gmail or Microsoft 365 connects by signing in; Claude says what it can see.
 - [ ] A call recorder (Fathom, Fireflies and so on) connects; Claude names your latest call.
 - [ ] For an app that needs a key, `bash setup/scripts/save-key.sh NAME` stores it in Keychain; after restarting Claude it can use it, and the key never appeared in chat.
-- [ ] First run: Replies fills with real emails that need an answer, each with a sensible draft. Draft opens it in Gmail or Outlook, addressed and written.
+- [ ] First run: the Inbox fills with real emails that need an answer, each with a sensible draft. Draft opens it in Gmail or Outlook, addressed and written.
 - [ ] Calls shows recent calls with summaries, actions in Review and a follow-up draft.
 - [ ] Brain dump "pay HMRC tax bill", then "sort my brain dump": a task with a GOV.UK guide and a suggested time; Approve, then Add to calendar opens a filled-in event.
 - [ ] Voice note (top bar, or V): talk for a minute about 4 or 5 different things, press Done. "Claude is sorting your voice note" appears, then "Claude has sorted your voice note"; Review has the new tasks, one with a Draft email, one with a suggested time. Works in Chrome; Firefox shows the explanation.
@@ -63,6 +63,22 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] "Chase [a client] about invoice 1042 for £340": specific, right firmness.
 - [ ] "Write up this call" with pasted notes: summary, follow-up draft, actions as New suggestions in the app.
 - [ ] "Wrap up my day": short and kind, changes nothing.
+
+**The redesign** (shared version 3)
+- [ ] http://localhost:4747 opens Home: a greeting and 7 boxes in rows that line up. Approve on Today's plan works there.
+- [ ] Customise on Home: hide, show, move, make wide, Done. Reload: still the same. Reset puts the default back.
+- [ ] Sidebar: Home at the top, Task List OS as a dropdown with its pages (All tasks has Waiting on and Done under it). Fold it: the total waiting shows on its name. Reload: still folded.
+- [ ] The moon or sun button switches light and dark on every page, and is remembered.
+- [ ] This week: Board or Calendar switch. Drag a task between days on the board; in Calendar, drag one onto a time. A link to the old Calendar page opens This week's calendar.
+- [ ] All tasks: All, Needs a reply (the emails waiting, each with Draft, plus tasks with an email to send) and In my calendar (tasks with a time).
+- [ ] Add meeting: it shows dashed in This week's calendar at once and opens in Google Calendar or Outlook with the title, time, place and guests filled in. Its panel can open it again or remove it.
+- [ ] Setup step 5 offers to match the brand from a website or brand guidelines, and the colour, font and logo change in light and dark.
+
+**Toolkit menu and attaching** (shared version 2)
+- [ ] The sidebar shows "Your tools" with Task List OS, and "More tools" with the other 8, each with a padlock, in the catalogue's order.
+- [ ] Clicking a locked tool opens the panel. "Book a free call" opens the booking page in a new tab, and its address ends with `utm_source=task-list-os&utm_medium=toolkit-app&utm_campaign=<that tool>`. Escape, "Not now" and a click outside all close it.
+- [ ] With `showMoreTools` set to `false` in `apps/shared/catalogue.json`, the locked tools disappear.
+- [ ] The full list of helper checks, including a throwaway test tool, is in `maintainers/SHARED-V2-CHANGES.md` section 5. Never ship the test tool.
 
 ## 4. Reset
 

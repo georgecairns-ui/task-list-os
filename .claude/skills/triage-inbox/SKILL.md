@@ -1,6 +1,6 @@
 ---
 name: triage-inbox
-description: Sorts the person's email like a good assistant would. Every new email is put in one of 4 piles; ones that need an answer get a reply drafted in the person's voice (shown on the app's Replies page with a Draft button), and requests become suggested tasks. Use from check-in or sort-my-day, or when the person says "triage my inbox", "check my email", "what needs a reply?".
+description: Sorts the person's email like a good assistant would. Every new email is put in one of 4 piles; ones that need an answer get a reply drafted in the person's voice (shown in the app's Inbox with a Draft button), and requests become suggested tasks. Use from check-in or sort-my-day, or when the person says "triage my inbox", "check my email", "what needs a reply?".
 ---
 
 # Triage the inbox
@@ -42,7 +42,7 @@ An email can be both "needs a reply" and "a task" (Tom sends a signed contract: 
 
 - Read only. Never send, reply, forward, delete, archive, label, mark as read or unsubscribe, even though the connection allows some of these. Drafts live in the task file; the person opens them with the app's Draft button.
 - Save a draft into their mailbox only if they ask for that specific email.
-- Be conservative with "needs a reply": if nobody is waiting on them, it isn't one. A short, accurate Replies page beats a long one.
+- Be conservative with "needs a reply": if nobody is waiting on them, it isn't one. A short, accurate Inbox beats a long one.
 - Never invent facts in a draft (prices, dates, promises). Use square-bracket gaps.
 
 ## What to say

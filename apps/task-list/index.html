@@ -9,10 +9,13 @@
   <!-- Shared look (theme.css holds every colour and font) -->
   <link rel="stylesheet" href="../shared/theme.css">
   <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../shared/sidebar.css">
+  <!-- Light or dark: applied before anything draws, so the page never flashes the wrong colours -->
+  <script src="../shared/js/theme.js"></script>
   <!-- This app's layout -->
   <link rel="stylesheet" href="app/app.css">
 </head>
-<body>
+<body data-tool="task-list">
   <a class="skip-link" href="#view">Skip to main content</a>
 
   <!-- Shown before a folder is connected: welcome, loading, or a problem -->
@@ -23,31 +26,44 @@
     <aside class="sidebar" id="sidebar" aria-label="Main">
       <div class="sidebar__brand">
         <img src="../shared/images/GAIP-emblem-black-teal-pop-RGB.svg" alt="" width="28" height="28">
-        <div>
-          <div class="sidebar__product">Task List OS</div>
-          <div class="sidebar__business" id="businessName"></div>
+        <div class="sidebar__brand-text">
+          <div class="sidebar__product" id="businessName">Your workspace</div>
         </div>
       </div>
 
-      <button type="button" class="btn btn--primary sidebar__new" data-action="quick-add">
-        <span data-icon="plus"></span>New task<span class="kbd sidebar__kbd">N</span>
-      </button>
+      <!-- The shared sidebar (../shared/js/sidebar.js) adds Home, the other tools in this folder and
+           the locked tools. This tool's own pages stay here, so they work even if those can't load. -->
+      <a class="side-home" href="../home/"><span data-icon="home"></span>Home</a>
 
-      <nav class="nav" id="nav">
-        <a class="nav__item" href="#today" data-view="today"><span data-icon="sun"></span>Today<span class="nav__count" data-count="today"></span></a>
-        <a class="nav__item" href="#review" data-view="review"><span data-icon="sparkle"></span>Review<span class="nav__count nav__count--accent" data-count="review"></span></a>
-        <a class="nav__item" href="#replies" data-view="replies"><span data-icon="mail"></span>Replies<span class="nav__count nav__count--accent" data-count="replies"></span></a>
-        <a class="nav__item" href="#calls" data-view="calls"><span data-icon="phone"></span>Calls<span class="nav__count" data-count="calls"></span></a>
-        <a class="nav__item" href="#dump" data-view="dump"><span data-icon="pencil"></span>Brain dump<span class="nav__count" data-count="dump"></span></a>
-        <div class="nav__gap"></div>
-        <a class="nav__item" href="#week" data-view="week"><span data-icon="columns"></span>This week</a>
-        <a class="nav__item" href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Calendar</a>
-        <div class="nav__gap"></div>
-        <a class="nav__item" href="#all" data-view="all"><span data-icon="list"></span>All tasks<span class="nav__count" data-count="all"></span></a>
-        <a class="nav__item" href="#waiting" data-view="waiting"><span data-icon="hourglass"></span>Waiting on<span class="nav__count" data-count="waiting"></span></a>
-        <a class="nav__item" href="#people" data-view="people"><span data-icon="users"></span>People<span class="nav__count" data-count="people"></span></a>
-        <a class="nav__item" href="#done" data-view="done"><span data-icon="check"></span>Done</a>
-      </nav>
+      <div class="side-label">Your tools</div>
+      <section class="tool-group" data-tool-group="task-list">
+        <button type="button" class="tool-group__head" aria-expanded="true" aria-controls="nav">
+          <span class="tool-group__icon"><span data-icon="checkSquare"></span></span>
+          <span class="tool-group__name">Task List OS</span>
+          <span class="tool-group__count" aria-hidden="true"></span>
+          <span class="tool-group__chevron"><span data-icon="chevronDown"></span></span>
+        </button>
+        <div class="tool-group__body">
+          <nav class="nav" id="nav" aria-label="Task List OS">
+            <a class="nav__item" href="#today" data-view="today"><span data-icon="sun"></span>Today<span class="nav__count" data-count="today"></span></a>
+            <a class="nav__item" href="#week" data-view="week"><span data-icon="columns"></span>This week</a>
+            <a class="nav__item" href="#replies" data-view="replies"><span data-icon="inbox"></span>Inbox<span class="nav__count nav__count--accent" data-count="replies"></span></a>
+            <a class="nav__item" href="#review" data-view="review"><span data-icon="sparkle"></span>Review<span class="nav__count nav__count--accent" data-count="review"></span></a>
+            <a class="nav__item" href="#all" data-view="all"><span data-icon="list"></span>All tasks<span class="nav__count" data-count="all"></span></a>
+            <div class="nav__sub">
+              <a class="nav__item" href="#waiting" data-view="waiting"><span data-icon="hourglass"></span>Waiting on<span class="nav__count" data-count="waiting"></span></a>
+              <a class="nav__item" href="#done" data-view="done"><span data-icon="check"></span>Done</a>
+            </div>
+            <a class="nav__item" href="#calls" data-view="calls"><span data-icon="phone"></span>Calls<span class="nav__count" data-count="calls"></span></a>
+            <a class="nav__item" href="#dump" data-view="dump"><span data-icon="pencil"></span>Brain dump<span class="nav__count" data-count="dump"></span></a>
+            <a class="nav__item" href="#people" data-view="people"><span data-icon="users"></span>People<span class="nav__count" data-count="people"></span></a>
+          </nav>
+        </div>
+      </section>
+
+      <!-- Shared sidebar: the other tools in this folder, then the locked ones -->
+      <div data-toolkit-menu="others"></div>
+      <div data-toolkit-menu="more" hidden></div>
 
       <div class="sidebar__foot">
         <div class="saved-mini" id="savedMini"></div>
@@ -79,6 +95,7 @@
         </div>
         <span class="claude-status" id="claudeStatus" hidden></span>
         <span class="save-status" id="saveStatus" hidden></span>
+        <button type="button" class="icon-btn topbar__theme" data-theme-toggle aria-label="Switch to dark mode" title="Light or dark"><span data-icon="moon"></span></button>
         <button type="button" class="btn topbar__voice" data-action="voice-note" title="Record a voice note (V)"><span data-icon="mic"></span><span class="topbar__voice-label">Voice note</span></button>
         <button type="button" class="btn btn--primary topbar__new" data-action="quick-add" aria-label="New task"><span data-icon="plus"></span><span class="topbar__new-label">New</span></button>
       </header>
@@ -157,6 +174,7 @@
   <!-- Shared helpers, then the model, then the pages, then the app that ties them together -->
   <script src="../shared/js/ui.js"></script>
   <script src="../shared/js/store.js"></script>
+  <script src="../shared/js/sidebar.js"></script>
   <script src="app/model.js"></script>
   <script src="app/demo-data.js"></script>
   <script src="app/components.js"></script>

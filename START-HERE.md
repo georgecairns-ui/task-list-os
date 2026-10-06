@@ -16,7 +16,7 @@ A personal assistant for a small business owner, run by you, with an app on top.
 - You read their **call recordings** and write each call up: summary, actions, follow-up email.
 - You copy their **calendar** in, find free time and suggest when to do things.
 - You turn their **brain dump** into proper tasks, and research the ones they don't know how to do.
-- Everything lands in the **task list app**, which you run on their computer and they open at **http://localhost:4747**: Today, Review, Replies, Calls, Brain dump, This week, Calendar, People. They approve your suggestions with one click, press **Draft** to open a reply you wrote, and **Add to calendar** to book time.
+- Everything lands in the **task list app**, which you run on their computer and they open at **http://localhost:4747**: Home (a dashboard they arrange), then Today, This week (a board, with their calendar inside), Inbox, Review, All tasks, Calls, Brain dump, People. They approve your suggestions with one click, press **Draft** to open a reply you wrote, and **Add to calendar** to book time.
 - If they agree, you **check in every hour** on your own, so the app keeps itself up to date.
 
 This folder is their workspace from now on: `context/` holds what you know about the business, `files/` their documents, `.claude/skills/` your saved know-how (they load automatically in Claude Code and work as commands like `/sort-my-day`).
@@ -35,7 +35,7 @@ This folder is their workspace from now on: `context/` holds what you know about
 | 2 | `setup/02-connect-email-and-calendar.md` | Connect email and calendar (sign in, approve) | 2 min |
 | 3 | `setup/03-connect-call-recordings.md` | Connect their call recorder, if they have one | 2 min |
 | 4 | `setup/04-connect-other-apps.md` | Connect 2 or 3 other apps; save any keys safely | 3 to 5 min |
-| 5 | `setup/05-get-to-know-the-business.md` | You work out the business from their email and ask 2 or 3 questions | 3 min |
+| 5 | `setup/05-get-to-know-the-business.md` | You work out the business from their email and ask 2 or 3 questions, then make the app look like their brand (from their website or brand guidelines) | 5 min |
 | 6 | `setup/06-first-run.md` | You fill the task list from their real inbox, calls and calendar, start it, and give them the link | 1 min |
 | 7 | `setup/07-make-it-automatic.md` | Hourly check-ins, if they want them | 2 min |
 | 8 | `setup/08-check-and-hand-over.md` | Check everything works, then hand over | 2 min |

@@ -1,6 +1,6 @@
 # Connect Gmail and Google Calendar
 
-One line: fills Replies (draft emails waiting for a reply), Calendar (today's and this week's meetings) and feeds new tasks into Review.
+One line: fills the Inbox (draft emails waiting for a reply), the calendar in This week (today's and this week's meetings) and feeds new tasks into Review.
 
 **Recommended route:** the Gmail and Google Calendar connectors in Claude's connector directory. **Plans:** free for both, available on Claude and Claude Desktop for all users; Team and Enterprise need an Owner to switch them on first.
 

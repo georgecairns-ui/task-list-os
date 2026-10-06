@@ -4,9 +4,9 @@ Use `skills/connect-a-tool/SKILL.md` for the general method (order of preference
 
 | App | What it gives Task List OS | Recommended route | File |
 |---|---|---|---|
-| Gmail | Replies (drafted emails waiting to be sent) and new tasks in Review | Claude connector | `gmail-and-google-calendar.md` |
+| Gmail | The Inbox (drafted emails waiting to be sent) and new tasks in Review | Claude connector | `gmail-and-google-calendar.md` |
 | Google Calendar | Calendar (today's and this week's meetings) | Claude connector | `gmail-and-google-calendar.md` |
-| Microsoft 365 (Outlook mail and calendar) | Replies and Calendar | Claude connector | `microsoft-365.md` |
+| Microsoft 365 (Outlook mail and calendar) | The Inbox and the calendar in This week | Claude connector | `microsoft-365.md` |
 | Microsoft Teams meeting transcripts | Calls entries and follow-up tasks in Review | Claude connector (Microsoft 365) | `microsoft-365.md` |
 | Google Drive | Files found for Review and People | Claude connector | `google-drive.md` |
 | Google Meet transcripts and Gemini notes | Calls entries and follow-up tasks in Review | Claude connector (Google Drive, reading the "Google Meet" folder) | `google-drive.md` |

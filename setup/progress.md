@@ -8,7 +8,7 @@ Setup status: not started
 - [ ] 2. Connect email and calendar
 - [ ] 3. Connect call recordings
 - [ ] 4. Connect other apps
-- [ ] 5. Get to know the business
+- [ ] 5. Get to know the business (and make the app look like it)
 - [ ] 6. First run
 - [ ] 7. Make it automatic
 - [ ] 8. Check and hand over

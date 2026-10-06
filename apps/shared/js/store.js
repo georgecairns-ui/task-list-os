@@ -1,11 +1,15 @@
 /*
-  STORE: how a module reads and saves its data file
-  -------------------------------------------------
-  Every module keeps its data in a plain JSON file inside its own "data" folder, for example
-  01-task-list/data/tasks.json. The customer's Claude edits that same file.
+  STORE: how a tool reads and saves its data file
+  -----------------------------------------------
+  Every tool keeps its data in a plain JSON file inside its own "data" folder, for example
+  apps/task-list/data/tasks.json. The customer's Claude edits that same file.
+
+  Usually the helper on this computer (apps/server) does the reading and saving: the page asks it
+  through opts.api, so there's nothing to pick or allow. Steps 1 and 2 below are the fallback for
+  when the page is opened straight from the folder in Chrome or Edge.
 
   How it works, in plain English:
-  1. The first time, the customer clicks "Connect" and picks the module folder. Chrome asks
+  1. The first time, the customer clicks "Connect" and picks the folder. Chrome asks
      "Let this page edit files?" and they click Allow. This uses the browser's built-in
      File System Access feature, so nothing needs installing.
   2. The folder is remembered in the browser. Next time it opens straight away, or after one click.

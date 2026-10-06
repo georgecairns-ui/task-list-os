@@ -21,7 +21,7 @@ Check these yourself. Fix anything that fails, then check again.
 
 **With them** (ask them to do these 3 things)
 - [ ] They open **http://localhost:4747** (or their bookmark). They see "Good morning, [name]", the line saying when you last checked, and your suggestions.
-- [ ] On **Replies**, press **Draft** on one. The email opens in Gmail or Outlook, written and addressed. (They don't have to send it.)
+- [ ] In the **Inbox**, press **Draft** on one. The email opens in Gmail or Outlook, written and addressed. (They don't have to send it.)
 - [ ] On **Review**, approve one suggestion. Then read the task file again and check it changed. Tell them: "That's working both ways. I can see you approved [task]."
 
 ## 8.2 Note what's missing, gently

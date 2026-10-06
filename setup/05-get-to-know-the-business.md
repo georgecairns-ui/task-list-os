@@ -41,4 +41,10 @@ Show a 5 line summary and ask what's wrong:
 
 > Here's what I've got. Fern & Finch is a 2 person design studio in Bristol, mostly local hospitality and healthcare clients. Priya freelances 3 days a week. Main clients right now: Greenway Café, Marlow Dental, Hollins Lettings. You invoice on the 1st and VAT is quarterly. Your emails are friendly and short, signed "Cheers, Sam". Anything I've got wrong?
 
-Fix what they correct. Tick step 5.
+Fix what they correct.
+
+## 5.5 Make the app look like their business
+
+Follow `.claude/skills/match-my-brand`: ask for their brand guidelines or website (or 3 quick questions if they have neither), then put their colour, font and logo on the app. If you found their website in 5.1, say so and offer to use it, so they only have to say yes. Show them the result in light and dark before moving on. If they'd rather keep the standard look, that's fine: skip it.
+
+Tick step 5.

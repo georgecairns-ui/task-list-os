@@ -1,6 +1,6 @@
 # Step 2: connect email and calendar
 
-Goal: you can read their email and calendar. This is what fills the Replies page (emails that need an answer, each with your draft), Review (new tasks from email) and the Calendar page.
+Goal: you can read their email and calendar. This is what fills the Inbox (emails that need an answer, each with your draft), Review (new tasks from email) and the calendar in This week.
 
 ## 2.1 One sentence on why
 

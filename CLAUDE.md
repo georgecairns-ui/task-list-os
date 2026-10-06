@@ -42,10 +42,11 @@ If one still says "Status: not filled in yet", work with what you have and offer
 
 | Folder | What's in it |
 |---|---|
-| **http://localhost:4747** | The task list app: Today, Review, Replies, Calls, Brain dump, This week, Calendar, All tasks, Waiting on, People, Done. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-task-list` |
+| **http://localhost:4747** | The app. It opens on Home (a dashboard of boxes they arrange themselves), then the task list's pages: Today, This week (a board, with a Calendar view inside), Inbox, Review, All tasks (with Waiting on and Done), Calls, Brain dump, People. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-task-list` |
 | `Open Task List.html` | Double-clicking it goes to the link above when the task list is running |
 | `apps/task-list/` | The task list app. `CLAUDE.md` in there explains its data. Their tasks are in `apps/task-list/data/tasks.json` |
-| `apps/shared/` | The app's look: `theme.css` holds every colour and font |
+| `apps/shared/` | The app's look: `theme.css` holds every colour and font. Also the toolkit menu: `catalogue.json` lists all 9 tools and the booking link |
+| `apps/installed.json` | The tools in this folder. The menu and the helper both read it |
 | `context/` | Your notes about the business (see above) |
 | `files/` | Their documents, in numbered folders. `files/README.md` maps anything that lives elsewhere, such as Google Drive |
 | `.claude/skills/` | Saved know-how for common jobs. They load automatically in Claude Code and work as commands (`/sort-my-day`). `.claude/skills/README.md` lists them |
@@ -79,6 +80,7 @@ When a request matches a skill in `.claude/skills/`, read that skill's `SKILL.md
 | "Can Priya do this?", "hand this over" | `.claude/skills/delegate-it` |
 | "Where should this go?", "save this" | `.claude/skills/file-it` |
 | "Connect my Xero", "can you see my calendar?" | `.claude/skills/connect-a-tool` |
+| "Make it match my brand", "use our colours", "put our logo on it" | `.claude/skills/match-my-brand` |
 | They mention a new client, price or preference | `.claude/skills/keep-context-fresh` |
 
 Any email or message you draft for them follows `.claude/skills/human-email` and uses `context/voice.md`.
@@ -88,10 +90,22 @@ Any email or message you draft for them follows `.claude/skills/human-email` and
 - "Add this to my list": add the task (see `apps/task-list/CLAUDE.md`), confirm in one line.
 - "I've done X": mark it done and log it.
 - Spotted something that needs doing (in an email, a meeting, a conversation)? Add it as a suggested task so it appears in the app's Review page with a "New" tag. Don't just mention it and forget it.
-- Each time you sort their day, copy their calendar in so the app's Today and Calendar pages show their real meetings.
+- Each time you sort their day, copy their calendar in so Today, Home and This week's calendar show their real meetings.
 - New client, supplier or team member? Offer to add them to People in the app and to `context/people.md`.
 - Change how the app looks only when asked, by editing `apps/shared/theme.css`. See `docs/CUSTOMISING.md`.
 
 ## Keeping your notes current
 
 When you learn something lasting (a new client, a team change, a new price, a preference), suggest a one-line update to the right `context/` file and make it once they agree. See `.claude/skills/keep-context-fresh`.
+
+## Other tools in the toolkit
+
+Task List OS is one of 9 free tools from Get AI Powers. The app's menu shows the others under "More tools" with a padlock. `apps/shared/catalogue.json` lists every tool, what it does and the booking link.
+
+- If they ask about a locked tool, or say they want one: explain what it does in plain words (its description in the catalogue is a good start), say Get AI Powers sets it up with them on a free call, and give them the booking link (`booking.url` in the catalogue). Say it once. Never push it.
+- If they say they're on that call, or that Get AI Powers has told them to go ahead: follow `ATTACHING.md` in this folder to attach the tool.
+- Never attach a tool on your own initiative. Change the booking link or switch off "More tools" only when they ask (see `docs/CUSTOMISING.md`).
+
+## Attached tools
+
+None yet. When a tool is attached, its day-to-day instructions go here, copied from its `ATTACH-CLAUDE.md`.

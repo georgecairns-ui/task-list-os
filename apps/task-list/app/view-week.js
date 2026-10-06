@@ -1,6 +1,7 @@
 /*
-  THIS WEEK: plan the week on a board
-  -----------------------------------
+  THIS WEEK: plan the week on a board, or see it as a calendar
+  ------------------------------------------------------------
+  A Board or Calendar switch at the top. Calendar shows view-calendar.js (Day, Week, Month) here.
   Goals for the week along the top. Below, an "Unplanned" tray and a column per day.
   Drag a task onto a day to plan it for that day, or back onto the tray to unplan it.
   Claude's suggested days ("plan my week") show as dashed cards to approve or skip.
@@ -32,7 +33,16 @@
       (t.due && t.due === M.plannedDate(t) ? '<span class="chip chip--warning">' + icon("flag") + "Due</span>" : "") + (p ? C.avatar(p) : "") + "</span></div>";
   }
 
+  // Board or Calendar: the calendar opens inside This week
+  function modeSwitch(ctx) {
+    const mode = ctx.state.weekMode;
+    return '<div class="segmented week-mode" role="group" aria-label="Show this week as">' +
+      '<button type="button" data-action="week-mode" data-mode="board" aria-pressed="' + (mode !== "calendar") + '">' + icon("columns") + "Board</button>" +
+      '<button type="button" data-action="week-mode" data-mode="calendar" aria-pressed="' + (mode === "calendar") + '">' + icon("calendar") + "Calendar</button></div>";
+  }
+
   function render(ctx) {
+    if (ctx.state.weekMode === "calendar") return window.TL.views.calendar.render(ctx, { lead: modeSwitch(ctx) });
     const d = ctx.d;
     const monday = ctx.state.weekStart ? ui.parseDate(ctx.state.weekStart) : M.mondayOf();
     const dates = M.weekDates(monday);
@@ -42,12 +52,12 @@
     const label = monday.toLocaleDateString("en-GB", { day: "numeric", month: monday.getMonth() === sunday.getMonth() ? undefined : "short" }) + " to " + sunday.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
 
     let html = '<div class="page page--wide">' +
-      '<div class="toolbar"><div class="toolbar__group">' +
+      '<div class="toolbar"><div class="toolbar__group">' + modeSwitch(ctx) +
       '<button type="button" class="icon-btn" data-action="week-prev" aria-label="Previous week">' + icon("chevronLeft") + "</button>" +
       '<button type="button" class="btn btn--sm" data-action="week-today"' + (isThisWeek ? " disabled" : "") + ">This week</button>" +
       '<button type="button" class="icon-btn" data-action="week-next" aria-label="Next week">' + icon("chevronRight") + "</button>" +
       '<h2 class="toolbar__label">' + esc(label) + "</h2></div>" +
-      '<div class="toolbar__group">' + C.say("Plan my week") + "</div></div>";
+      '<div class="toolbar__group">' + C.say("Plan my week") + '<button type="button" class="btn" data-action="add-meeting">' + icon("plus") + "Add meeting</button></div></div>";
 
     // Goals (this week only)
     if (isThisWeek) {
@@ -94,6 +104,7 @@
 
   // Drag and drop between the tray and the days
   function bind(root, ctx) {
+    if (ctx.state.weekMode === "calendar") return window.TL.views.calendar.bind(root, ctx);
     root.querySelectorAll('.wcard[draggable="true"]').forEach(function (el) {
       el.addEventListener("dragstart", function (e) {
         e.dataTransfer.setData("text/plain", el.getAttribute("data-task"));
@@ -119,6 +130,7 @@
   window.TL.views.week = {
     title: function () { return "This week"; },
     sub: function (ctx) {
+      if (ctx.state.weekMode === "calendar") return window.TL.views.calendar.sub(ctx);
       const goals = ctx.d.week.start === ui.isoDate(M.mondayOf()) ? ctx.d.week.goals : [];
       return goals.length ? goals.filter(function (g) { return g.done; }).length + " of " + goals.length + " goals done" : "Drag tasks onto days to plan your week";
     },

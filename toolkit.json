@@ -1,0 +1,46 @@
+{
+  "id": "task-list",
+  "name": "Task List OS",
+  "version": "1.0.0",
+  "sharedVersion": "3",
+  "attachingVersion": "1",
+  "app": "apps/task-list/",
+  "dataFiles": [
+    "apps/task-list/data/tasks.json"
+  ],
+  "skills": [
+    "check-in",
+    "sort-my-day",
+    "triage-inbox",
+    "process-calls",
+    "schedule-it",
+    "plan-my-week",
+    "sort-my-brain-dump",
+    "wrap-up-my-day",
+    "weekly-review",
+    "meeting-follow-up",
+    "delegate-it",
+    "draft-a-reply",
+    "research-task"
+  ],
+  "setupSteps": [
+    "setup/02-connect-email-and-calendar.md",
+    "setup/03-connect-call-recordings.md",
+    "setup/06-first-run.md",
+    "setup/07-make-it-automatic.md"
+  ],
+  "connections": [
+    "setup/connections/gmail-and-google-calendar.md",
+    "setup/connections/microsoft-365.md",
+    "setup/connections/fathom.md",
+    "setup/connections/fireflies.md",
+    "setup/connections/granola.md",
+    "setup/connections/otter.md",
+    "setup/connections/read-ai.md",
+    "setup/connections/tldv.md",
+    "setup/connections/zoom.md"
+  ],
+  "claudeSection": "apps/task-list/ATTACH-CLAUDE.md",
+  "reads": [],
+  "sends": []
+}

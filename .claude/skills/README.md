@@ -11,7 +11,7 @@ In Claude Code, every skill is also a command: type `/` and its name, for exampl
 | Skill | Say something like | What happens |
 |---|---|---|
 | `check-in` | "Check in", "anything new?" (runs every hour if you turned that on) | Calendar copied in, new email sorted with replies drafted, new calls written up |
-| `triage-inbox` | "What needs a reply?" | Every email sorted; the ones needing an answer appear in Replies with a draft |
+| `triage-inbox` | "What needs a reply?" | Every email sorted; the ones needing an answer appear in the Inbox with a draft |
 | `process-calls` | "Write up my calls" | Each call summarised on the Calls page, with actions and a follow-up email |
 | `sort-my-day` | "Sort my day" | Claude checks your list, inbox and calendar and proposes today's plan in the app |
 | `plan-my-week` | "Plan my week" | Goals for the week, and a suggested day for each task that needs one, around your meetings |
@@ -38,6 +38,7 @@ In Claude Code, every skill is also a command: type `/` and its name, for exampl
 |---|---|---|
 | `file-it` | "Where should this go?" | Claude suggests a folder and a name, and files it once you agree |
 | `connect-a-tool` | "Connect my accounts software" | Claude walks you through connecting an app safely |
+| `match-my-brand` | "Make it match my brand" | Your colours, font and logo on the app, from your website or brand guidelines |
 | `setup` | `/setup` | Runs the setup, or carries on where it left off |
 | `open-task-list` | "Open my task list" | Starts your task list if needed and gives you the link, http://localhost:4747 |
 | `keep-context-fresh` | (automatic) | When you mention a new client or a change, Claude offers to update its notes |

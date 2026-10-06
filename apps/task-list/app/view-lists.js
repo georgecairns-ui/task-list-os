@@ -12,12 +12,24 @@
   const M = window.TL.model, C = window.TL.c;
 
   // ---------- All tasks ----------
+  // The view buttons at the top: everything, just what needs an email from you, or just what's in your calendar
+  const VIEWS = [
+    { key: "all", label: "All", icon: "list", test: function () { return true; } },
+    { key: "reply", label: "Needs a reply", icon: "mail", test: function (d, t) {
+      const r = t.replyId ? M.replyById(d, t.replyId) : null;
+      return (r && r.status === "waiting") || !!(t.emailDraft && t.emailDraft.body);
+    } },
+    { key: "calendar", label: "In my calendar", icon: "calendar", test: function (d, t) { return !!(t.scheduledDate && t.scheduledTime) || !!t.calendarAddedAt; } }
+  ];
+
   function renderAll(ctx) {
     const d = ctx.d, st = ctx.state;
     const cat = st.filterCat || "all";
     const person = st.filterPerson || "";
     const sort = st.sortBy || "date";
-    let tasks = M.openTasks(d);
+    const view = VIEWS.find(function (v) { return v.key === st.allView; }) || VIEWS[0];
+    const inView = M.openTasks(d).filter(function (t) { return view.test(d, t); });
+    let tasks = inView.slice();
     if (cat !== "all") tasks = tasks.filter(function (t) { return t.category === cat; });
     if (person) tasks = tasks.filter(function (t) { return t.personId === person; });
     const sorters = {
@@ -31,11 +43,27 @@
     tasks.sort(sorters[sort] || sorters.date);
 
     const chips = [["all", "All"]].concat(M.CATEGORIES.map(function (c) { return [c.key, c.label]; })).map(function (c) {
-      const n = c[0] === "all" ? M.openTasks(d).length : M.openTasks(d).filter(function (t) { return t.category === c[0]; }).length;
+      const n = c[0] === "all" ? inView.length : inView.filter(function (t) { return t.category === c[0]; }).length;
       return '<button type="button" class="filter' + (cat === c[0] ? " is-active" : "") + '" data-action="filter-cat" data-cat="' + c[0] + '" aria-pressed="' + (cat === c[0]) + '">' + (c[0] !== "all" ? C.catDot(c[0]) : "") + esc(c[1]) + '<span class="filter__n num">' + n + "</span></button>";
     }).join("");
 
-    return '<div class="page">' +
+    const views = '<div class="segmented all-views" role="group" aria-label="Show">' + VIEWS.map(function (v) {
+      const n = M.openTasks(d).filter(function (t) { return v.test(d, t); }).length + (v.key === "reply" ? M.openReplies(d).length : 0);
+      return '<button type="button" data-action="all-view" data-view-key="' + v.key + '" aria-pressed="' + (view.key === v.key) + '">' + icon(v.icon) + esc(v.label) + '<span class="segmented__n num">' + n + "</span></button>";
+    }).join("") + "</div>";
+    const emptyText = view.key === "reply" ? "Nothing needs an email from you. Claude puts a draft on any task that does." :
+      view.key === "calendar" ? "No tasks have a time yet. Drag one onto a time in This week's calendar." :
+      cat === "all" && !person ? "Add a task with the New button, or ask Claude to add one." : "No open tasks match this filter.";
+
+    // Needs a reply: the emails waiting for an answer (each with Claude's draft), then any task with an email to send
+    const emails = view.key === "reply" ? M.openReplies(d) : [];
+    const emailPanel = emails.length ? '<section class="panel panel--flush">' + C.sectionHead("Emails to answer", { icon: "inbox", count: emails.length }) +
+      '<ul class="replies" role="list">' + emails.map(function (r) { return window.TL.views.replies.replyRow(ctx, r, { suffix: "-all" }); }).join("") + "</ul></section>" : "";
+    if (view.key === "reply" && emails.length && !tasks.length) {
+      return '<div class="page">' + views + emailPanel + "</div>";
+    }
+
+    return '<div class="page">' + views + emailPanel +
       '<div class="toolbar toolbar--wrap"><div class="filters" role="group" aria-label="Filter by list">' + chips + "</div>" +
       '<div class="toolbar__group">' +
       '<label class="sr-only" for="filterPerson">Filter by person</label><select class="select select--sm" id="filterPerson" data-change="filter-person">' + C.personOptions(d, person).replace("Nobody in particular", "Everyone") + "</select>" +
@@ -44,7 +72,7 @@
       "</select></div></div>" +
       '<section class="panel panel--flush">' + (tasks.length ? C.taskList(d, tasks, { anim: ctx.anim, showCat: true, showNotes: true, keySuffix: "-all",
         actions: '<button type="button" class="icon-btn icon-btn--sm" data-action="add-today" aria-label="Add to today">' + icon("sun") + "</button>" }) :
-        C.empty("thinking", "Nothing here.", cat === "all" && !person ? "Add a task with the New task button, or ask Claude to add one." : "No open tasks match this filter.", "", true)) +
+        C.empty("thinking", "Nothing here.", emptyText, "", true)) +
       "</section></div>";
   }
 

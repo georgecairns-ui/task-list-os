@@ -1,6 +1,6 @@
 # Task list: standing instructions for Claude
 
-This folder is the task list app inside Task List OS. You (Claude) and the app share one file, `data/tasks.json`. The person you work for sees it as a proper piece of software: Today, Review, Replies, Calls, Brain dump, This week, Calendar, All tasks, Waiting on, People and Done. They approve your suggestions there with one click. You keep it sorted and up to date. Read this file every time you work with the task list.
+This folder is the task list app inside Task List OS. You (Claude) and the app share one file, `data/tasks.json`. The person you work for sees it as a proper piece of software: Home (a dashboard), Today, This week (a board, with a Calendar view inside), Inbox, Review, All tasks (with Waiting on and Done), Calls, Brain dump and People. They approve your suggestions there with one click. You keep it sorted and up to date. Read this file every time you work with the task list.
 
 The app runs at **http://localhost:4747**, served by a small helper on this computer (`apps/server/`, started by `.claude/skills/open-task-list`). The helper reads and saves this same file, so you keep editing it directly as described below; the app picks up your changes within a few seconds. If setup has not happened yet (the tasks in `data/tasks.json` still have `"example": true`), follow `START-HERE.md` in the main folder first.
 
@@ -106,6 +106,7 @@ Copies of the person's real calendar, so the app can show their day and week. Re
 
 - `start` and `end` are the person's local time, without a time zone. For all-day events use `"start": "2026-10-10"`, `"end": "2026-10-10"`, `"allDay": true`.
 - Copy events from yesterday to 14 days ahead. Replace the whole `events` list each time you copy (it is a mirror, not a record), then set `eventsSyncedAt` to now.
+- **Meetings the person added in the app** have `"source": "app"` (plus `guests` and `notes`). The app opened them in their calendar to save. When you copy the calendar, keep each one until the real calendar has an event with the same title on the same day, then drop the app copy. Never remove one otherwise: they may not have saved it yet.
 - Leave out events they've declined and anything marked private, unless they ask. Keep titles as they are; don't copy attendee lists or descriptions into the file.
 
 ### People
@@ -138,9 +139,9 @@ Whatever the person typed into Brain dump, one line per item:
 - `"kind": "voice"` marks a voice note: one long spoken paragraph from the app's Voice note button. When one is added, the task list asks you to sort it straight away (a `claude -p` run started by the helper, with nobody watching).
 - See `.claude/skills/sort-my-brain-dump` for how to turn lines into suggested tasks.
 
-### Replies: emails that need an answer
+### Replies: emails that need an answer (the Inbox page)
 
-From `triage-inbox`. The app's Replies page lists those `waiting`, urgent first, each with a **Draft** button that opens the draft, written and addressed, in Gmail, Outlook or their email app (from `settings.emailProvider`). The person checks it and sends it.
+From `triage-inbox`. The app's Inbox page (and the Needs a reply view of All tasks) lists those `waiting`, urgent first, each with a **Draft** button that opens the draft, written and addressed, in Gmail, Outlook or their email app (from `settings.emailProvider`). The person checks it and sends it.
 
 ```json
 { "id": "r-k3j9x2", "from": { "name": "Dev Patel", "email": "dev@hollins.example" }, "subject": "Can we move today's kick-off to 2:30?",
@@ -166,7 +167,7 @@ From `process-calls` (or `meeting-follow-up` for pasted notes). Shown on the Cal
 
 ### Triage: when you last checked
 
-`triage` powers the line at the top of Today and Replies ("Claude checked at 10:30: 47 emails sorted, 6 need a reply..."). `check-in` updates it every run. Counts are for today; start them from zero on a new day. `nextRunAt` is when the next scheduled check-in is due, or `null`.
+`triage` powers the line at the top of Today and the Inbox ("Claude checked at 10:30: 47 emails sorted, 6 need a reply..."). `check-in` updates it every run. Counts are for today; start them from zero on a new day. `nextRunAt` is when the next scheduled check-in is due, or `null`.
 
 ### Settings for the app's buttons
 
