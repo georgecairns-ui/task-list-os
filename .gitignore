@@ -9,3 +9,6 @@ dist/
 ._*
 Thumbs.db
 desktop.ini
+
+# Local Claude Code settings (test server)
+.claude/

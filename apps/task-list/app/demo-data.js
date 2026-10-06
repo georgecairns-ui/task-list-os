@@ -32,7 +32,14 @@
       { id: "d-10", title: "Print proofs from PrintHouse", notes: "For the Old Forge menus.", category: "waiting", waitingOn: "PrintHouse", waitingSince: day(-5), addedBy: "you" },
       { id: "d-11", title: "Plan the Christmas newsletter", notes: "", category: "later", addedBy: "you" },
       { id: "d-12", title: "Post the Old Forge project on LinkedIn", notes: "", category: "later", estimateMinutes: 20, addedBy: "claude" },
-      { id: "d-13", title: "Approve Priya's timesheet", notes: "", category: "quick-win", estimateMinutes: 2, addedBy: "you" }
+      { id: "d-13", title: "Approve Priya's timesheet", notes: "", category: "quick-win", estimateMinutes: 2, addedBy: "you" },
+      // New tasks Claude spotted this morning. Not on the list until approved.
+      { id: "d-14", title: "Send Greenway Café their deposit invoice", notes: "Tom says the contract is signed. Deposit is 50%, £1,200.", category: "today", due: day(0), addedBy: "claude", suggested: true,
+        source: { type: "email", from: "Tom at Greenway Café", subject: "Signed contract attached", date: day(0) } },
+      { id: "d-15", title: "Reread the Hollins Lettings brief before the 2pm call", notes: "", category: "quick-win", due: day(0), addedBy: "claude", suggested: true,
+        source: { type: "calendar", from: "Website kick-off with Hollins Lettings", subject: "Today, 2pm", date: day(0) } },
+      { id: "d-16", title: "Answer Hannah's 2 questions about the logo tweaks", notes: "She wants to know about the colour and the file formats.", category: "quick-win", addedBy: "claude", suggested: true,
+        source: { type: "email", from: "Hannah at Marlow Dental", subject: "Quick questions on the logo", date: day(-1) } }
     ].map(function (t) {
       return Object.assign({ status: "open", doneAt: null, due: null, waitingOn: "", delegateTo: "", created: at(-2, 9) }, t);
     });
@@ -51,12 +58,15 @@
         { taskId: "d-03", category: "today", reason: "Jo needs it before the VAT deadline.", status: "proposed" },
         { taskId: "d-04", category: "quick-win", reason: "Takes 3 minutes and the domain lapses this week.", status: "proposed" },
         { taskId: "d-06", category: "delegate", reason: "Priya has space this week and it doesn't need you.", status: "proposed" },
-        { taskId: "d-07", category: "waiting", reason: "With Tom since Monday. Claude will flag it again on Thursday.", status: "proposed" },
+        { taskId: "d-14", category: "today", reason: "Tom's email this morning has the signed contract. Invoice now and the deposit lands this week.", status: "proposed" },
+        { taskId: "d-15", category: "quick-win", reason: "The call is at 2pm. 10 minutes with the brief beforehand will do it.", status: "proposed" },
+        { taskId: "d-16", category: "quick-win", reason: "2 short answers keep the Marlow project moving.", status: "proposed" },
+        { taskId: "d-07", category: "waiting", reason: "Tom's email says it's signed. Tick this off once you've saved the copy.", status: "proposed" },
         { taskId: "d-08", category: "later", reason: "Nothing depends on it this week.", status: "proposed" }
       ]
     };
 
-    // A believable week of activity so the "time saved" counter has something to show
+    // A believable 7 days of activity so the "time saved" counter has something to show
     const activity = [];
     for (let offset = -6; offset < 0; offset++) {
       const d = ui.addDays(now, offset);

@@ -18,7 +18,7 @@
   const esc = ui.esc;
   const icon = ui.icon;
 
-  const MODULE_ID = "01-task-list";
+  const MODULE_ID = "task-list";
   const DATA_FILE = "tasks.json";
 
   // Work out where the shared folder is (it moves when the module is zipped on its own)
@@ -75,7 +75,7 @@
     d.tasks = d.tasks.filter(function (t) { return t && t.id && t.title; });
     d.tasks.forEach(function (t) {
       if (!CAT[t.category]) t.category = "later";
-      if (t.status !== "done") t.status = "open";
+      if (t.status !== "done" && t.status !== "dismissed") t.status = "open";
     });
     if (!d.plan || typeof d.plan !== "object") d.plan = { date: null, preparedAt: null, note: "", items: [] };
     if (!Array.isArray(d.plan.items)) d.plan.items = [];
@@ -103,13 +103,18 @@
     if (!planIsToday(d)) return [];
     return d.plan.items.filter(function (i) { return i.status === "approved" && taskById(d, i.taskId); });
   }
+  // A task Claude spotted (in email, the calendar and so on) that the person has not approved yet
+  function isSuggestion(t) { return !!t.suggested && t.status === "open"; }
+  // Tasks that are really on the list: open, and not an unapproved suggestion
+  function isOnList(t) { return t.status === "open" && !t.suggested; }
+
   // Open tasks that are not on today's plan in any form
   function everythingElse(d) {
     const onPlan = new Set(planIsToday(d) ? d.plan.items.filter(function (i) { return i.status !== "skipped"; }).map(function (i) { return i.taskId; }) : []);
-    return d.tasks.filter(function (t) { return t.status === "open" && !onPlan.has(t.id); });
+    return d.tasks.filter(function (t) { return isOnList(t) && !onPlan.has(t.id); });
   }
   function waitingList(d) {
-    return d.tasks.filter(function (t) { return t.status === "open" && t.category === "waiting"; });
+    return d.tasks.filter(function (t) { return isOnList(t) && t.category === "waiting"; });
   }
   function doneToday(d) {
     const today = todayISO();
@@ -136,6 +141,9 @@
   const store = window.Toolkit.createStore({
     moduleId: MODULE_ID,
     fileName: DATA_FILE,
+    // Where tasks.json can be, depending on which folder the person picks:
+    // this app's folder, its data folder, or the main Task List OS folder
+    dataPaths: ["data", "", "apps/task-list/data"],
     makeDemoData: window.makeTaskDemoData,
     validate: validate,
     onStatus: function (s, detail) {
@@ -237,12 +245,12 @@
       '<section class="welcome card card--raised">' +
       '<div class="welcome__art"><img src="' + ART.welcome + '" alt="The Claude character waving hello" width="440" height="440"></div>' +
       '<div class="welcome__body">' +
-      '<span class="eyebrow eyebrow--accent">Set up / about 1 minute</span>' +
+      '<span class="eyebrow eyebrow--accent">Task List OS / one-time setup</span>' +
       '<h1>Connect your <span class="accent">task list.</span></h1>' +
       "<p>Your tasks live in a file on your own computer, in the same folder Claude works from. Connect it once and everything you approve here is saved straight into it.</p>" +
       '<ol class="steps">' +
       "<li><span>Click <strong>Connect your task list</strong>.</span></li>" +
-      "<li><span>Choose the folder called <strong>" + esc(MODULE_ID) + "</strong>. It's the folder this page is in.</span></li>" +
+      "<li><span>Choose your <strong>Task List OS</strong> folder. It's the main folder you set up with Claude, the one with START-HERE.md in it.</span></li>" +
       "<li><span>When Chrome asks to let the page edit files, click <strong>Allow</strong>.</span></li>" +
       "</ol>" +
       (message ? '<p class="inline-error" role="alert">' + icon("alert") + esc(message) + "</p>" : "") +
@@ -383,7 +391,10 @@
     let line;
     if (props.length) {
       const mins = Math.max(2, Math.round(props.length * 0.75));
-      line = "Claude has sorted your day. " + props.length + (props.length === 1 ? " suggestion" : " suggestions") + " to look over, about " + mins + " minutes.";
+      const fresh = props.filter(function (i) { return isSuggestion(taskById(data, i.taskId)); }).length;
+      line = "Claude has sorted your day. " + props.length + (props.length === 1 ? " suggestion" : " suggestions") +
+        " to look over, about " + mins + " minutes." +
+        (fresh ? " " + fresh + (fresh === 1 ? " is new, spotted" : " are new, spotted") + " in your inbox or calendar." : "");
     } else if (approved.length) {
       const left = approved.length - doneCount;
       line = left === 0 ? "Everything on today's list is done. Nicely handled." : doneCount + " of " + approved.length + " done. " + left + " to go.";
@@ -442,8 +453,9 @@
       html +=
         '<li class="proposal-wrap' + anim("p-" + t.id) + '" data-task="' + esc(t.id) + '">' +
         '<article class="proposal" aria-label="' + esc(t.title) + '"><div class="proposal__inner">' +
-        '<div class="proposal__top">' + catChip(c) + metaBits(t) + "</div>" +
+        '<div class="proposal__top">' + (t.suggested ? '<span class="sticker sticker--new">New</span>' : "") + catChip(c) + metaBits(t) + "</div>" +
         '<h3 class="proposal__title">' + esc(t.title) + "</h3>" +
+        (t.suggested && t.source ? sourceLine(t.source) : "") +
         (item.reason ? '<p class="proposal__reason">' + esc(item.reason) + "</p>" : "") +
         '<div class="proposal__actions">' +
         '<button type="button" class="btn btn--approve btn--small" data-action="approve">' + icon("check") + "<span>Approve</span></button>" +
@@ -453,6 +465,18 @@
     });
     html += "</ul>";
     panel.innerHTML = html;
+  }
+
+  // "From your inbox Tom at Greenway Café, "Signed contract attached""
+  function sourceLine(src) {
+    const kinds = {
+      email:    { icon: "mail",     label: "From your inbox" },
+      calendar: { icon: "calendar", label: "From your calendar" },
+      meeting:  { icon: "users",    label: "From a meeting" }
+    };
+    const k = kinds[src.type] || { icon: "sparkle", label: src.label || "Spotted by Claude" };
+    const detail = [src.from, src.subject ? "\u201c" + src.subject + "\u201d" : ""].filter(Boolean).join(", ");
+    return '<p class="proposal__source">' + icon(k.icon) + "<span><strong>" + esc(k.label) + "</strong>" + (detail ? " " + esc(detail) : "") + "</span></p>";
   }
 
   function catChip(c) {
@@ -533,19 +557,20 @@
   }
 
   function renderSaved(anim) {
-    const weekStart = ui.startOfWeek();
-    const week = timeSaved(data, weekStart);
-    // One bar per day, Monday to Sunday
+    const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
+    const firstDay = ui.addDays(startToday, -6);
+    const week = timeSaved(data, firstDay);
+    // One bar per day: the 6 days before today, then today on the right
     let max = 1;
     const days = [];
     for (let i = 0; i < 7; i++) {
-      const from = ui.addDays(weekStart, i), to = ui.addDays(weekStart, i + 1);
+      const from = ui.addDays(firstDay, i), to = ui.addDays(firstDay, i + 1);
       const m = timeSaved(data, from, to).minutes;
       max = Math.max(max, m);
-      days.push({ label: from.toLocaleDateString("en-GB", { weekday: "narrow" }), minutes: m, today: ui.isoDate(from) === todayISO(), future: from > new Date() });
+      days.push({ label: from.toLocaleDateString("en-GB", { weekday: "narrow" }), minutes: m, today: i === 6, future: false });
     }
     $("#savedCard").innerHTML =
-      '<div class="saved__head"><span class="eyebrow">Time saved this week</span><span class="sticker sticker--small">Estimate</span></div>' +
+      '<div class="saved__head"><span class="eyebrow">Time saved, last 7 days</span><span class="sticker sticker--small">Estimate</span></div>' +
       '<p class="saved__value' + anim("saved-" + week.minutes) + '">' + esc(ui.minutesLabel(week.minutes)) + "</p>" +
       '<div class="bars" aria-hidden="true">' + days.map(function (d) {
         const h = d.minutes ? Math.max(8, Math.round((d.minutes / max) * 100)) : 4;
@@ -652,7 +677,14 @@
       if (!item || !t) return;
       if (edits) applyEdits(t, edits, item);
       item.status = newStatus;
-      if (newStatus === "approved") { t.category = item.category || t.category; item.approvedAt = nowISO(); }
+      if (newStatus === "approved") {
+        t.category = item.category || t.category;
+        item.approvedAt = nowISO();
+        if (t.suggested) { delete t.suggested; t.addedBy = "claude"; t.approvedAt = nowISO(); } // now a real task
+      }
+      // Skipping a brand-new suggestion dismisses it, so Claude knows not to suggest it again
+      if (newStatus === "skipped" && t.suggested) { t.status = "dismissed"; t.dismissedAt = nowISO(); }
+      if (newStatus === "proposed" && t.status === "dismissed") { t.status = "open"; delete t.dismissedAt; } // undo
       logPlanApproved(d);
     });
   }
@@ -686,19 +718,22 @@
   }
 
   function skip(taskId, button) {
+    const isNew = isSuggestion(taskById(data, taskId) || {});
     const wrap = button.closest(".proposal-wrap");
     const index = Array.prototype.indexOf.call(document.querySelectorAll(".proposal-wrap"), wrap);
     wrap.classList.add("is-leaving", "is-skipped");
     setTimeout(function () {
       setProposal(taskId, "skipped").then(function () {
         focusNextProposal(index);
-        ui.toast("Skipped. It stays on your list for another day", { icon: "info", actionLabel: "Undo", onAction: function () { setProposal(taskId, "proposed"); } });
+        ui.toast(isNew ? "Skipped. Claude won't suggest it again" : "Skipped. It stays on your list for another day",
+          { icon: "info", actionLabel: "Undo", onAction: function () { setProposal(taskId, "proposed"); } });
       });
     }, ui.prefersReducedMotion() ? 0 : 300);
   }
 
   function approveAll() {
     const ids = proposals(data).map(function (i) { return i.taskId; });
+    const newIds = ids.filter(function (id) { return isSuggestion(taskById(data, id)); }); // so Undo can put them back
     if (!ids.length) return;
     document.querySelectorAll(".proposal-wrap").forEach(function (w, n) {
       setTimeout(function () { w.classList.add("is-approved"); }, n * 60);
@@ -708,7 +743,8 @@
         d.plan.items.forEach(function (i) {
           if (i.status === "proposed") {
             i.status = "approved"; i.approvedAt = nowISO();
-            const t = taskById(d, i.taskId); if (t) t.category = i.category || t.category;
+            const t = taskById(d, i.taskId);
+            if (t) { t.category = i.category || t.category; if (t.suggested) { delete t.suggested; t.addedBy = "claude"; t.approvedAt = nowISO(); } }
           }
         });
         logPlanApproved(d);
@@ -719,6 +755,7 @@
           onAction: function () {
             change(function (d) {
               d.plan.items.forEach(function (i) { if (ids.indexOf(i.taskId) > -1) i.status = "proposed"; });
+              ids.forEach(function (id) { const t = taskById(d, id); if (t && newIds.indexOf(id) > -1) { t.suggested = true; delete t.approvedAt; } });
               d.activity = d.activity.filter(function (a) { return !(a.type === "plan-approved" && a.planDate === d.plan.date); });
             });
           }
@@ -945,7 +982,7 @@
     switch (action) {
       case "connect":
         store.connect().catch(function (err) {
-          if (err && err.kind === "wrong-folder") return renderConnect("That folder doesn't have your task list in it. Please choose the folder called " + MODULE_ID + ".");
+          if (err && err.kind === "wrong-folder") return renderConnect("That folder doesn't have your task list in it. Please choose your Task List OS folder, the one with START-HERE.md in it.");
           renderConnect("That didn't work. Please try again, and click Allow when Chrome asks.");
         });
         break;

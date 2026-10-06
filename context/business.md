@@ -1,0 +1,15 @@
+# The business
+
+Status: not filled in yet
+
+<!-- Claude: fill this in during setup step 4. Keep it short and factual. Replace every line below. -->
+
+- Name:
+- What we do, in a sentence:
+- Who for (typical customers):
+- What we sell, and a typical price or order size:
+- Where we are, and where customers are:
+- Website:
+- Going since:
+- What makes us different, in the owner's words:
+- Anything else Claude should always keep in mind:

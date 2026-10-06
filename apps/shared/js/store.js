@@ -71,8 +71,9 @@
 
   /*
     createStore(options)
-      moduleId     e.g. "01-task-list" (also the folder name we expect the customer to pick)
+      moduleId     e.g. "task-list" (used to remember which folder belongs to which app)
       fileName     e.g. "tasks.json"
+      dataPaths    where to look for the file inside the folder the person picks
       makeDemoData function returning fresh sample data for Demo mode
       validate     function(data) that throws if the file is not in the expected shape
       onData       function(data, reason) called whenever data arrives. reason is
@@ -97,8 +98,8 @@
     function setStatus(status, detail) { opts.onStatus(status, detail || {}); }
 
     // Find the data folder inside whatever folder the customer picked.
-    // Accepts: the module folder (has data/tasks.json), the data folder itself,
-    // or the folder one level up that contains the module folder.
+    // opts.dataPaths lists the places to look, relative to the picked folder,
+    // for example ["data", "", "apps/task-list/data"]. "" means the picked folder itself.
     async function findDataDir(picked) {
       async function hasFile(dir) {
         try { await dir.getFileHandle(opts.fileName); return true; } catch (e) { return false; }
@@ -106,12 +107,15 @@
       async function child(dir, name) {
         try { return await dir.getDirectoryHandle(name); } catch (e) { return null; }
       }
-      const data = await child(picked, "data");
-      if (data && await hasFile(data)) return data;
-      if (await hasFile(picked)) return picked;
-      const moduleDir = await child(picked, opts.moduleId);
-      const nestedData = moduleDir && await child(moduleDir, "data");
-      if (nestedData && await hasFile(nestedData)) return nestedData;
+      const paths = opts.dataPaths || ["data", ""];
+      for (const path of paths) {
+        let dir = picked;
+        for (const part of path.split("/").filter(Boolean)) {
+          dir = await child(dir, part);
+          if (!dir) break;
+        }
+        if (dir && await hasFile(dir)) return dir;
+      }
       throw StoreError("wrong-folder", "That folder does not contain " + opts.fileName + ".");
     }
 

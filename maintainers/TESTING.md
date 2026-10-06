@@ -1,0 +1,55 @@
+# Testing Task List OS
+
+How to test the whole thing as a customer would, without touching the repo.
+
+## 1. Make a fresh copy
+
+Never test inside the repo: setup writes your real details into it. Build the release zip and unzip it somewhere else:
+
+```bash
+bash maintainers/make-release.sh
+```
+
+Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/Task List OS test`. Each test run starts from a fresh unzip.
+
+## 2. Run setup as a customer
+
+1. Open Claude (desktop app with folder access, or Claude Code opened in the test folder).
+2. Say: **"Read START-HERE.md and set me up."**
+3. Answer as a real small business owner would. A test Gmail account is ideal for step 2, so Claude reads a test inbox rather than your real one. Send it a few realistic emails first: a client asking for something, an invoice reminder, a newsletter (which Claude should ignore).
+4. Try stopping halfway and starting a new conversation with "carry on setting up". It should pick up from `setup/progress.md`.
+
+## 3. What to check
+
+**Setup**
+- [ ] Claude explains what's about to happen before starting, and asks one batch of questions per step, not a long interview.
+- [ ] It never asks for a password or key in chat.
+- [ ] Email connects (or Claude explains the alternatives honestly if it can't).
+- [ ] The `context/` files are filled in, short and accurate, and Claude showed a summary for correction.
+- [ ] The gaps note at the end is gentle and appears once.
+- [ ] No jargon reaches the customer: agent, repo, JSON, MCP, API.
+
+**The app**
+- [ ] Open Task List.html opens the app in Chrome. Connect, pick the main folder, Allow.
+- [ ] "Good morning, [name]" with Claude's suggestions, including some with a **New** sticker and "From your inbox".
+- [ ] Approve: the card ticks and slides away, the task lands on today's list. Undo works.
+- [ ] Skip a **New** suggestion: it disappears for good. Run "sort my day" again; Claude must not suggest it again.
+- [ ] Tick a task done. The time saved panel (last 7 days) goes up.
+- [ ] Ask Claude "add call the bank to my list" with the app open: it appears within a few seconds with "Claude updated your list".
+- [ ] Reload the page: everything is still there.
+- [ ] Demo switch on and off: demo shows Fern & Finch, and switching off returns your real list untouched.
+- [ ] Phone width (Chrome's device toolbar): readable, no sideways scrolling.
+
+**Skills**
+- [ ] "Help me reply to [an email in the test inbox]": a draft in your voice, offered as a draft, never sent.
+- [ ] "Chase [a client] about invoice 1042 for £340": specific, right firmness.
+- [ ] "Write up this call" with pasted notes: summary, follow-up draft, actions as New suggestions in the app.
+- [ ] "Wrap up my day": short and kind, changes nothing.
+
+## 4. Reset
+
+Delete the test folder (it's a copy) and unzip again. If you tested inside the repo by mistake, restore the shipped files with:
+
+```bash
+git checkout -- apps/task-list/data context setup/progress.md CLAUDE.md files
+```

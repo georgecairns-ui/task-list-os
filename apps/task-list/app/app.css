@@ -142,6 +142,14 @@
 .proposal__top { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); align-items: center; }
 .proposal__title { font-size: var(--text-lg); font-weight: 600; }
 .proposal__reason { color: var(--color-ink-soft); font-size: var(--text-sm); }
+/* Where a brand-new suggestion came from, for example "From your inbox" */
+.proposal__source {
+  display: flex; gap: var(--space-2); align-items: flex-start;
+  font-size: var(--text-xs); color: var(--color-muted); font-family: var(--font-ui);
+}
+.proposal__source svg { width: 15px; height: 15px; flex: none; margin-top: 2px; color: var(--color-accent-text); }
+.proposal__source strong { color: var(--color-ink-soft); font-weight: 600; }
+.sticker--new { font-size: 0.625rem; padding: 2px 9px; box-shadow: none; transform: rotate(-2deg); }
 .proposal__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 @media (max-width: 420px) {
   .proposal__inner { padding: var(--space-4); }

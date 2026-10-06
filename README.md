@@ -1,73 +1,66 @@
-# Small business toolkit
+# Task List OS
 
-Plug-and-play business tools that look like simple web apps but are really files that Claude reads and writes. Each module works on its own (lead magnet, free module) and will plug into the others (paid bundle).
+**The task list that does itself.** A free kit from [Get AI Powers](https://getaipowers.com) that sets up your Claude as a proper assistant for your small business, with a calm daily task list on top.
 
-Status, 6 October 2026: phase 1 done. `shared/` and module 01 (the task list) are built and tested. Modules 02 to 06 and the full toolkit home screen are phase 2.
+Every morning you say "sort my day". Claude checks your list, your inbox and your calendar, and proposes a plan, including new jobs it spotted in your email. You approve each one with a click. Admin that used to eat 2 hours feels like 10 minutes.
 
-## What's in here
+Nothing happens without your say-so. Claude reads and drafts. You decide and you send.
+
+## What you get
+
+- **A task list app** that opens in your browser. No account, no subscription, works offline. Claude proposes, you approve, edit or skip.
+- **A guided setup** that connects Claude to your email, calendar and the apps you use, and writes up your business so Claude stops giving generic answers.
+- **13 skills** for the jobs small businesses ask for most: replies that sound like you rather than a robot, polite invoice chasers, meeting write-ups, handing work to your team, and more.
+- **A tidy folder structure** for your business documents.
+
+## Get started (about 45 minutes, once)
+
+You need the Claude app (a paid Claude plan works best, for connecting email) and Google Chrome or Microsoft Edge.
+
+1. **Download this kit.** Click the green **Code** button above, then **Download ZIP**. Unzip it and move the folder somewhere permanent, such as Documents. You can rename it.
+2. **Give Claude the folder.** Open Claude and give it access to the folder. In the Claude desktop app, choose the folder when you start working on files, or in Claude Code, open the folder.
+3. **Say: "Read START-HERE.md and set me up."**
+
+Claude takes it from there. It asks a few questions, helps you connect your email and apps, and shows you how to open your task list. You can stop at any time and say "carry on setting up" later.
+
+Want a look first? Double-click **Open Task List.html** (in Chrome or Edge) and flick the **Demo** switch in the top right. It shows a made-up business and saves nothing.
+
+## Every day
+
+| Say | When |
+|---|---|
+| "Sort my day" | In the morning |
+| "Add [something] to my list" | Any time |
+| "Help me reply to [name]" | When an email needs answering |
+| "Wrap up my day" | At the end of the day |
+
+Open your list with **Open Task List.html**.
+
+## Your information
+
+Everything stays in this folder on your computer and in the apps you already use. Claude never sends, deletes or pays for anything on your behalf. Read [docs/PRIVACY-AND-SAFETY.md](docs/PRIVACY-AND-SAFETY.md) for the detail.
+
+## Make it yours
+
+Change the colours, labels and folders by asking Claude. See [docs/CUSTOMISING.md](docs/CUSTOMISING.md).
+
+## Want it set up properly for you?
+
+Task List OS works on its own. If you'd like your folders, business context and Claude skills built around how your business really works, Get AI Powers runs a 4 week setup. Find us at [getaipowers.com](https://getaipowers.com).
+
+## What's inside
 
 ```
-small-business-toolkit/
-  README.md            this file (for George)
-  CLAUDE.md            rules for Claude when working on the toolkit itself (not shipped)
-  shared/              used by every module
-    theme.css          ALL brand colours, fonts, sizes, spacing, corners, shadows
-    base.css           shared pieces: buttons, cards, inputs, switches, pop-ups, toasts, animations
-    js/store.js        connects a module to its data file, saves changes, spots Claude's edits, demo mode
-    js/ui.js           small helpers: icons, notifications, dates, copy to clipboard
-    fonts/             Zilla Slab and Source Serif 4, bundled (no internet needed)
-    images/            Get AI Powers logo and the Claude character stills
-  modules/
-    01-task-list/
-      index.html       the app (double-click to open)
-      app/             the app's own code, styles and demo data
-      data/tasks.json  the file Claude and the app share (ships with 5 example tasks)
-      INSTALL.md       instructions for the customer's Claude to set it up
-      CLAUDE.md        standing instructions for the customer's Claude, every day
-      README.txt       3 lines for the customer
-  build/make-zips.sh   builds one clean zip per module
-  dist/                the zips (made by the build script)
+START-HERE.md          Claude reads this first and runs setup
+CLAUDE.md              Claude's standing instructions in this folder
+Open Task List.html    double-click to open your task list
+setup/                 the 8 setup steps, and a progress checklist
+context/               Claude's notes about your business
+skills/                saved know-how for common jobs
+files/                 your business documents, in numbered folders
+apps/                  the task list app and its look (theme.css)
+docs/                  customising, privacy and safety
+maintainers/           for people developing Task List OS itself
 ```
 
-## How to look at module 01
-
-1. Open `modules/01-task-list/` and double-click `index.html`. Use Chrome or Edge.
-2. To see it full of realistic data straight away, flick the **Demo** switch in the top right. It shows a made-up design studio, Fern & Finch. Nothing in demo mode is saved anywhere. Switch it off again before handing over a laptop.
-3. To try it for real, click **Connect your task list**, pick the `01-task-list` folder, click **Allow**. Your clicks then save into `data/tasks.json`.
-
-Warning: if you connect the real folder here and click around, you change the sample file that ships to customers. Either use Demo mode, or test on a copy (unzip `dist/01-task-list.zip` somewhere else and test that).
-
-## How it saves (the choice we made)
-
-The app uses Chrome and Edge's built-in File System Access feature. The customer connects the folder once and clicks Allow. After that, every approve, tick and edit is written straight into `data/tasks.json`. The app checks the file every few seconds, so when Claude changes it the screen updates by itself. Before every save the app re-reads the file and keeps the previous version as `tasks.backup.json`, so it never overwrites Claude's latest edit.
-
-Safari and Firefox can't do this. They get a friendly "open this in Chrome or Edge" screen and can still try the demo.
-
-## Re-branding for a client
-
-Change the values in `shared/theme.css`. That's it for colours, fonts and shapes. To change the logo, replace the 2 SVG files in `shared/images/` (keep the same file names). Then rebuild the zips.
-
-## Building the zips
-
-From the `small-business-toolkit` folder, run:
-
-```bash
-bash build/make-zips.sh
-```
-
-You get one zip per module in `dist/`, for example `dist/01-task-list.zip`. Each zip has its own copy of `shared/` inside, so it works with nothing else installed. The script leaves out hidden Mac and Windows files and any test backups, checks the data files are valid, and stops with a clear message if anything is wrong.
-
-## Adding a module (phase 2 pattern)
-
-1. Copy `modules/01-task-list` to `modules/02-whatever`.
-2. Rename the data file (for example `data/pipeline.json`) and set `MODULE_ID` and `DATA_FILE` at the top of `app/app.js`.
-3. Replace the screens in `app/app.js` and `app/app.css`. Keep using `store.update()` for every change, so saving, backups and the "Claude updated your list" refresh all keep working.
-4. Write new demo data in `app/demo-data.js` (made-up business, dates worked out from today).
-5. Rewrite `CLAUDE.md` (the data format and what to do when asked) and `INSTALL.md` (questions to ask, what good looks like, the gentle gaps note at the end). Keep the same section order as module 01.
-6. Run `bash build/make-zips.sh`.
-
-## Known limits
-
-- Needs Chrome or Edge on a laptop or desktop. Phones can view the layout but phone browsers cannot connect a folder.
-- In some versions of Chrome the customer clicks "Open my task list" once per visit. Newer Chrome versions offer "Allow on every visit", which removes that click.
-- The app spots Claude's changes while its window is in view. If it's in a background tab, it catches up the moment you click back to it.
+Fonts: Zilla Slab and Source Serif 4, under the SIL Open Font License (see `apps/shared/fonts/OFL.txt`).
