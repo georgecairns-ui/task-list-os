@@ -1,10 +1,10 @@
 # Maintaining Task List OS
 
-For people developing the kit itself. Customers never need this folder; the release zip leaves it out.
+For people developing the kit itself. Customers never need this folder, but it is public on GitHub, so keep it free of anything private.
 
 ## What this project is
 
-A kit a small business owner downloads and opens in Claude Code (or the Claude desktop app). They type `/setup`; Claude follows `START-HERE.md`, connects their email, calendar, call recorder and apps (`setup/connections/`), writes up the business in `context/`, and fills the task list app (`apps/task-list/`) with their real work. The downloaded folder becomes the customer's workspace. Claude can then check in every hour through a scheduled task in the Claude desktop app.
+A kit a small business owner copies from GitHub (they ask Claude to clone it) and opens in Claude Code (or the Claude desktop app). They type `/setup`; Claude follows `START-HERE.md`, connects their email, calendar, call recorder and apps (`setup/connections/`), writes up the business in `context/`, and fills the task list app (`apps/task-list/`) with their real work. The downloaded folder becomes the customer's workspace. Claude can then check in every hour through a scheduled task in the Claude desktop app.
 
 ## Stack
 
@@ -19,11 +19,11 @@ A kit a small business owner downloads and opens in Claude Code (or the Claude d
 
 - Run the app: `node apps/server/server.js` (or `python3 apps/server/server.py`), then open http://localhost:4747. Without the helper, `Open Task List.html` still opens the app from the file, which can connect to the folder through Chrome's File System Access as a fallback.
 - Test: by hand, see `maintainers/TESTING.md`.
-- Release zip: `bash maintainers/make-release.sh` (creates `dist/task-list-os.zip`; refuses to build if the shipped files contain real data).
+- Publish: customers clone `main` on GitHub (`georgecairns-ui/task-list-os`). Work happens on a `claude/...` branch. To publish, run `bash maintainers/make-release.sh` first as the safety check (it refuses to build if the shipped files contain real data, and its zip in `dist/` is a handy local test copy). Then bring `public-main` level with the work branch in one commit (`git checkout public-main && git rm -rq . && git checkout <work branch> -- . && git commit`), so the public history shows releases only, never work in progress, and push it with `git push origin public-main:main`. Never force-push `main`: people have copies of it. Finally refresh the plain copy in Google Drive: `05_Marketing/small-business-toolkit/task-list-os/` (files only, no git history; `git archive public-main | tar -x -C <that folder>`).
 
 ## Rules
 
-- The repo is the customer's starting workspace. Anything committed ships. Never commit filled-in `context/` files, real tasks, replies or calls, a ticked `setup/progress.md`, or `CLAUDE.md` with "Setup: complete". The release script checks for these.
+- The repo is the customer's starting workspace. Anything committed ships. Never commit filled-in `context/` files, real tasks, replies or calls, a ticked `setup/progress.md`, or `CLAUDE.md` with "Setup: complete". The release script checks for these, so always run it before publishing.
 - Every data change in the app goes through `store.update()`, which re-reads the file, applies the change, writes a backup, then saves.
 - Human in the loop: Claude proposes, the person approves. Read and draft only in connected apps. The app opens drafts and calendar events for the person to finish; it never sends. Never add anything that sends, pays, deletes or posts on the customer's behalf, and never pre-approve such tools in `.claude/settings.json`.
 - Connection guides contain only verified facts with sources. Mark anything unverified as such.
