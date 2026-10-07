@@ -21,7 +21,8 @@
     "meeting-follow-up",
     "delegate-it",
     "draft-a-reply",
-    "research-task"
+    "research-task",
+    "spot-claude-tasks"
   ],
   "setupSteps": [
     "setup/02-connect-email-and-calendar.md",

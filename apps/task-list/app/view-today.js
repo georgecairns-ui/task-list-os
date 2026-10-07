@@ -97,6 +97,23 @@
       '<button type="button" class="btn btn--sm saved__wrap" data-action="summary">' + icon("moon") + "Wrap up the day</button></div></section>";
   }
 
+  // Claude's plan for today (or a nudge to ask for one), shown at the top of the Tasks page's Today view
+  function planSection(ctx) {
+    const d = ctx.d;
+    const props = M.proposals(d);
+    if (props.length) {
+      return '<section class="panel panel--accent">' + C.sectionHead("Claude's plan for today", { icon: "sparkle", count: props.length, accent: true,
+        right: '<button type="button" class="btn btn--approve btn--sm" data-action="approve-plan">' + icon("check") + "Approve all</button>" }) +
+        (d.plan.note ? '<blockquote class="claude-note"><span class="label">Claude\'s read on today</span><p>' + esc(d.plan.note) + "</p></blockquote>" : "") +
+        '<ul class="proposals" role="list">' + props.map(function (i) { return window.TL.views.review.proposalRow(ctx, M.taskById(d, i.taskId), { kind: "plan", category: i.category, reason: i.reason }); }).join("") + "</ul></section>";
+    }
+    if (!M.claudeHasPlanned(d)) {
+      return '<section class="panel nudge"><div class="nudge__art"><img src="' + C.ART.thinking + '" alt="" width="64" height="64"></div>' +
+        "<div><h2>No plan for today yet</h2><p class=\"muted\">Ask Claude to sort your day. It checks your list, inbox and calendar, then suggests a plan for you to approve.</p></div>" + C.say("Sort my day") + "</section>";
+    }
+    return "";
+  }
+
   function render(ctx) {
     const d = ctx.d;
     const name = d.settings.yourName;
@@ -172,6 +189,8 @@
     sub: function () { return ui.longDate(); },
     render: render,
     summary: summary,
-    todaysTasks: todaysTasks
+    todaysTasks: todaysTasks,
+    planSection: planSection,
+    greetingLine: greetingLine
   };
 })();

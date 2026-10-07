@@ -21,7 +21,7 @@ The person says "sort my brain dump", "deal with my notes", "go through what I w
 3. For each line (or each thing pulled from a voice note), decide what it is:
    - **A task.** Write a clear title that starts with a verb ("ask Priya if she can do 4 days in November" becomes "Ask Priya about 4 days a week in November"). Choose a category. Pull out any date ("before the 20th" becomes `due`), amount or name into `notes`, `due` and `personId`.
    - **Several tasks.** Split it ("sort the van and the insurance" is 2 tasks).
-   - **A goal for the week**, not a task ("get on top of invoicing"). Suggest it as a weekly goal instead, with `"addedBy": "claude"`.
+   - **A bigger aim**, not a task ("get on top of invoicing"). Turn it into the first clear task towards it ("Send the 3 overdue invoices"), and mention the aim in your summary in case it belongs in `context/priorities.md`.
    - **Already on the list.** Don't duplicate it. Link the line to the existing task.
    - **Nothing to do** (a thought, a worry, a reminder that's already handled). Mark the line `dismissed` and mention it in your summary.
    - **Personal** ("Mum's birthday, book the restaurant"). It's still a task if they wrote it down. Category `later` or with its date, never shared with anyone.
@@ -38,11 +38,11 @@ The person says "sort my brain dump", "deal with my notes", "go through what I w
 
 - Everything you make is a suggestion. The person approves it in Review.
 - Keep their meaning. If a line is ambiguous, make your best reading and put the original line in `notes`, rather than asking about every line. Ask at most one question, for the line that really can't be guessed.
-- Never drop a line silently. Every line ends up as a task, a goal, linked to an existing task, or dismissed with a mention.
+- Never drop a line silently. Every line ends up as a task, linked to an existing task, or dismissed with a mention.
 
 ## What to say to the person
 
-"I've sorted your brain dump. 6 lines became 5 tasks and 1 goal for the week, all waiting in Review. I left 'feeling behind on admin' off the list, as it's a feeling rather than a task, but sorting your day each morning should help with that one."
+"I've sorted your brain dump. 6 lines became 6 tasks, all waiting in Review. I left 'feeling behind on admin' off the list, as it's a feeling rather than a task, but sorting your day each morning should help with that one."
 
 ## If something is missing
 

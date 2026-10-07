@@ -51,7 +51,9 @@ An older file with `formatVersion: 1` is fine. The app adds the missing sections
 | `id` | Unique. Make new ones as `t-` plus 6 random lowercase letters or digits, for example `t-k3j9x2`. Never reuse or change an id. |
 | `title` | Short, starts with a verb where possible: "Chase Marlow Dental for the overdue invoice". |
 | `notes` | Optional detail: names, amounts, phone numbers, links. |
-| `category` | One of `today`, `quick-win`, `delegate`, `waiting`, `later`. |
+| `category` | A category key from `settings.categories` (the standard ones: `today`, `quick-win`, `delegate`, `waiting`, `later`). |
+| `inProgress` | `true` when the person has started it: the In progress column on the board. Leave it alone unless they say they've started or stopped. |
+| `categoryBeforeWaiting` | Set by the app when a task is dragged to Waiting on, so it goes back to its old category when moved out. Don't change it. |
 | `status` | `open`, `done`, or `dismissed` (a new suggestion the person said no to). |
 | `due` | The deadline, `"YYYY-MM-DD"` or `null`. |
 | `scheduledDate` | The day the person plans to do it, `"YYYY-MM-DD"` or `null`. The week board and calendar use this, falling back to `due`. |
@@ -69,10 +71,18 @@ An older file with `formatVersion: 1` is fine. The app adds the missing sections
 | `proposedDate`, `proposedTime`, `proposedReason` | Your suggested day (and optionally time) for an existing task, from "plan my week". Shows as a dashed card on the week board and in Review. Approving moves it into `scheduledDate` and `scheduledTime`. Never set `scheduledDate` yourself unless the person asks for that specific task. |
 | `guide` | "How to do this", from `research-task`: `{ "summary": "...", "steps": ["..."], "links": [{ "label": "Pay your Self Assessment tax bill (GOV.UK)", "url": "https://www.gov.uk/pay-self-assessment-tax-bill" }], "researchedAt": "<timestamp>" }`. Shown in the task's panel. |
 | `replyId` | Links a task to the email in `replies` it came from, so the panel can open the draft. |
+| `claude` | Written by `.claude/skills/spot-claude-tasks` when you could do this task: `{ "how": "one plain sentence", "uses": ["Gmail"], "prompt": "the full prompt", "checkedAt": "<now>" }`. The app shows "Claude can do this" and an Open in Claude button that opens a new Claude Code session in this folder with the prompt ready; the person presses send. Remove it when the task no longer fits. |
 | `emailDraft` | An email the person needs to send for this task, drafted by you: `{ "to": "tom@greenway.example", "subject": "Quote for the menu boards", "body": "Hi Tom,..." }`. The task's panel shows it with a Draft button. |
 | `dismissedAt`, `approvedAt`, `scheduledAt`, `calendarAddedAt` | Timestamps the app sets. Leave them alone. `calendarAddedAt` means the person pressed Add to calendar. |
 
-### The 5 categories
+### Where a task is (the board's columns)
+
+The Tasks page shows each task in one of 4 columns, worked out from the task: **Done** (`status: "done"`), **Waiting on** (`category: "waiting"`), **In progress** (`inProgress: true`), otherwise **To do**. The person can rename the columns (`settings.stageLabels`); the order stays.
+
+### The categories
+
+The person can rename, recolour, add and remove categories in Preferences; the list is `settings.categories` (`[{ "key": "today", "label": "Do today", "colour": "" }, ...]`, where `colour` "" means the standard colour). Use their keys and labels. If it's missing, the standard 5 below apply. `waiting` always exists.
+
 
 | Key | Shown as | Use it for |
 |---|---|---|
@@ -111,7 +121,7 @@ Copies of the person's real calendar, so the app can show their day and week. Re
 
 ### People
 
-A light CRM: clients, customers, suppliers, team and advisers.
+The person's contacts: clients, customers, suppliers, team and advisers. Tasks link to them for "Who's it for". There's no People page in Task List OS (that's part of Pipeline OS); the app adds a person or company here when they type a new name in "Who's it for", with `role: "other"`.
 
 ```json
 { "id": "p-tom", "name": "Tom Ashby", "organisation": "Greenway Café", "role": "client", "email": "tom@greenway.example", "phone": "", "notes": "Owner. Prefers calls for anything big.", "lastContact": "2026-10-06T08:10:00.000Z" }
@@ -125,11 +135,11 @@ A light CRM: clients, customers, suppliers, team and advisers.
 
 ### Weekly goals
 
-`week.start` is the Monday of the current week. `goals` are the 3 to 5 things that would make the week a good one. The person can add and tick goals in the app. When you suggest goals ("plan my week"), add them with `"addedBy": "claude"`; the person removes any they don't want. If `week.start` is an earlier Monday, start a fresh week.
+Older files have a `week` section with goals. The app no longer shows weekly goals, so don't add any; leave what's there.
 
 ### Brain dump
 
-Whatever the person typed into Brain dump, one line per item:
+What the person said into **Brain dump** (the button at the top of the app, which records a voice note), plus anything they asked you to note. One item per note or line:
 
 ```json
 { "id": "b-x7k2p9", "text": "ask Priya if she can do 4 days in November", "createdAt": "2026-10-06T07:20:00.000Z", "status": "unsorted" }
@@ -141,7 +151,7 @@ Whatever the person typed into Brain dump, one line per item:
 
 ### Replies: emails that need an answer (the Inbox page)
 
-From `triage-inbox`. The app's Inbox page (and the Needs a reply view of All tasks) lists those `waiting`, urgent first, each with a **Draft** button that opens the draft, written and addressed, in Gmail, Outlook or their email app (from `settings.emailProvider`). The person checks it and sends it.
+From `triage-inbox`. The app's Inbox page lists those `waiting`, urgent first, each with a **Draft** button that opens the draft, written and addressed, in Gmail, Outlook or their email app (from `settings.emailProvider`). The person checks it and sends it.
 
 ```json
 { "id": "r-k3j9x2", "from": { "name": "Dev Patel", "email": "dev@hollins.example" }, "subject": "Can we move today's kick-off to 2:30?",
@@ -170,6 +180,9 @@ From `process-calls` (or `meeting-follow-up` for pasted notes). Shown on the Cal
 `triage` powers the line at the top of Today and the Inbox ("Claude checked at 10:30: 47 emails sorted, 6 need a reply..."). `check-in` updates it every run. Counts are for today; start them from zero on a new day. `nextRunAt` is when the next scheduled check-in is due, or `null`.
 
 ### Settings for the app's buttons
+
+The person changes these in Preferences (the cog). Besides those below: `defaultScope` (`today`, `week` or `all`) and `defaultView` (`board`, `list` or `calendar`) are how the Tasks page first opens; `stageLabels` renames the board's columns; `categories` is their category list (see above).
+
 
 `emailProvider` decides where Draft opens: `gmail`, `outlook-work` (Microsoft 365), `outlook-personal` (Outlook.com, opens the computer's email app) or `other` (the computer's email app). `calendarProvider` decides where Add to calendar opens: `google`, `outlook-work`, `outlook-personal` or `other` (downloads a calendar file any calendar app can open).
 

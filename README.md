@@ -12,11 +12,11 @@ Task List OS is part of a toolkit of 9 free tools from Get AI Powers. The others
 
 - **Sorts your inbox.** Every new email goes in a pile: needs a reply, a task, just so you know, or no action. The ones that need an answer appear in your **Inbox** with a draft in your voice. Press **Draft** and the email opens in Gmail or Outlook, written and addressed. Check it, press send.
 - **Writes up your calls.** If you record calls (Fathom, Fireflies, Otter, Granola, tl;dv, Read AI, Zoom, Teams or Google Meet), each one appears on **Calls** with a summary, what was decided, your actions to approve and a follow-up email ready to go.
-- **Listens.** Press **Voice note** at the top of any page and talk: everything on your mind, as messy as you like. Your words appear as you speak. Press Done and Claude turns it into tasks, suggested times, how-to guides and draft emails, ready for you to approve, usually within a minute or two.
-- **Turns your brain dump into a plan.** Type (or say) "pay my tax to HMRC" into **Brain dump**. Claude makes it a task, looks up how to do it on GOV.UK, and suggests a free slot in your calendar. Approve it, press **Add to calendar**, done.
-- **Plans your day and week.** **Home** is your dashboard: choose the boxes you want to see and arrange them. **Today** shows Claude's plan for the day. **This week** has your goals and a board to drag tasks onto days, and switches to a calendar of your real meetings with your tasks in the gaps. **Add meeting** puts a meeting in and opens it in your calendar, ready to save.
-- **Looks the part.** A clean, calm app in light or dark, in your own colours.
-- **Keeps track of people.** **People** is a light CRM: everyone you work with, what's open with them and what you're waiting on.
+- **Brain dump.** Press **Brain dump** at the top of any page and talk: everything on your mind, as messy as you like. Your words appear as you speak. Press Done and Claude turns it into tasks, suggested times, how-to guides and draft emails, ready for you to approve, usually within a minute or two.
+- **Turns it into a plan.** Say "pay my tax to HMRC" into **Brain dump**. Claude makes it a task, looks up how to do it on GOV.UK, and suggests a free slot in your calendar. Approve it, press **Add to calendar**, done.
+- **One page for every task.** **Home** is your dashboard: choose the boxes you want and arrange them. **Tasks** shows Today (with Claude's plan on top), This week or All, as a **Board** (To do, In progress, Waiting on, Done: drag cards across), a **List**, or a **Calendar** of your real meetings with your tasks in the gaps. **Add meeting** puts a meeting in and opens it in your calendar, ready to save.
+- **Does some of it for you.** Claude marks the tasks it could do with your connections, such as a chaser, a reply, a figure from your accounts or a first draft. Press **Open in Claude** and it opens with the prompt ready; read it and press send.
+- **Yours to shape.** A clean, calm app in light or dark, in your own colours. **Preferences** lets you rename and recolour categories, rename the board's columns and choose how Tasks opens.
 - **Keeps itself up to date.** If you want, Claude checks in every hour while you work, so the app is always current.
 
 ## What you need
@@ -46,7 +46,7 @@ If an app needs a key rather than a sign-in, Claude gives you one line to paste 
 | "Sort my day" (`/sort-my-day`) | Your plan for today, from your list, inbox, calls and calendar |
 | "Check in" (`/check-in`) | Anything new in your inbox, calls and calendar. Runs on its own every hour if you turn that on |
 | "Sort my brain dump" (`/sort-my-brain-dump`) | Your notes become tasks, with times and how-to guides |
-| "Plan my week" (`/plan-my-week`) | Goals for the week and a day for each task |
+| "Plan my week" (`/plan-my-week`) | A day for each task that needs one, around your meetings |
 | "Help me reply to Tom" | A draft in your voice |
 | "Wrap up my day" (`/wrap-up-my-day`) | What got done and what rolls over |
 

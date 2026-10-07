@@ -1,7 +1,7 @@
 /*
   VOICE NOTE: talk, and it becomes a brain dump
   ---------------------------------------------
-  Press "Voice note" (or V) and talk. Your words appear as you speak. Press Done and the whole
+  Press "Brain dump" (or V) and talk. Your words appear as you speak. Press Done and the whole
   note goes into your brain dump, where Claude turns it into tasks, times, guides and drafts.
 
   The speech-to-text is done by your browser's built-in speech recognition (Chrome uses Google's
@@ -35,7 +35,7 @@
     dlg.innerHTML =
       '<div class="voice">' +
       '<button type="button" class="voice__close icon-btn" data-voice="cancel" aria-label="Cancel">' + icon("x") + "</button>" +
-      '<h2 id="voiceTitle" class="sr-only">Voice note</h2>' +
+      '<h2 id="voiceTitle" class="sr-only">Brain dump</h2>' +
       '<div class="voice__mic is-live" aria-hidden="true">' + icon("mic") + "</div>" +
       '<p class="voice__status" role="status">Listening… <span class="voice__time num">0:00</span></p>' +
       '<div class="voice__text" aria-live="polite"><span class="voice__final"></span><span class="voice__interim"></span>' +

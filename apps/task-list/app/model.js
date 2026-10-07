@@ -9,7 +9,7 @@
     settings  name, business, time-saved estimates, working hours
     tasks     every task, open or done
     plan      today's plan: Claude's proposals and what the person approved
-    week      this week's goals
+    week      (older versions: this week's goals; no longer shown)
     events    calendar events Claude copied in from the person's calendar (read only here)
     people    clients, suppliers, team: who tasks are for or waiting on
     dump      brain dump lines waiting for Claude to sort into tasks
@@ -20,15 +20,49 @@
 
   const ui = window.TaskListOS.ui;
 
-  const CATEGORIES = [
-    { key: "today",     label: "Do today",           icon: "sun" },
-    { key: "quick-win", label: "Quick wins",         icon: "zap" },
-    { key: "delegate",  label: "Delegate",           icon: "users" },
-    { key: "waiting",   label: "Waiting on someone", icon: "hourglass" },
-    { key: "later",     label: "Can wait",           icon: "calendar" }
+  // The standard categories. People can rename, recolour, add and remove them in Preferences
+  // (saved as settings.categories); "waiting" always exists because the Waiting on column uses it.
+  // A colour of "" means the theme's own colour for that category (works in light and dark).
+  const DEFAULT_CATEGORIES = [
+    { key: "today",     label: "Do today",           colour: "" },
+    { key: "quick-win", label: "Quick wins",         colour: "" },
+    { key: "delegate",  label: "Delegate",           colour: "" },
+    { key: "waiting",   label: "Waiting on someone", colour: "" },
+    { key: "later",     label: "Can wait",           colour: "" }
   ];
+  const THEME_COLOURS = { today: "var(--cat-today)", "quick-win": "var(--cat-quick)", delegate: "var(--cat-delegate)", waiting: "var(--cat-waiting)", later: "var(--cat-later)" };
+  const CATEGORIES = [];
   const CAT = {};
-  CATEGORIES.forEach(function (c) { CAT[c.key] = c; });
+  function useCategories(list) {
+    const clean = (Array.isArray(list) && list.length ? list : DEFAULT_CATEGORIES)
+      .filter(function (c) { return c && /^[a-z0-9-]{1,40}$/.test(c.key) && String(c.label || "").trim(); })
+      .map(function (c) { return { key: c.key, label: String(c.label).trim().slice(0, 40), colour: /^#[0-9a-fA-F]{6}$/.test(c.colour || "") ? c.colour : "" }; });
+    if (!clean.some(function (c) { return c.key === "waiting"; })) clean.push({ key: "waiting", label: "Waiting on someone", colour: "" });
+    if (!clean.some(function (c) { return c.key === "later"; })) clean.push({ key: "later", label: "Can wait", colour: "" });
+    CATEGORIES.length = 0;
+    Object.keys(CAT).forEach(function (k) { delete CAT[k]; });
+    clean.forEach(function (c) { c.css = c.colour || THEME_COLOURS[c.key] || "var(--cat-later)"; CATEGORIES.push(c); CAT[c.key] = c; });
+  }
+  useCategories(null);
+
+  // Where a task is on the board. The labels can be renamed in Preferences (settings.stageLabels).
+  const STAGES = [
+    { key: "todo",    label: "To do" },
+    { key: "doing",   label: "In progress" },
+    { key: "waiting", label: "Waiting on" },
+    { key: "done",    label: "Done" }
+  ];
+  function stageLabel(d, key) {
+    const custom = d && d.settings && d.settings.stageLabels && d.settings.stageLabels[key];
+    const s = STAGES.find(function (x) { return x.key === key; });
+    return custom || (s ? s.label : key);
+  }
+  function stageOf(t) {
+    if (t.status === "done") return "done";
+    if (t.category === "waiting") return "waiting";
+    if (t.inProgress) return "doing";
+    return "todo";
+  }
 
   const ROLES = [
     { key: "client",   label: "Client" },
@@ -42,7 +76,8 @@
   const DEFAULT_SETTINGS = {
     yourName: "", businessName: "",
     minutesSavedPerTask: 6, minutesSavedPerPlan: 20,
-    dayStarts: "08:00", dayEnds: "18:00"
+    dayStarts: "08:00", dayEnds: "18:00",
+    defaultScope: "today", defaultView: "board"
   };
 
   // ============================================================
@@ -59,6 +94,7 @@
   function normalise(d) {
     d.formatVersion = 2;
     d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
+    useCategories(d.settings.categories);
     d.tasks = (d.tasks || []).filter(function (t) { return t && t.id && t.title; });
     d.tasks.forEach(function (t) {
       if (!CAT[t.category]) t.category = "later";
@@ -123,6 +159,8 @@
   function claudeHasPlanned(d) { return planIsToday(d) && !!d.plan.preparedAt; }
 
   // A new task Claude spotted that the person has not approved yet
+  // Claude has looked at this task and written a prompt it could act on (see the spot-claude-tasks skill)
+  function claudeCanDo(t) { return !!(t && t.status === "open" && !t.suggested && t.claude && t.claude.prompt); }
   function isSuggestion(t) { return !!t && !!t.suggested && t.status === "open"; }
   // Really on the list: open and not an unapproved suggestion
   function isOnList(t) { return !!t && t.status === "open" && !t.suggested; }
@@ -388,6 +426,42 @@
       return t;
     },
 
+    // Move a task to a column on the board: To do, In progress, Waiting on or Done
+    setStage: function (d, taskId, stage) {
+      const t = taskById(d, taskId);
+      if (!t) return;
+      if (stage === "done") { mut.setDone(d, taskId, true); t.inProgress = false; return; }
+      if (t.status === "done") mut.setDone(d, taskId, false);
+      if (stage === "waiting") {
+        if (t.category !== "waiting") { t.categoryBeforeWaiting = t.category; t.category = "waiting"; t.waitingSince = todayISO(); }
+        t.inProgress = false;
+        return;
+      }
+      if (t.category === "waiting") { t.category = CAT[t.categoryBeforeWaiting] && t.categoryBeforeWaiting !== "waiting" ? t.categoryBeforeWaiting : "today"; delete t.waitingSince; }
+      t.inProgress = stage === "doing";
+    },
+
+    // Save Preferences. Categories that were removed move their tasks to "Can wait".
+    setPreferences: function (d, values, categories) {
+      Object.assign(d.settings, values);
+      if (categories) {
+        d.settings.categories = categories;
+        useCategories(categories);
+        d.tasks.forEach(function (t) { if (!CAT[t.category]) t.category = "later"; });
+        d.plan.items.forEach(function (i) { if (i.category && !CAT[i.category]) i.category = "later"; });
+      }
+    },
+
+    // "Who's it for": an existing person or company by name, or a new one added to the contacts
+    personByName: function (d, name, organisation) {
+      const n = String(name || "").trim();
+      if (!n) return null;
+      const lower = n.toLowerCase();
+      const found = d.people.find(function (p) { return p.name.toLowerCase() === lower || (p.organisation && p.organisation.toLowerCase() === lower); });
+      if (found) return found;
+      return mut.addPerson(d, { name: n, organisation: String(organisation || "").trim(), role: "other" });
+    },
+
     // Edit any fields of a task
     updateTask: function (d, taskId, fields) {
       const t = taskById(d, taskId);
@@ -541,7 +615,8 @@
 
   window.TL = window.TL || {};
   window.TL.model = {
-    CATEGORIES: CATEGORIES, CAT: CAT, ROLES: ROLES, DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+    CATEGORIES: CATEGORIES, CAT: CAT, DEFAULT_CATEGORIES: DEFAULT_CATEGORIES, ROLES: ROLES, DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+    STAGES: STAGES, stageOf: stageOf, stageLabel: stageLabel, claudeCanDo: claudeCanDo,
     validate: validate, normalise: normalise,
     todayISO: todayISO, mondayOf: mondayOf, weekDates: weekDates, toMinutes: toMinutes, fromMinutes: fromMinutes,
     splitLocal: splitLocal, timeLabel: timeLabel,

@@ -195,6 +195,10 @@ async function handleApi(req, res, url) {
     // Used by "Open Task List.html" to check the helper is running
     return send(res, 200, "window.tlosAlive = true;", TYPES[".js"]);
   }
+  // Where this folder is, so the app can open Claude Code right here ("Open in Claude" on a task)
+  if (url === "/api/info" && req.method === "GET") {
+    return sendJson(res, 200, { folder: ROOT });
+  }
   if (url === "/api/tasks/meta" && req.method === "GET") {
     return sendJson(res, 200, { modified: modified() });
   }
