@@ -174,6 +174,7 @@ Every tool's own setup ends its "get to know the business" step with the brand s
 | Address | Does |
 |---|---|
 | `GET /` | Opens Home (`/home/`) |
+| `GET /api/info` | The folder this kit is in, so a page can link to `claude://code/new?q=...&folder=...` (opens Claude Code there with a prompt typed in). Added 7 October 2026; the helper files are otherwise unchanged, so copy them again |
 | `GET /api/alive.js` | Answers if the helper is running (used by the launcher and the start scripts) |
 | `GET /api/tasks`, `PUT /api/tasks`, `GET /api/tasks/meta` | The task file, as before. A save must keep its `tasks` list |
 | `GET /api/data/<id>/<file>.json` | Reads a data file of an installed tool |
