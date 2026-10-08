@@ -8,6 +8,15 @@ Nothing goes out without you. Claude reads and drafts; you decide and you send.
 
 Task List OS is part of a toolkit of 9 free tools from Get AI Powers. The others (a pipeline, proposals, content, money and more) show in the app's menu, and Get AI Powers sets them up with you on a free call.
 
+## What happens when you type /setup
+
+You copy the kit, open it in Claude Code and type **/setup**. In about 20 minutes, Claude:
+
+- **Finds out what you already use.** It checks which apps your Claude account is already connected to, asks a few quick questions, and connects your email, calendar, call recorder and the other apps you name, one by one.
+- **Interviews you about your business.** Your services, your prices, how a new client goes from first message to finished work, and the things you explain again and again.
+- **Builds you your own skills.** 3 to 5 sets of saved instructions written for your business, such as your quotes, replies to new enquiries and welcoming a new client. They work straight away, and Claude saves them in the **skills-to-upload** folder so you can add them to Claude and use them everywhere, including on your phone.
+- **Fills your task list with your real work.** Your last week of email sorted with replies drafted, your recent calls written up, your calendar copied in, and today's plan ready, before you've opened the app.
+
 ## What it does
 
 - **Sorts your inbox.** Every new email goes in a pile: needs a reply, a task, just so you know, or no action. The ones that need an answer appear in your **Inbox** with a draft in your voice. Press **Draft** and the email opens in Gmail or Outlook, written and addressed. Check it, press send.
@@ -23,7 +32,7 @@ Task List OS is part of a toolkit of 9 free tools from Get AI Powers. The others
 
 - **Claude Code**, signed in with a paid Claude plan (Pro or Max). Your email, calendar and app connections come from your Claude account, and Claude Code only uses them when it's signed in with a subscription. The Claude desktop app works too.
 - Nothing else to install in most cases. Your task list runs on your own computer using Node (Claude installs it for you if it's missing, with your permission).
-- About 15 to 20 minutes, once.
+- About 20 to 25 minutes, once.
 
 ## Get started
 
@@ -35,7 +44,7 @@ Task List OS is part of a toolkit of 9 free tools from Get AI Powers. The others
 3. **Open the Task List OS folder in Claude Code and choose "Yes, I trust this folder".** The first time, Claude Code asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps. Press the down arrow, then Enter.
 4. **Type `/setup`.**
 
-Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. It also asks for your website or brand guidelines, so the app comes out in your own colours, font and logo. Then it opens your task list and gives you its link, **http://localhost:4747**. Bookmark it. That's it.
+Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. It asks about your services and builds you your own skills, saved in the **skills-to-upload** folder with a note on how to add them to Claude. It also asks for your website or brand guidelines, so the app comes out in your own colours, font and logo. Then it opens your task list and gives you its link, **http://localhost:4747**. Bookmark it. That's it.
 
 If an app needs a key rather than a sign-in, Claude gives you one line to paste into the Terminal. The key is stored in your computer's secure keychain, never in a chat and never in this folder.
 
@@ -70,9 +79,10 @@ toolkit.json           what this tool is, for attaching it to the others in the 
 ATTACHING.md           how the toolkit's tools attach to each other
 CLAUDE.md              Claude's standing instructions in this folder
 Open Task List.html    double-click to open your task list (or use the link Claude gives you)
-setup/                 the 8 setup steps, a guide per app in connections/, and the key scripts
+setup/                 the 9 setup steps, a guide per app in connections/, and the key scripts
 context/               Claude's notes about your business
 .claude/skills/        saved know-how; each one also works as a command in Claude Code
+skills-to-upload/      the skills Claude builds for your business, packed up to add to Claude
 files/                 your business documents, in numbered folders
 apps/                  the task list app and its look (theme.css)
 docs/                  customising, privacy and safety

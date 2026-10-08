@@ -49,7 +49,8 @@ If one still says "Status: not filled in yet", work with what you have and offer
 | `apps/installed.json` | The tools in this folder. The menu and the helper both read it |
 | `context/` | Your notes about the business (see above) |
 | `files/` | Their documents, in numbered folders. `files/README.md` maps anything that lives elsewhere, such as Google Drive |
-| `.claude/skills/` | Saved know-how for common jobs. They load automatically in Claude Code and work as commands (`/sort-my-day`). `.claude/skills/README.md` lists them |
+| `.claude/skills/` | Saved know-how for common jobs. They load automatically in Claude Code and work as commands (`/sort-my-day`). `.claude/skills/README.md` lists them. Includes the skills you built for this business in setup step 6 |
+| `skills-to-upload/` | The skills you built for this business, packed as zips for them to add to Claude (Customize, then Skills). Keep it in step with `.claude/skills/` when you change one of their skills |
 | `setup/connections/` | How to connect each app (email, calendar, call recorders, accounts, CRM) |
 | `setup/` | The setup steps and `progress.md` |
 | `docs/` | Plain-English guides for the person: customising the app, privacy and safety |

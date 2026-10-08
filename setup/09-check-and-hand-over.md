@@ -1,8 +1,8 @@
-# Step 8: check and hand over
+# Step 9: check and hand over
 
 Goal: prove it all works, both ways, then leave them with a clear picture of what they've got.
 
-## 8.1 What good looks like
+## 9.1 What good looks like
 
 Check these yourself. Fix anything that fails, then check again.
 
@@ -19,12 +19,17 @@ Check these yourself. Fix anything that fails, then check again.
 - [ ] Every connected app is in `context/tools.md` with what you may and may not do.
 - [ ] Every `context/` file says "Status: filled in", or `setup/progress.md` says why not.
 
+**Their skills**
+- [ ] Each skill from step 6 is in `.claude/skills/<name>/SKILL.md` and as `skills-to-upload/<name>.zip`, and the zip opens to a `<name>` folder with `SKILL.md` inside.
+- [ ] Each skill's `name` matches its folder, and none of them points at files in this folder.
+- [ ] `skills-to-upload/README.md` lists them all.
+
 **With them** (ask them to do these 3 things)
 - [ ] They open **http://localhost:4747** (or their bookmark). They see "Good morning, [name]", the line saying when you last checked, and your suggestions.
 - [ ] In the **Inbox**, press **Draft** on one. The email opens in Gmail or Outlook, written and addressed. (They don't have to send it.)
 - [ ] On **Review**, approve one suggestion. Then read the task file again and check it changed. Tell them: "That's working both ways. I can see you approved [task]."
 
-## 8.2 Note what's missing, gently
+## 9.2 Note what's missing, gently
 
 3 things make the biggest difference to how useful you can be:
 1. **Connections:** their email, calendar and call recorder.
@@ -37,11 +42,13 @@ If all 3 are in good shape, say so. If any are thin, say it once, kindly, in you
 
 Mention it once. Never suggest the task list is broken without it.
 
-## 8.3 Hand over
+## 9.3 Hand over
 
-1. In `setup/progress.md`, change "Setup status" to `complete on <date>` and tick step 8.
+1. In `setup/progress.md`, change "Setup status" to `complete on <date>` and tick step 9.
 2. In `CLAUDE.md`, change `Setup: not done yet` to `Setup: complete on <date>`.
-3. Tell them, briefly:
+3. Tell them what you did, as a short list with real numbers, so they see it in one go. For example: "Connected Gmail, Google Calendar, Fathom and Xero. Sorted 143 emails and drafted 9 replies. Wrote up 4 calls with 11 actions. Built you 4 skills. Found 6 tasks I can do for you."
+4. Remind them about their skills in one line: they're in the **skills-to-upload** folder, and adding them to Claude (Customize, then Skills) means they work in every conversation, including on their phone.
+5. Then tell them, briefly:
    - What's connected, and that you only read and draft.
    - Their link, **http://localhost:4747**, and whether it starts with their computer.
    - Whether you're checking in automatically, and when.

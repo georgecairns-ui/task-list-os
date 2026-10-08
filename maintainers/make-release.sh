@@ -47,6 +47,10 @@ if any(data.get("settings", {}).get(k) for k in ("yourName", "businessName")):
 for f in sorted((root / "context").glob("*.md")):
     if f.name != "README.md" and "Status: not filled in yet" not in f.read_text():
         problems.append(f"{f.relative_to(root)} has been filled in")
+if [f.name for f in (root / "skills-to-upload").iterdir() if f.name not in ("README.md", ".DS_Store")]:
+    problems.append("skills-to-upload/ has someone's own skills in it")
+if "(Claude fills this in during setup)" not in (root / "skills-to-upload/README.md").read_text():
+    problems.append("skills-to-upload/README.md lists someone's own skills")
 if "Setup status: not started" not in (root / "setup/progress.md").read_text():
     problems.append("setup/progress.md is not blank")
 if "Setup: not done yet" not in (root / "CLAUDE.md").read_text():
@@ -67,7 +71,7 @@ rsync -a \
 find "$OUT" -mindepth 2 -type d -name .claude -empty -prune -exec rm -rf {} +
 
 # ---------- 3. Checks ----------
-for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" ".claude/skills/README.md" ".claude/settings.json" "setup/scripts/save-key.sh" "setup/scripts/start-task-list.sh" "apps/server/server.js" "apps/server/server.py" "setup/connections/README.md" "toolkit.json" "ATTACHING.md" "apps/installed.json" "apps/shared/catalogue.json" "apps/shared/VERSION" "apps/shared/sidebar.css" "apps/shared/js/sidebar.js" "apps/shared/js/theme.js" "apps/shared/images/claude-icon.png" "apps/task-list/menu.json" "apps/task-list/app/view-tasks.js" "apps/task-list/app/view-preferences.js" ".claude/skills/spot-claude-tasks/SKILL.md" "apps/home/index.html" "apps/home/home.js" "apps/home/home.css" "apps/task-list/home-boxes.js" "apps/shared/fonts/Figtree-Variable.woff2" "apps/task-list/ATTACH-CLAUDE.md"; do
+for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" ".claude/skills/README.md" ".claude/settings.json" "setup/scripts/save-key.sh" "setup/scripts/start-task-list.sh" "apps/server/server.js" "apps/server/server.py" "setup/connections/README.md" "toolkit.json" "ATTACHING.md" "apps/installed.json" "apps/shared/catalogue.json" "apps/shared/VERSION" "apps/shared/sidebar.css" "apps/shared/js/sidebar.js" "apps/shared/js/theme.js" "apps/shared/images/claude-icon.png" "apps/task-list/menu.json" "apps/task-list/app/view-tasks.js" "apps/task-list/app/view-preferences.js" ".claude/skills/spot-claude-tasks/SKILL.md" "apps/home/index.html" "apps/home/home.js" "apps/home/home.css" "apps/task-list/home-boxes.js" "apps/shared/fonts/Figtree-Variable.woff2" "apps/task-list/ATTACH-CLAUDE.md" "setup/06-build-your-skills.md" "setup/09-check-and-hand-over.md" "skills-to-upload/README.md"; do
   [ -e "$OUT/$f" ] || fail "missing $f"
 done
 python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$OUT/apps/task-list/data/tasks.json" || fail "tasks.json is not valid"

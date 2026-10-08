@@ -11,7 +11,7 @@ Goal: in one short exchange, learn what the person uses, so every later step is 
 
 ## 1.2 Ask everything in one message
 
-Send this as one friendly, numbered message. Skip anything you already know from 1.1 and say so. Tell them short answers are fine.
+Open with what you found in 1.1, so they see you've already looked: "You've already got Gmail and Google Calendar connected to Claude, so I'll use those." Then send the questions as one friendly, numbered message. Skip anything you already know from 1.1 and say so. Tell them short answers are fine.
 
 > To set this up properly I need to know a few things. Short answers are fine.
 >

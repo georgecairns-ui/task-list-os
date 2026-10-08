@@ -117,7 +117,7 @@
 
   function gateCard(art, eyebrow, title, body, actions, small) {
     return '<div class="gate__card">' +
-      '<div class="gate__text"><div class="gate__brand"><img src="../shared/images/GAIP-emblem-black-teal-pop-RGB.svg" alt="" width="28" height="28"><span>Task List OS</span></div>' +
+      '<div class="gate__text"><div class="gate__brand"><img src="../shared/images/claude-icon.png" alt="" width="28" height="28"><span>Task List OS</span></div>' +
       (eyebrow ? '<span class="label">' + esc(eyebrow) + "</span>" : "") + "<h1>" + title + "</h1>" + body +
       '<div class="gate__actions">' + actions + "</div>" + (small ? '<p class="gate__small">' + small + "</p>" : "") + "</div>" +
       '<div class="gate__art"><img src="' + C.ART[art] + '" alt="" width="440" height="440"></div></div>';

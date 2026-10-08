@@ -27,8 +27,8 @@
   "setupSteps": [
     "setup/02-connect-email-and-calendar.md",
     "setup/03-connect-call-recordings.md",
-    "setup/06-first-run.md",
-    "setup/07-make-it-automatic.md"
+    "setup/07-first-run.md",
+    "setup/08-make-it-automatic.md"
   ],
   "connections": [
     "setup/connections/gmail-and-google-calendar.md",
