@@ -20,6 +20,7 @@ The task list app, where every tool's actions land. Their tasks are in `apps/tas
 | "Sort my brain dump", "turn my notes into tasks" | `.claude/skills/sort-my-brain-dump` |
 | "Wrap up my day", "what did I get done" | `.claude/skills/wrap-up-my-day` |
 | "Weekly review", "how did this week go" | `.claude/skills/weekly-review` |
+| "What can you do off my list?", and on every check-in | `.claude/skills/spot-claude-tasks` |
 | "Reply to this", "help me answer Tom" | `.claude/skills/draft-a-reply` |
 | "Write up this meeting", "follow-up from the call" | `.claude/skills/meeting-follow-up` |
 | "Can Priya do this?", "hand this over" | `.claude/skills/delegate-it` |
@@ -30,4 +31,4 @@ Day to day:
 - "I've done X": mark it done and log it.
 - Spotted something that needs doing? Add it as a suggested task so it appears on the Review page with a "New" tag. A task that came from another tool carries `"source": { "tool": "<tool id>", "id": "<that tool's record id>" }`.
 - Each time you sort their day, copy their calendar in so Today and Calendar show their real meetings.
-- New client, supplier or team member? Offer to add them to People in the app and to `context/people.md`. Other tools link to people by their People id.
+- New client, supplier or team member? Offer to add them to the contacts in the task file (`people`) and to `context/people.md`. Other tools link to people by their People id.

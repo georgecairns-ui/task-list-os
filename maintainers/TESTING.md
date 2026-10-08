@@ -39,7 +39,6 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] Reload the page: everything is still there.
 - [ ] Demo switch on and off: demo shows Fern & Finch, and switching off returns your real list untouched.
 - [ ] Review: approve, edit and skip all work; Approve all clears the page.
-- [ ] This week: drag a task from Unplanned onto a day, and back. Approve one of Claude's dashed suggested days. Add and tick a goal.
 - [ ] Calendar: your real meetings show (after "sort my day"). Drag a task from To schedule onto a time slot; drag it to a new time. Day, Week and Month all work.
 - [ ] Brain dump: type 3 lines, press Cmd or Ctrl and Enter. Say "sort my brain dump" to Claude; the lines become New suggestions in Review.
 - [ ] People: add a person, open their record, add a task for them, see it in their record.
@@ -69,8 +68,12 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] Customise on Home: hide, show, move, make wide, Done. Reload: still the same. Reset puts the default back.
 - [ ] Sidebar: Home at the top, Task List OS as a dropdown with its pages (All tasks has Waiting on and Done under it). Fold it: the total waiting shows on its name. Reload: still folded.
 - [ ] The moon or sun button switches light and dark on every page, and is remembered.
-- [ ] This week: Board or Calendar switch. Drag a task between days on the board; in Calendar, drag one onto a time. A link to the old Calendar page opens This week's calendar.
-- [ ] All tasks: All, Needs a reply (the emails waiting, each with Draft, plus tasks with an email to send) and In my calendar (tasks with a time).
+- [ ] Tasks: Today, This week and All each work as Board, List and Calendar. Drag a card between To do, In progress, Waiting on and Done; it stays there after a reload. Every card is the same height and stays inside its column, with the title on up to 2 lines.
+- [ ] Today shows Claude's plan on top. Old links (#today, #week, #calendar, #all, #waiting, #done) open the matching Tasks view.
+- [ ] New task: type a new name in "Who's it for"; it's added to the contacts and the task shows it.
+- [ ] Preferences (the cog): rename a column, rename and recolour a category, add one, remove one (its tasks move to "Can wait"), set how Tasks opens. Save, reload: all kept, on the board and in the task panel.
+- [ ] Claude can do this: in Demo mode 4 tasks show the tag; the filter shows only them; a task's panel has Open in Claude (opens the Claude desktop app with the prompt typed in, in this folder) and Copy the prompt. After a real check-in, tasks Claude could do get the tag.
+- [ ] The Brain dump button at the top records a voice note; the sidebar shows only Tasks, Inbox, Review and Calls.
 - [ ] Add meeting: it shows dashed in This week's calendar at once and opens in Google Calendar or Outlook with the title, time, place and guests filled in. Its panel can open it again or remove it.
 - [ ] Setup step 5 offers to match the brand from a website or brand guidelines, and the colour, font and logo change in light and dark.
 

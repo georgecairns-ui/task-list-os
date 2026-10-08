@@ -70,6 +70,15 @@
     const lengthOptions = '<option value="">Length</option>' + LENGTHS.map(function (m) { return '<option value="' + m + '"' + (Number(t.durationMinutes) === m ? " selected" : "") + ">" + esc(ui.minutesLabel(m)) + "</option>"; }).join("");
     const source = t.source ? '<section class="drawer__section"><h3 class="label">Where it came from</h3>' + C.sourceLine(t) + (t.source.date ? '<p class="muted drawer__small">' + esc(ui.parseDate(t.source.date).toLocaleDateString("en-GB", { day: "numeric", month: "long" })) + "</p>" : "") + "</section>" : "";
     const hist = M.history(d, t);
+    const person = M.personById(d, t.personId);
+    // Claude has written a prompt it could act on: open it in Claude, ready for the person to send
+    const cl = t.claude;
+    const claudeSection = M.claudeCanDo(t) ? '<section class="drawer__section claude-can"><h3 class="label">' + icon("sparkle") + "Claude can do this</h3>" +
+      (cl.how ? "<p>" + esc(cl.how) + "</p>" : "") +
+      (cl.uses && cl.uses.length ? '<p class="claude-can__uses">' + cl.uses.map(function (u) { return '<span class="chip">' + esc(u) + "</span>"; }).join("") + "</p>" : "") +
+      '<div class="claude-can__actions"><a class="btn btn--primary" href="' + esc(C.claudeLink(cl.prompt)) + '">' + icon("external") + "Open in Claude</a>" +
+      '<button type="button" class="btn" data-action="copy" data-text="' + esc(cl.prompt) + '">' + icon("list") + "Copy the prompt</button></div>" +
+      '<p class="muted drawer__small">Opens Claude with the prompt ready. Read it, then press send. Claude asks you before it sends, books or pays for anything.</p></section>' : "";
 
     return '<div class="drawer__head"><span class="label">Task</span><span class="drawer__spacer"></span>' +
       '<button type="button" class="icon-btn" data-action="close-drawer" aria-label="Close">' + icon("x") + "</button></div>" +
@@ -77,8 +86,10 @@
       '<div class="drawer__title-row"><button type="button" class="check check--lg" role="checkbox" aria-checked="' + done + '" data-action="toggle-done" aria-label="' + (done ? "Mark not done" : "Mark done") + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg></button>' +
       '<textarea class="input-bare drawer__title" data-field="title" rows="1" maxlength="200" aria-label="Task title">' + esc(t.title) + "</textarea></div>" +
       '<div class="props">' +
-      prop("List", '<select class="select select--bare" data-field="category" aria-label="List">' + C.categoryOptions(t.category) + "</select>") +
-      prop("Who", '<select class="select select--bare" data-field="personId" aria-label="Who it\'s for">' + C.personOptions(d, t.personId) + "</select>") +
+      prop("Status", '<select class="select select--bare" data-stage aria-label="Status">' + M.STAGES.map(function (st) { return '<option value="' + st.key + '"' + (M.stageOf(t) === st.key ? " selected" : "") + ">" + esc(M.stageLabel(d, st.key)) + "</option>"; }).join("") + "</select>") +
+      prop("Category", '<select class="select select--bare" data-field="category" aria-label="Category">' + C.categoryOptions(t.category) + "</select>") +
+      prop("Who", '<input class="input input--bare" data-who list="drawerPeople" maxlength="80" value="' + esc(person ? person.name : "") + '" placeholder="A person or company" aria-label="Who it\'s for"><datalist id="drawerPeople">' +
+        d.people.map(function (x) { return '<option value="' + esc(x.name) + '">' + esc(x.organisation || "") + "</option>"; }).join("") + "</datalist>") +
       (t.category === "waiting" ? prop("Waiting on", '<input class="input input--bare" data-field="waitingOn" maxlength="120" value="' + esc(t.waitingOn || "") + '" placeholder="Who or what" aria-label="Waiting on">') : "") +
       (t.category === "delegate" ? prop("Hand to", '<input class="input input--bare" data-field="delegateTo" maxlength="120" value="' + esc(t.delegateTo || "") + '" placeholder="Who should do it" aria-label="Hand to">') : "") +
       prop("Plan for", '<input class="input input--bare" type="date" data-field="scheduledDate" value="' + esc(t.scheduledDate || "") + '" aria-label="Plan for">') +
@@ -87,7 +98,7 @@
       prop("Due", '<input class="input input--bare" type="date" data-field="due" value="' + esc(t.due || "") + '" aria-label="Due date">') +
       prop("Today", done ? '<span class="muted">Done</span>' : onToday ? '<button type="button" class="btn btn--sm" data-action="remove-today">' + icon("sun") + "On today's list · Remove</button>" : '<button type="button" class="btn btn--sm" data-action="add-today">' + icon("sun") + "Add to today</button>") +
       "</div>" +
-      emailDraft + replyLink + guide +
+      claudeSection + emailDraft + replyLink + guide +
       '<section class="drawer__section"><h3 class="label"><label for="taskNotes">Notes</label></h3><textarea class="textarea" id="taskNotes" data-field="notes" rows="4" maxlength="4000" placeholder="Names, amounts, links, anything useful">' + esc(t.notes || "") + "</textarea></section>" +
       source +
       (hist.length ? '<section class="drawer__section"><h3 class="label">History</h3><ol class="history">' + hist.map(function (h) {
@@ -209,6 +220,12 @@
 
   // Save each field as soon as it changes
   function bind(root, ctx, target) {
+    root.querySelectorAll("[data-stage]").forEach(function (el) {
+      el.addEventListener("change", function () { ctx.actions.setStage(target.id, el.value); });
+    });
+    root.querySelectorAll("[data-who]").forEach(function (el) {
+      el.addEventListener("change", function () { ctx.actions.setWho(target.id, el.value.trim()); });
+    });
     root.querySelectorAll("[data-field]").forEach(function (el) {
       el.addEventListener("change", function () {
         const field = el.getAttribute("data-field");

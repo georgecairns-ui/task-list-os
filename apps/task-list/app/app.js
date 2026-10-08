@@ -19,19 +19,29 @@
   const mut = M.mut;
   const $ = function (sel, root) { return (root || document).querySelector(sel); };
 
-  // Number keys 1 to 9 follow the sidebar: Today, This week, Inbox, Review, All tasks, Waiting on, Done, Calls, Brain dump
-  const VIEW_ORDER = ["today", "week", "replies", "review", "all", "waiting", "done", "calls", "dump"];
+  // Number keys 1 to 4 follow the sidebar: Tasks, Inbox, Review, Calls
+  const VIEW_ORDER = ["tasks", "replies", "review", "calls"];
   const L = window.TL.links;
   const narrow = function () { return window.matchMedia("(max-width: 760px)").matches; };
 
+  function remembered(key, allowed) {
+    try { const v = localStorage.getItem(key); return allowed.indexOf(v) > -1 ? v : null; } catch (e) { return null; }
+  }
+  function remember(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* not remembered, fine */ }
+  }
+
   // ---------- Screen state (not saved to the file) ----------
   const state = {
-    view: "today",
+    view: "tasks",
     calMode: narrow() ? "day" : "week",
     calDate: M.todayISO(),
     calScroll: null,
     weekStart: null,
-    weekMode: (function () { try { return localStorage.getItem("tlos-week-mode") === "calendar" ? "calendar" : "board"; } catch (e) { return "board"; } })(),
+    // The Tasks page: which tasks (today, week, all) and how (board, list, calendar); remembered in this browser
+    tasksScope: remembered("tlos-tasks-scope", ["today", "week", "all"]),
+    tasksView: remembered("tlos-tasks-view", ["board", "list", "calendar"]),
+    claudeOnly: false,
     filterCat: "all", filterPerson: "", sortBy: "date", allView: "all", filterRole: "all",
     drawer: null
   };
@@ -64,6 +74,9 @@
     },
     onData: function (d, reason) {
       data = M.normalise(d);
+      // First time on Tasks in this browser: open it the way Preferences says
+      if (!state.tasksScope) state.tasksScope = data.settings.defaultScope || "today";
+      if (!state.tasksView) state.tasksView = data.settings.defaultView || "board";
       // A different set of data (a folder opened, or Demo switched): start with a clean screen
       if (reason === "load" || reason === "demo") { seen.clear(); state.drawer = null; }
       render();
@@ -170,13 +183,17 @@
     return ' enter" style="--i:' + Math.min(stagger++, 12);
   }
 
+  function storeInfo() {
+    return { demo: store.isDemo(), canChange: !store.isDemo() && !store.isHelper(),
+      folder: store.isDemo() ? "Sample data (nothing is saved)" : store.isHelper() ? "Your Task List OS folder, on this computer" : store.folderName() };
+  }
+
   function ctx() {
-    return { d: data, state: state, anim: anim, actions: viewActions };
+    return { d: data, state: state, anim: anim, actions: viewActions, storeInfo: storeInfo };
   }
 
   // Sidebar counts, top bar, banners
   function renderChrome() {
-    $("#demoToggle").checked = status === "demo";
     const pill = $("#saveStatus");
     if (status === "ready") {
       const just = statusDetail.savedAt && Date.now() - statusDetail.savedAt < 3000;
@@ -204,6 +221,7 @@
     $("#businessName").textContent = data.settings.businessName || (data.settings.yourName ? data.settings.yourName + "'s workspace" : "Your workspace");
     const counts = {
       today: V.today.todaysTasks(data).filter(function (t) { return t.status === "open"; }).length,
+      tasks: data.tasks.filter(function (t) { return t.status === "open" && V.tasks.inScope(data, t, "today"); }).length,
       review: M.reviewCount(data),
       dump: M.unsortedDump(data).length,
       replies: M.openReplies(data).length,
@@ -286,17 +304,21 @@
   // 4. Moving between pages
   // ============================================================
 
-  // The calendar lives inside This week now: anything that asks for "calendar" opens This week in calendar view
-  function setWeekMode(mode) {
-    state.weekMode = mode === "calendar" ? "calendar" : "board";
-    try { localStorage.setItem("tlos-week-mode", state.weekMode); } catch (e) { /* not remembered, fine */ }
+  function setScope(scope) { state.tasksScope = scope; remember("tlos-tasks-scope", scope); }
+  function setTasksView(v) { state.tasksView = v; remember("tlos-tasks-view", v); }
+  // Pages that are now views of Tasks (and People, which lives in Pipeline OS): old links still land somewhere sensible
+  function resolve(view) {
+    const map = { today: ["today"], week: ["week"], calendar: [null, "calendar"], all: ["all"], waiting: ["all"], done: ["all", "list"], dump: [], people: [] };
+    if (!map[view]) return V[view] && ["preferences", "tasks", "replies", "review", "calls"].indexOf(view) > -1 ? view : "tasks";
+    if (map[view][0]) setScope(map[view][0]);
+    if (map[view][1]) setTasksView(map[view][1]);
+    return "tasks";
   }
   function go(view) {
-    if (view === "calendar") { setWeekMode("calendar"); view = "week"; }
-    if (!V[view]) view = "today";
+    view = resolve(view);
     if (view !== state.view) seen.clear();
     state.view = view;
-    try { localStorage.setItem("tlos-view", view); } catch (e) { /* not remembered, fine */ }
+    remember("tlos-view", view);
     if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
     document.body.classList.remove("sidebar-open");
     if (inApp()) { renderChrome(); renderView(); $("#view").scrollTop = 0; }
@@ -308,6 +330,11 @@
   // ============================================================
 
   const viewActions = {
+    setStage: function (taskId, stage) {
+      const before = M.taskById(data, taskId);
+      if (!before || M.stageOf(before) === stage) return;
+      change(function (d) { mut.setStage(d, taskId, stage); }).then(function () { ui.toast("Moved to " + M.stageLabel(data, stage)); });
+    },
     planForDay: function (taskId, date) {
       change(function (d) {
         const t = M.taskById(d, taskId);
@@ -325,6 +352,16 @@
     },
     updateTask: function (taskId, fields) {
       change(function (d) { mut.updateTask(d, taskId, fields); });
+    },
+    // "Who's it for" in a task's panel: an existing person or company, or a new one
+    setWho: function (taskId, name) {
+      let added = false;
+      change(function (d) {
+        const before = d.people.length;
+        const p = name ? mut.personByName(d, name) : null;
+        added = d.people.length > before;
+        mut.updateTask(d, taskId, { personId: p ? p.id : "" });
+      }).then(function () { if (added) ui.toast(name + " added to your contacts"); });
     },
     updatePerson: function (personId, fields) {
       change(function (d) { mut.updatePerson(d, personId, fields); });
@@ -499,7 +536,11 @@
     const p = preset || {};
     quickForm.reset();
     quickForm.category.innerHTML = C.categoryOptions(p.category || "today");
-    quickForm.personId.innerHTML = C.personOptions(data, p.personId || "");
+    const forPerson = p.personId ? M.personById(data, p.personId) : null;
+    quickForm.whoFor.value = forPerson ? forPerson.name : "";
+    $("#quickPeople").innerHTML = data.people.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (x) {
+      return '<option value="' + esc(x.name) + '">' + esc(x.organisation || "") + "</option>" + (x.organisation ? '<option value="' + esc(x.organisation) + '"></option>' : "");
+    }).join("");
     quickForm.today.checked = p.today !== false;
     if (p.title) quickForm.title.value = p.title;
     quickAdd.showModal();
@@ -509,11 +550,15 @@
     e.preventDefault();
     const title = quickForm.title.value.trim();
     if (!title) return quickForm.title.focus();
-    const fields = { title: title, category: quickForm.category.value, personId: quickForm.personId.value || null, scheduledDate: quickForm.scheduledDate.value || null, due: quickForm.due.value || null };
+    const fields = { title: title, category: quickForm.category.value, personId: null, scheduledDate: quickForm.scheduledDate.value || null, due: quickForm.due.value || null };
+    const whoFor = quickForm.whoFor.value.trim();
     const today = quickForm.today.checked;
     quickAdd.close();
     let made = null;
-    change(function (d) { made = mut.addTask(d, fields, { today: today }); }).then(function () {
+    change(function (d) {
+      if (whoFor) fields.personId = mut.personByName(d, whoFor).id;
+      made = mut.addTask(d, fields, { today: today });
+    }).then(function () {
       ui.toast(today ? "Added to today's list" : "Task added", { actionLabel: "Open", onAction: function () { openDrawer("task", made.id); } });
     });
   });
@@ -585,29 +630,6 @@
       '<div class="modal__foot"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn--primary">Add person</button></div></form>');
   }
 
-  const settingsDialog = $("#settingsDialog"), settingsForm = $("#settingsForm");
-  function openSettings() {
-    const s = data.settings;
-    settingsForm.emailProvider.innerHTML = L.EMAIL_PROVIDERS.map(function (p) { return '<option value="' + p.key + '">' + esc(p.label) + "</option>"; }).join("");
-    settingsForm.calendarProvider.innerHTML = L.CALENDAR_PROVIDERS.map(function (p) { return '<option value="' + p.key + '">' + esc(p.label) + "</option>"; }).join("");
-    ["yourName", "businessName", "dayStarts", "dayEnds", "minutesSavedPerTask", "minutesSavedPerPlan", "emailProvider", "calendarProvider"].forEach(function (k) { if (s[k] != null) settingsForm[k].value = s[k]; });
-    $("#settingsFolder").textContent = store.isDemo() ? "Sample data (nothing is saved)" : store.isHelper() ? "Your Task List OS folder, on this computer" : store.folderName();
-    $("#changeFolderBtn").hidden = store.isDemo() || store.isHelper();
-    settingsDialog.showModal();
-  }
-  settingsForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const v = {
-      yourName: settingsForm.yourName.value.trim(), businessName: settingsForm.businessName.value.trim(),
-      dayStarts: settingsForm.dayStarts.value || "08:00", dayEnds: settingsForm.dayEnds.value || "18:00",
-      minutesSavedPerTask: Math.max(0, Number(settingsForm.minutesSavedPerTask.value) || 0),
-      minutesSavedPerPlan: Math.max(0, Number(settingsForm.minutesSavedPerPlan.value) || 0),
-      emailProvider: settingsForm.emailProvider.value, calendarProvider: settingsForm.calendarProvider.value
-    };
-    settingsDialog.close();
-    change(function (d) { mut.setSettings(d, v); }).then(function () { ui.toast("Settings saved"); });
-  });
-  $("#changeFolderBtn").addEventListener("click", function () { settingsDialog.close(); data = null; store.forget(); });
 
   // ============================================================
   // 6. Clicks, forms and changes
@@ -772,7 +794,6 @@
         renderView(); break;
       }
       case "go-calendar-day": state.calDate = btn.getAttribute("data-date"); state.calMode = "day"; state.calScroll = null; go("calendar"); break;
-      case "week-mode": setWeekMode(btn.getAttribute("data-mode")); seen.clear(); state.calScroll = null; renderView(); break;
       case "open-event": openEvent(btn.getAttribute("data-event") || (btn.closest("[data-event]") || btn).getAttribute("data-event")); break;
 
       // lists and people
@@ -786,7 +807,13 @@
 
       // everything else
       case "summary": openGeneric(V.today.summary(ctx())); break;
-      case "settings": openSettings(); break;
+      case "settings": go("preferences"); break;
+      case "change-folder": data = null; store.forget(); break;
+      case "pref-add-cat": V.preferences.addCategoryRow($("#prefCats")); break;
+      case "pref-remove-cat": btn.closest(".pref-cat").remove(); break;
+      case "tasks-scope": setScope(btn.getAttribute("data-value")); seen.clear(); state.calScroll = null; state.calDate = M.todayISO(); renderView(); renderChrome(); break;
+      case "tasks-view": setTasksView(btn.getAttribute("data-value")); seen.clear(); state.calScroll = null; renderView(); renderChrome(); break;
+      case "claude-only": state.claudeOnly = !state.claudeOnly; seen.clear(); renderView(); break;
       case "shortcuts": $("#shortcutsDialog").showModal(); break;
       case "open-sidebar": document.body.classList.add("sidebar-open"); break;
       case "close-sidebar": document.body.classList.remove("sidebar-open"); break;
@@ -837,6 +864,12 @@
       generic.close();
       change(function (d) { mut.schedule(d, id, date, time || null, minutes); }).then(function () { if (time) scheduled(id, date, time); else ui.toast("Planned for " + ui.parseDate(date).toLocaleDateString("en-GB", { weekday: "long" })); });
     }
+    if (kind === "preferences") {
+      const got = V.preferences.collect(form);
+      if (got.error) return ui.toast(got.error, { icon: "alert", duration: 6000 });
+      change(function (d) { mut.setPreferences(d, got.values, got.categories); }).then(function () { ui.toast("Preferences saved"); renderChrome(); });
+      return;
+    }
     if (kind === "add-meeting") {
       const f = form.elements;
       const m = { title: f.title.value.trim(), date: f.date.value, time: f.time.value, minutes: f.minutes.value, guests: f.guests.value.trim(), location: f.location.value.trim(), notes: f.notes.value.trim() };
@@ -868,10 +901,11 @@
     const kind = el.getAttribute("data-change");
     if (kind === "filter-person") state.filterPerson = el.value;
     if (kind === "sort-by") state.sortBy = el.value;
+    if (kind === "filter-cat") { state.filterCat = el.value; seen.clear(); }
+    if (kind === "demo") { data = null; store.setDemo(el.checked); return; }
     renderView();
   });
 
-  $("#demoToggle").addEventListener("change", function () { settingsDialog.close(); data = null; store.setDemo(this.checked); });
   document.querySelectorAll("dialog.modal").forEach(function (dlg) { dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); }); });
   generic.addEventListener("click", function (e) {
     if (e.target === generic) return generic.close();
@@ -953,14 +987,15 @@
   });
 
   const fromHash = location.hash.slice(1);
-  let remembered = null;
-  try { remembered = localStorage.getItem("tlos-view"); } catch (e) { remembered = null; }
-  state.view = V[fromHash] ? fromHash : V[remembered] ? remembered : "today";
-  if (state.view === "calendar") { setWeekMode("calendar"); state.view = "week"; }
+  let lastView = null;
+  try { lastView = localStorage.getItem("tlos-view"); } catch (e) { lastView = null; }
+  state.view = resolve(fromHash || lastView || "tasks");
   if (location.hash !== "#" + state.view) history.replaceState(null, "", "#" + state.view);
 
   renderGate();
   store.start().then(function () {
     if (store.isHelper()) fetch("/api/claude/status", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (st) { if (st.running) watchClaude(); }).catch(function () {});
+    // Where this folder is, so "Open in Claude" can start Claude Code right here (with its connections and skills)
+    if (/^https?:$/.test(location.protocol)) fetch("/api/info", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (info) { C.setFolder(info.folder); }).catch(function () {});
   });
 })();

@@ -25,7 +25,7 @@ The person says "sort my day", "plan my day", "what should I do today" or "morni
 4. If email or calendar is connected, run `triage-inbox` to find new actions since the last plan. Add each as a task with `suggested: true`, `addedBy: "claude"` and a `source`, checking first that nothing with the same `ref` or sender and subject already exists, including dismissed tasks.
 5. Look at every open task. Decide its category (`today`, `quick-win`, `delegate`, `waiting`, `later`). Overdue and due-today items, money coming in or owed, and promises the person made come first.
 6. Build 5 to 10 `proposed` plan items: carried-over tasks, your new suggestions, waiting items worth a chase, and anything worth delegating. Give each a one-sentence reason that names a date, amount or person where you can. Leave everything else off the plan; it stays in the app's "everything else" list.
-7. Write a 1 to 2 sentence `note` on the plan, your honest read of the day.
+7. Write a 1 to 2 sentence `note` on the plan, your honest read of the day. Then follow `.claude/skills/spot-claude-tasks`, so the tasks you could do for them show "Claude can do this" with a ready prompt.
 8. If there are 5 or more unsorted brain dump lines, mention it and offer `sort-my-brain-dump`. On a Monday, offer `plan-my-week` once.
 9. Save: read the file immediately before writing, write the whole file back, keep it valid, 2-space indented, read it back and check it parses.
 10. Tell the person what happened.

@@ -209,6 +209,8 @@ class Handler(BaseHTTPRequestHandler):
         url = self.path.split("?")[0]
         if url == "/api/alive.js":
             return self.send(200, "window.tlosAlive = true;", TYPES[".js"])
+        if url == "/api/info":  # where this folder is, so "Open in Claude" can start Claude Code right here
+            return self.send_json(200, {"folder": ROOT})
         if url == "/api/tasks/meta":
             return self.send_json(200, {"modified": modified()})
         if url == "/api/tasks":

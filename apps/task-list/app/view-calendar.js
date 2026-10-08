@@ -68,7 +68,7 @@
       if (b.kind === "event") {
         return '<button type="button" class="cal-block cal-block--event' + (b.pending ? " cal-block--pending" : "") + short + '" style="' + style + '" data-event="' + esc(b.id) + '" data-action="open-event" title="' + esc(b.title) + '">' + inner + "</button>";
       }
-      return '<div class="cal-block cal-block--task cat-edge--' + esc(b.cat) + (b.done ? " is-done" : "") + short + '" style="' + style + '" data-task="' + esc(b.id) + '" draggable="true" title="' + esc(b.title) + '">' +
+      return '<div class="cal-block cal-block--task' + (b.done ? " is-done" : "") + short + '" style="' + style + ";--edge:" + esc(C.catColour(b.cat)) + '" data-task="' + esc(b.id) + '" draggable="true" title="' + esc(b.title) + '">' +
         '<button type="button" class="cal-block__open" data-action="open-task">' + inner + "</button></div>";
     }).join("");
   }
@@ -161,7 +161,8 @@
     return mon.toLocaleDateString("en-GB", { day: "numeric", month: mon.getMonth() === sun.getMonth() ? undefined : "short" }) + " to " + sun.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   }
 
-  // opts.lead: anything to show first in the toolbar (This week's Board or Calendar switch)
+  // opts.lead: anything to show first in the toolbar (the Tasks page's switches)
+  // opts.hideModes: the Tasks page's Today, This week or All choice sets Day, Week or Month instead
   function render(ctx, opts) {
     const st = ctx.state;
     const mode = st.calMode;
@@ -174,7 +175,7 @@
       '<button type="button" class="btn btn--sm" data-action="cal-today">Today</button>' +
       '<button type="button" class="icon-btn" data-action="cal-next" aria-label="Next">' + icon("chevronRight") + "</button>" +
       '<h2 class="toolbar__label">' + esc(label(st)) + "</h2></div>" +
-      '<div class="toolbar__group"><div class="segmented" role="group" aria-label="Calendar view">' + modes + '</div><button type="button" class="btn" data-action="add-meeting" data-date="' + esc(st.calDate || "") + '">' + icon("plus") + "Add meeting</button></div></div>";
+      '<div class="toolbar__group">' + (opts && opts.hideModes ? "" : '<div class="segmented" role="group" aria-label="Calendar view">' + modes + "</div>") + '<button type="button" class="btn" data-action="add-meeting" data-date="' + esc(st.calDate || "") + '">' + icon("plus") + "Add meeting</button></div></div>";
     if (mode === "month") return html + monthGrid(ctx) + "</div>";
     const dates = visibleDates(st);
     return html + '<div class="cal-layout">' + toScheduleList(ctx, dates) + timeGrid(ctx, dates) + "</div></div>";

@@ -15,6 +15,13 @@
   let data = null;
   let ctx = null;
   let store = null;
+  let folder = null;   // this Task List OS folder, so "Open in Claude" starts Claude Code right here
+
+  // Same rule as the task panel: Claude Code in this folder when it's known, otherwise a new chat. Never sent by itself.
+  function claudeLink(prompt) {
+    const q = encodeURIComponent(String(prompt || "").slice(0, 12000));
+    return folder ? "claude://code/new?q=" + q + "&folder=" + encodeURIComponent(folder) : "claude://claude.ai/new?q=" + q;
+  }
 
   function today() { return M.todayISO(); }
   function person(id) { return id ? M.personById(data, id) : null; }
@@ -99,6 +106,15 @@
     }).join("") + "</ul>";
   }
 
+  function claudeCan() {
+    const list = data.tasks.filter(M.claudeCanDo);
+    if (!list.length) return empty("When Claude checks in, it marks the tasks it could do for you, using your connections. They appear here with a prompt ready to go.");
+    return '<ul class="hlist" role="list">' + list.slice(0, 4).map(function (t) {
+      return '<li class="hrow"><span class="hrow__main"><span class="hrow__title">' + esc(t.title) + '</span><span class="hrow__sub">' + esc(t.claude.how || "") + "</span></span>" +
+        '<a class="btn btn--sm" href="' + esc(claudeLink(t.claude.prompt)) + '" title="Opens Claude with the prompt ready. You press send.">' + icon("sparkle") + "Open in Claude</a></li>";
+    }).join("") + "</ul>" + (list.length > 4 ? '<p class="hbox__more">' + (list.length - 4) + " more on Tasks</p>" : "");
+  }
+
   function saved() {
     const start = ui.parseDate(today());
     const w = M.timeSaved(data, ui.addDays(start, -6));
@@ -127,7 +143,8 @@
       { id: "week", title: "This week", icon: "columns", size: 2, defaultOn: true, page: PAGE + "week", render: week },
       { id: "waiting", title: "Waiting on", icon: "hourglass", size: 1, defaultOn: true, page: PAGE + "waiting", render: waiting },
       { id: "calendar", title: "Today's calendar", icon: "calendar", size: 1, defaultOn: true, page: PAGE + "calendar", render: calendar },
-      { id: "saved", title: "Time saved", icon: "clock", size: 1, defaultOn: true, page: PAGE + "today", render: saved },
+      { id: "claude", title: "Claude can do these", icon: "sparkle", size: 1, defaultOn: true, page: PAGE + "tasks", render: claudeCan },
+      { id: "saved", title: "Time saved", icon: "clock", size: 1, defaultOn: false, page: PAGE + "tasks", render: saved },
       { id: "calls", title: "Calls", icon: "phone", size: 1, defaultOn: true, page: PAGE + "calls", render: calls }
     ],
     greetingName: function () { return data && data.settings.yourName; },
@@ -146,6 +163,7 @@
         onData: function (d) { data = M.normalise(d); def.ready = true; ctx.refresh(); }
       });
       store.start();
+      fetch("/api/info", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (info) { folder = info.folder || null; ctx.refresh(); }).catch(function () {});
     },
     action: function (name, el) {
       const id = el.getAttribute("data-id");

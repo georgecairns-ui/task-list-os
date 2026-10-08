@@ -35,14 +35,14 @@
 
     const tasks = [
       // Today
-      T({ id: "d-01", title: "Chase Marlow Dental for the overdue invoice", notes: "Invoice FF-1042, £1,850. Sent 12 days ago.", category: "today", due: today, personId: "p-hannah", addedBy: "claude" }),
-      T({ id: "d-02", title: "Send Hollins Lettings the website proposal", notes: "Promised on Thursday's call. Draft is in files/03-sales.", category: "today", due: today, personId: "p-dev", scheduledDate: today, scheduledTime: "10:30", durationMinutes: 60 }),
-      T({ id: "d-03", title: "Reply to Jo about the VAT figures", notes: "She needs the Q3 expenses total.", category: "today", due: day(2), personId: "p-jo", addedBy: "claude" }),
+      T({ id: "d-01", claude: { how: "Claude can draft a polite chaser for invoice FF-1042 in your voice, ready for you to check and send.", uses: ["Gmail"], prompt: "Use the polite-chaser skill. Marlow Dental (Hannah Price, hannah@marlowdental.example) hasn't paid invoice FF-1042 for £1,850, sent 12 days ago. Check my email for anything they've said about it since, then draft a friendly but clear chaser in my voice as a Gmail draft. Don't send it: show me the draft first.", checkedAt: at(0, 7, 50) }, title: "Chase Marlow Dental for the overdue invoice", notes: "Invoice FF-1042, £1,850. Sent 12 days ago.", category: "today", due: today, personId: "p-hannah", addedBy: "claude" }),
+      T({ id: "d-02", inProgress: true, title: "Send Hollins Lettings the website proposal", notes: "Promised on Thursday's call. Draft is in files/03-sales.", category: "today", due: today, personId: "p-dev", scheduledDate: today, scheduledTime: "10:30", durationMinutes: 60 }),
+      T({ id: "d-03", claude: { how: "Claude can total last quarter's expenses from your accounts and draft the reply to Jo with the figure.", uses: ["Xero", "Gmail"], prompt: "Jo Bennett (our accountant, jo@ledgerline.example) needs the Q3 expenses total for the VAT return. Work out the total from Xero for July to September, show me how you got it, then draft a short reply to Jo in my voice with the figure as a Gmail draft. Don't send it.", checkedAt: at(0, 7, 50) }, title: "Reply to Jo about the VAT figures", notes: "She needs the Q3 expenses total.", category: "today", due: day(2), personId: "p-jo", addedBy: "claude" }),
       T({ id: "d-09", title: "Send The Old Forge their final invoice", category: "today", personId: "p-ruth", status: "done", doneAt: at(0, 8, 42), scheduledDate: today }),
       T({ id: "d-13", title: "Approve Priya's timesheet", category: "quick-win", personId: "p-priya", scheduledDate: today }),
       // Later this week
       T({ id: "d-04", title: "Renew the fernandfinch.co.uk domain", category: "quick-win", due: day(3) }),
-      T({ id: "d-06", title: "Format the Greenway Café case study", notes: "Copy is approved. Needs laying out for the website.", category: "delegate", delegateTo: "Priya", personId: "p-priya", scheduledDate: wd(3) }),
+      T({ id: "d-06", inProgress: true, title: "Format the Greenway Café case study", notes: "Copy is approved. Needs laying out for the website.", category: "delegate", delegateTo: "Priya", personId: "p-priya", scheduledDate: wd(3) }),
       T({ id: "d-17", title: "Logo concepts for Ellis Joinery", notes: "3 routes, as discussed.", category: "today", personId: "p-mark", scheduledDate: wd(4), scheduledTime: "09:30", durationMinutes: 120 }),
       T({ id: "d-18", title: "Update the portfolio with The Old Forge project", category: "later", scheduledDate: wd(4) }),
       T({ id: "d-19", title: "Invoice Greenway Café for October retainer", category: "today", due: wd(4), personId: "p-tom" }),
@@ -53,8 +53,8 @@
       // Unplanned
       T({ id: "d-05", title: "Book the van in for its MOT", notes: "Due by the end of the month.", category: "quick-win", personId: "p-garage" }),
       T({ id: "d-08", title: "Update the prices page on the website", category: "later" }),
-      T({ id: "d-11", title: "Plan the Christmas newsletter", category: "later" }),
-      T({ id: "d-12", title: "Post the Old Forge project on LinkedIn", category: "later", addedBy: "claude" }),
+      T({ id: "d-11", claude: { how: "Claude can plan the Christmas newsletter: 3 story ideas from this year's projects and a first draft in your voice.", uses: ["Your notes", "Google Drive"], prompt: "Plan our Christmas newsletter for Fern & Finch. Look through this year's finished projects in my files and notes, suggest 3 short stories worth telling (with a line on each), then write a first draft of about 300 words in my voice. Save it as a document in files/04-marketing and tell me where it is.", checkedAt: at(0, 7, 50) }, title: "Plan the Christmas newsletter", category: "later" }),
+      T({ id: "d-12", claude: { how: "Claude can write the LinkedIn post about The Old Forge project for you to post.", uses: ["Your notes"], prompt: "Write a LinkedIn post about our finished project for The Old Forge (a B&B: menus and signage). Use my notes and files on the project, keep it under 150 words, in my voice, with no hashtags beyond 2. Give me 2 versions to choose from. Don't post anything.", checkedAt: at(0, 7, 50) }, title: "Post the Old Forge project on LinkedIn", category: "later", addedBy: "claude" }),
       // Done earlier in the week
       T({ id: "d-21", title: "Send Hannah the logo files", category: "today", personId: "p-hannah", status: "done", doneAt: at(-1, 15, 20), scheduledDate: day(-1) }),
       T({ id: "d-22", title: "Pay PrintHouse invoice", category: "quick-win", personId: "p-print", status: "done", doneAt: at(-1, 11, 5), scheduledDate: day(-1) }),

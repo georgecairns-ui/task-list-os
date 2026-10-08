@@ -103,7 +103,7 @@ window.TaskListOS.home.register("pipeline", {
 
 ```html
 <aside class="sidebar" id="sidebar" aria-label="Main">
-  <div class="sidebar__brand"><img src="../shared/images/GAIP-emblem-black-teal-pop-RGB.svg" alt="" width="28" height="28">
+  <div class="sidebar__brand"><img src="../shared/images/claude-icon.png" alt="" width="30" height="30">
     <div class="sidebar__brand-text"><div class="sidebar__product" id="businessName">Your workspace</div></div></div>
   <a class="side-home" href="../home/"><span data-icon="home"></span>Home</a>
   <div class="side-label">Your tools</div>
@@ -174,6 +174,7 @@ Every tool's own setup ends its "get to know the business" step with the brand s
 | Address | Does |
 |---|---|
 | `GET /` | Opens Home (`/home/`) |
+| `GET /api/info` | The folder this kit is in, so a page can link to `claude://code/new?q=...&folder=...` (opens Claude Code there with a prompt typed in). Added 7 October 2026; the helper files are otherwise unchanged, so copy them again |
 | `GET /api/alive.js` | Answers if the helper is running (used by the launcher and the start scripts) |
 | `GET /api/tasks`, `PUT /api/tasks`, `GET /api/tasks/meta` | The task file, as before. A save must keep its `tasks` list |
 | `GET /api/data/<id>/<file>.json` | Reads a data file of an installed tool |

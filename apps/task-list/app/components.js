@@ -40,10 +40,41 @@
   function personLabel(p) { return p.organisation ? p.name + ", " + p.organisation : p.name; }
 
   // ---------- Chips ----------
-  function catDot(key) { return '<span class="dot cat-dot--' + esc(key) + '" aria-hidden="true"></span>'; }
+  // Each category's colour comes from Preferences, or the theme's own colour for the standard ones
+  function catColour(key) { return (M.CAT[key] || M.CAT.later).css; }
+  function catDot(key) { return '<span class="dot" style="background:' + esc(catColour(key)) + '" aria-hidden="true"></span>'; }
   function catChip(key) {
     const c = M.CAT[key] || M.CAT.later;
-    return '<span class="chip cat-chip cat-chip--' + c.key + '">' + catDot(c.key) + esc(c.label) + "</span>";
+    return '<span class="chip cat-chip">' + catDot(c.key) + esc(c.label) + "</span>";
+  }
+
+  // ---------- Opening a task in Claude ----------
+  // Opens the Claude desktop app with the prompt typed in, ready for the person to read and send.
+  // With the folder known it opens a Claude Code session in their Task List OS folder (their
+  // connections, skills and notes); otherwise a new chat. Claude never sends it by itself.
+  let kitFolder = null;
+  function setFolder(f) { kitFolder = f || null; }
+  function claudeLink(prompt) {
+    const q = encodeURIComponent(String(prompt || "").slice(0, 12000));
+    return kitFolder ? "claude://code/new?q=" + q + "&folder=" + encodeURIComponent(kitFolder) : "claude://claude.ai/new?q=" + q;
+  }
+
+  // ---------- A task card (board, Home) ----------
+  // Every card shows the same things in the same places, at the same height:
+  // tick, title (up to 2 lines), then category, when, and who it's for.
+  function taskCard(d, t, opts) {
+    const o = opts || {};
+    const done = t.status === "done";
+    const p = M.personById(d, t.personId);
+    const when = dateChip(t) || '<span class="chip chip--quiet">' + icon("calendar") + (done && t.doneAt ? "Done " + esc(ui.parseDate(ui.isoDate(new Date(t.doneAt))).toLocaleDateString("en-GB", { day: "numeric", month: "short" })) : "No date") + "</span>";
+    const who = p ? '<span class="tcard__who" title="' + esc(personLabel(p)) + '">' + avatar(p) + '<span>' + esc(p.name) + "</span></span>" :
+      '<span class="tcard__who tcard__who--none">' + icon("user") + "<span>Just you</span></span>";
+    const claude = M.claudeCanDo(t) ? '<span class="tcard__claude" title="Claude can do this">' + icon("sparkle") + "<span>Claude can do this</span></span>" : "";
+    return '<article class="tcard' + (done ? " is-done" : "") + (o.anim ? o.anim("card-" + t.id) : "") + '" data-task="' + esc(t.id) + '" style="--edge:' + esc(catColour(t.category)) + '"' + (!done && o.draggable ? ' draggable="true"' : "") + ">" +
+      '<div class="tcard__top"><button type="button" class="check check--sm" role="checkbox" aria-checked="' + done + '" data-action="toggle-done" aria-label="' + (done ? "Mark not done: " : "Mark done: ") + esc(t.title) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg></button>' +
+      '<button type="button" class="tcard__title" data-action="open-task">' + esc(t.title) + "</button></div>" +
+      '<div class="tcard__meta">' + catChip(t.category) + when + "</div>" +
+      '<div class="tcard__foot">' + who + claude + "</div></article>";
   }
   // "Due today", "Overdue 3 days", "Thu", "14 Oct"
   function dateChip(t) {
@@ -103,7 +134,7 @@
       '<span class="row__title">' + esc(t.title) + "</span>" +
       (t.notes && o.showNotes ? '<span class="row__notes">' + esc(t.notes) + "</span>" : "") +
       "</button>" +
-      '<span class="row__meta">' + (o.showCat ? catChip(t.category) : "") + sourceChip(t) + dateChip(t) + whoChip(d, t) + "</span>" +
+      '<span class="row__meta">' + (M.claudeCanDo(t) ? '<span class="chip chip--accent" title="Claude can do this">' + icon("sparkle") + "Claude can do this</span>" : "") + (o.showCat ? catChip(t.category) : "") + sourceChip(t) + dateChip(t) + whoChip(d, t) + "</span>" +
       (o.actions ? '<span class="row__actions">' + o.actions + "</span>" : "") +
       "</li>";
   }
@@ -146,7 +177,7 @@
 
   window.TL.c = {
     ART: ART, avatar: avatar, initials: initials, colourFor: colourFor, personLabel: personLabel,
-    catDot: catDot, catChip: catChip, dateChip: dateChip, sourceChip: sourceChip, sourceLine: sourceLine, whoChip: whoChip,
+    catDot: catDot, catChip: catChip, catColour: catColour, claudeLink: claudeLink, setFolder: setFolder, taskCard: taskCard, dateChip: dateChip, sourceChip: sourceChip, sourceLine: sourceLine, whoChip: whoChip,
     taskRow: taskRow, taskList: taskList, groupedList: groupedList,
     sectionHead: sectionHead, empty: empty, say: say, categoryOptions: categoryOptions, personOptions: personOptions
   };

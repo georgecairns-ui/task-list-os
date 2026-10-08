@@ -1,14 +1,9 @@
 {
   "pages": [
     {
-      "id": "today",
-      "label": "Today",
-      "icon": "sun"
-    },
-    {
-      "id": "week",
-      "label": "This week",
-      "icon": "columns"
+      "id": "tasks",
+      "label": "Tasks",
+      "icon": "checkSquare"
     },
     {
       "id": "replies",
@@ -21,36 +16,9 @@
       "icon": "sparkle"
     },
     {
-      "id": "all",
-      "label": "All tasks",
-      "icon": "list",
-      "children": [
-        {
-          "id": "waiting",
-          "label": "Waiting on",
-          "icon": "hourglass"
-        },
-        {
-          "id": "done",
-          "label": "Done",
-          "icon": "check"
-        }
-      ]
-    },
-    {
       "id": "calls",
       "label": "Calls",
       "icon": "phone"
-    },
-    {
-      "id": "dump",
-      "label": "Brain dump",
-      "icon": "pencil"
-    },
-    {
-      "id": "people",
-      "label": "People",
-      "icon": "users"
     }
   ],
   "home": {
