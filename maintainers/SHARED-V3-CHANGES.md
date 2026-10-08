@@ -103,7 +103,7 @@ window.TaskListOS.home.register("pipeline", {
 
 ```html
 <aside class="sidebar" id="sidebar" aria-label="Main">
-  <div class="sidebar__brand"><img src="../shared/images/GAIP-emblem-black-teal-pop-RGB.svg" alt="" width="28" height="28">
+  <div class="sidebar__brand"><img src="../shared/images/claude-icon.png" alt="" width="30" height="30">
     <div class="sidebar__brand-text"><div class="sidebar__product" id="businessName">Your workspace</div></div></div>
   <a class="side-home" href="../home/"><span data-icon="home"></span>Home</a>
   <div class="side-label">Your tools</div>
