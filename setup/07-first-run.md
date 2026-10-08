@@ -1,10 +1,10 @@
-# Step 6: first run
+# Step 7: first run
 
 Goal: the moment it all comes together. You fill the task list with their real work, from their real inbox, calls and calendar, and they open the app to find it already organised.
 
 Read `apps/task-list/CLAUDE.md` first. It explains the task file and how to edit it safely.
 
-## 6.1 Fill the task file
+## 7.1 Fill the task file
 
 Edit `apps/task-list/data/tasks.json`:
 
@@ -19,7 +19,7 @@ Edit `apps/task-list/data/tasks.json`:
 9. **Today's plan:** follow `.claude/skills/sort-my-day`.
 10. Save, read the file back and check it's valid.
 
-## 6.2 Open it for them
+## 7.2 Open it for them
 
 Follow `.claude/skills/open-task-list`: start the task list, offer to make it start with the computer, then (with their yes) open **http://localhost:4747** in their browser. There's nothing for them to set up or connect.
 
@@ -31,4 +31,4 @@ Then tell them what's waiting, in this shape and in your own words:
 >
 > Start with your **Inbox**: press **Draft** on any of them and the email opens, written and addressed, ready for you to check and send. Then **Review** to approve the tasks I've suggested.
 
-Tick step 6.
+Tick step 7.

@@ -2,7 +2,7 @@
 
 Saved know-how for the jobs small businesses ask Claude for most. You don't need to remember any of this: ask in your own words and Claude picks the right one.
 
-Each skill is a folder with a `SKILL.md` inside. Claude reads them from here whenever this folder is open. Setup step 6 can also install them into Claude itself, so they work in every conversation.
+Each skill is a folder with a `SKILL.md` inside. Claude reads them from here whenever this folder is open. In setup step 6, Claude also writes you skills of your own, about your services, prices and way of working. They're saved here, and packed up in the `skills-to-upload` folder so you can add them to Claude and use them in every conversation.
 
 ## The daily rhythm
 

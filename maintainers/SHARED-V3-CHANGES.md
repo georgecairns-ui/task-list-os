@@ -96,6 +96,7 @@ window.TaskListOS.home.register("pipeline", {
 ### `apps/<folder>/index.html`
 
 - `<body data-tool="<id>">`
+- The browser-tab icon: `<link rel="icon" type="image/png" href="../shared/images/claude-icon.png">`
 - In `<head>`, in this order: `../shared/theme.css` (first: Task List OS's `components.js` finds the images folder from it), `../shared/base.css`, `../shared/sidebar.css`, `<script src="../shared/js/theme.js">`, then the tool's own `app/app.css`
 - Scripts at the end, in this order: `../shared/js/ui.js`, `../shared/js/store.js`, `../shared/js/sidebar.js`, then the tool's own
 - A light and dark button in the top bar: `<button type="button" class="icon-btn" data-theme-toggle aria-label="Switch to dark mode"><span data-icon="moon"></span></button>`
