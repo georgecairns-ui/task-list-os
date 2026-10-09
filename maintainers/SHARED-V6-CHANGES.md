@@ -25,3 +25,13 @@ Shared version 6, 9 October 2026. Everything in `SHARED-V3-CHANGES.md`, `SHARED-
 
 - A fresh install shows the setup card, never sample data, and no screen mentions a demo.
 - The release check fails if `demo-data.js` or any demo code comes back.
+
+## Added later in version 6: typing when there's no microphone
+
+| Path | Change |
+|---|---|
+| `apps/shared/js/braindump.js` | If the microphone is blocked, missing or can't reach the speech service, the Brain dump box switches to a typing box straight away, keeping anything already heard, and the message ends "Or type it below." Typed notes save with `kind: "typed"`. Before this, a blocked microphone left nowhere to type, so nothing could be saved |
+
+Each tool copies `apps/shared/js/braindump.js`. Nothing else changes and `VERSION` stays `6`.
+
+Test: block the microphone for the app's page (or use a browser with no microphone), press Brain dump, type a note and press Done. The note saves and Claude sorts it.
