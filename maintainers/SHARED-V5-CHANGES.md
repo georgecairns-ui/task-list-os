@@ -15,6 +15,8 @@ Shared version 5, 9 October 2026. Everything in `SHARED-V3-CHANGES.md` and `SHAR
 | `.claude/skills/sort-brain-dump/` | New shared skill: sorts every note and hands each part to the right tool's own brain dump skill |
 | `.claude/settings.json` | Allows Claude to edit `apps/home/data/**`, so an unattended sort can mark notes as sorted |
 | `apps/shared/VERSION` | `5` |
+| `apps/shared/theme.css` | Colours moved onto the Get AI Powers brand (9 October 2026): cream `#F5F3EE` page, `#FFFDFB` cards, ink `#191919` text, clay `#D97757` accent with clay deep `#9C5238` for small text, warm ink dark mode. Category meaning colours unchanged |
+| `apps/shared/images/` | The 2 old starburst logo files (`GAIP-*.svg`) removed; the app shows the Claude icon (`claude-icon.png`) |
 
 ## What each tool does
 

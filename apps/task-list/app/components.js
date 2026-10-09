@@ -23,7 +23,7 @@
   };
 
   // ---------- People ----------
-  const AVATAR_COLOURS = ["#B8643F", "#5B7FA6", "#4F8A5B", "#C08A1E", "#8A5BA6", "#A6505B", "#3F8A8A", "#7A6A4F"];
+  const AVATAR_COLOURS = ["#C4643F", "#5B7FA6", "#4F8A5B", "#C08A1E", "#8A5BA6", "#A6505B", "#3F8A8A", "#7A6A4F"];
   function initials(name) {
     const parts = String(name || "?").trim().split(/\s+/);
     return ((parts[0] || "")[0] + ((parts.length > 1 ? parts[parts.length - 1][0] : "") || "")).toUpperCase();
