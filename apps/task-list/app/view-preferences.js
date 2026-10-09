@@ -21,7 +21,7 @@
   // The colour picker needs a plain colour; a standard category uses its theme colour until changed
   function pickerValue(c) {
     if (c.colour) return c.colour;
-    return { today: "#cc785c", "quick-win": "#c08a1e", delegate: "#3f8a55", waiting: "#4a73b5", later: "#8c9099" }[c.key] || "#8c9099";
+    return { today: "#d97757", "quick-win": "#c08a1e", delegate: "#3f8a55", waiting: "#4a73b5", later: "#8c9099" }[c.key] || "#8c9099";
   }
   function catRow(c) {
     const fixed = c.key === "waiting";

@@ -398,44 +398,7 @@
     ui.toast("Planned for " + slotText(date, time), { icon: "calendar", duration: 7000, actionLabel: "Add to calendar", onAction: function () { addToCalendar(taskId); } });
   }
 
-  // ---------- Voice notes, and asking Claude to sort them ----------
-  let claudeTimer = null;
-  function setClaudeStatus(text) {
-    const el = $("#claudeStatus");
-    if (!text) { el.hidden = true; el.innerHTML = ""; return; }
-    el.hidden = false;
-    el.innerHTML = icon("loader", "claude-status__spin") + '<span class="claude-status__text">' + esc(text) + "</span>";
-  }
-  // Ask the helper to have Claude sort the brain dump now, then watch until it's done
-  function askClaudeToSort() {
-    if (!store.isHelper()) return Promise.resolve(false);
-    return fetch("/api/claude/sort-brain-dump", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
-      .then(function (r) { if (r.status === 202) { watchClaude(); return true; } return false; })
-      .catch(function () { return false; });
-  }
-  function watchClaude() {
-    setClaudeStatus("Claude is sorting your voice note");
-    clearInterval(claudeTimer);
-    claudeTimer = setInterval(function () {
-      fetch("/api/claude/status", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (st) {
-        if (st.running || st.queued) return;
-        clearInterval(claudeTimer);
-        setClaudeStatus(null);
-        if (st.lastResult === "ok") ui.toast("Claude has sorted your voice note", { icon: "sparkle", duration: 8000, actionLabel: "See it in Review", onAction: function () { go("review"); } });
-        else ui.toast("Claude couldn't finish sorting it. It's safe in your brain dump; say \u201csort my brain dump\u201d to Claude", { icon: "info", duration: 8000 });
-      }).catch(function () { /* helper briefly unavailable; keep watching */ });
-    }, 3000);
-  }
-  function recordVoiceNote() {
-    window.TL.voice.open(function (text) {
-      change(function (d) { mut.addVoiceNote(d, text); }).then(function () {
-        return askClaudeToSort();
-      }).then(function (sorting) {
-        if (sorting) ui.toast("Got it. Claude is turning your voice note into tasks", { icon: "mic", duration: 6000 });
-        else ui.toast("Saved to your brain dump. Say \u201csort my brain dump\u201d to Claude and it becomes tasks", { icon: "mic", duration: 7000, actionLabel: "Open Brain dump", onAction: function () { go("dump"); } });
-      });
-    });
-  }
+  // Brain dump is shared (../shared/js/braindump.js): the button, V, and asking Claude to sort it
 
   // "When would you like to do this?" with free slots from the calendar
   function askWhen(taskId) {
@@ -684,7 +647,6 @@
         break;
       }
       case "quick-add": openQuickAdd(); break;
-      case "voice-note": recordVoiceNote(); break;
       case "task-draft": {
         const t = M.taskById(data, taskId);
         if (t && t.emailDraft) openDraft(t.emailDraft, function () { ui.toast("Your email is open in " + L.emailLabel(data.settings.emailProvider) + ". Check it and press send", { icon: "mail", duration: 6000 }); });
@@ -968,7 +930,6 @@
     }
     if (typing || e.metaKey || e.ctrlKey || e.altKey || document.querySelector("dialog[open]")) return;
     if (e.key === "n" || e.key === "N") { e.preventDefault(); openQuickAdd(); }
-    else if (e.key === "v" || e.key === "V") { e.preventDefault(); recordVoiceNote(); }
     else if (e.key === "/") { e.preventDefault(); searchInput.focus(); }
     else if (e.key === "d" || e.key === "D") { const b = $('#view [data-action="reply-draft"]'); if (b) b.click(); }
     else if (e.key === "a" || e.key === "A") { const b = $('#view [data-action="approve"], #view [data-action="approve-schedule"]'); if (b) b.click(); }
@@ -994,7 +955,6 @@
 
   renderGate();
   store.start().then(function () {
-    if (store.isHelper()) fetch("/api/claude/status", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (st) { if (st.running) watchClaude(); }).catch(function () {});
     // Where this folder is, so "Open in Claude" can start Claude Code right here (with its connections and skills)
     if (/^https?:$/.test(location.protocol)) fetch("/api/info", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (info) { C.setFolder(info.folder); }).catch(function () {});
   });

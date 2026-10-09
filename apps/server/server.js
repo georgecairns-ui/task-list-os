@@ -17,9 +17,11 @@
       can't leave a half-written file.
     - It refuses requests from other websites.
 
-  It can also ask Claude to sort a new voice note straight away: it runs Claude Code on this
-  computer ("claude -p ...") in the Task List OS folder, one run at a time. Only the task list app
-  itself can trigger this. Turn it off with TLOS_AUTO_CLAUDE=off.
+  It can also ask Claude to do a small job straight away, such as sorting a new voice note or
+  updating a deal from call notes: it runs Claude Code on this computer ("claude -p ...") in this
+  folder, one run at a time. Only the app itself can ask, and only for a job a tool lists in its
+  own apps/<tool>/claude-jobs.json (the app sends the job's name, never the words Claude follows).
+  Turn it off with TLOS_AUTO_CLAUDE=off.
 
   Run it:        node apps/server/server.js
   Other port:    TLOS_PORT=4848 node apps/server/server.js
@@ -40,18 +42,22 @@ const APPS = path.join(ROOT, "apps");                         // the only folder
 const DATA = path.join(APPS, "task-list", "data", "tasks.json");
 const INSTALLED = path.join(APPS, "installed.json");
 const HOME_LAYOUT = path.join(APPS, "home", "data", "layout.json");
+const BRAIN_DUMP = path.join(APPS, "home", "data", "braindump.json");   // the shared Brain dump, every tool's notes
 // A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
 const DATA_FILE_RE = /^apps\/[a-z0-9-]+\/data\/[a-z0-9-]+\.json$/;
 const MAX_BODY = 10 * 1024 * 1024;
 
-// ---------- Asking Claude to sort a voice note ----------
+// ---------- Asking Claude to do a small job (sort a voice note, update a deal) ----------
 const AUTO_CLAUDE = (process.env.TLOS_AUTO_CLAUDE || "on") !== "off";
 const CLAUDE_LOG = path.join(fs.existsSync(path.join(os.homedir(), "Library", "Logs")) ? path.join(os.homedir(), "Library", "Logs") : os.tmpdir(), "task-list-os-claude.log");
 const RUN_LIMIT_MS = 10 * 60 * 1000;
-const SORT_PROMPT = "A new voice note has just been added to the brain dump in the task list. " +
-  "Follow .claude/skills/sort-my-brain-dump for the unsorted brain dump items only. Be quick and change nothing else. " +
-  "Nobody is watching this run, so do not ask questions: make your best reading of anything unclear and say so in the task notes.";
-const claudeRun = { running: false, queued: false, startedAt: null, lastRunAt: null, lastResult: null };
+const UNWATCHED = " Nobody is watching this run, so do not ask questions: make your best reading of anything unclear and say so in your notes.";
+const SORT_JOB = { key: "shared:brain-dump", label: "sorting the brain dump",
+  prompt: "A new brain dump has just been added. Follow .claude/skills/sort-brain-dump for the unsorted items in apps/home/data/braindump.json " +
+    "(and any unsorted items in apps/task-list/data/tasks.json's dump). Be quick and change nothing else." + UNWATCHED };
+// One run at a time. Asking again for a job that's already waiting doesn't queue it twice.
+const claudeRun = { running: false, queued: false, job: null, startedAt: null, lastRunAt: null, lastResult: null, lastJob: null };
+const claudeQueue = [];
 
 // Find the "claude" command on this computer, if Claude Code is installed
 function findClaude() {
@@ -67,29 +73,57 @@ function findClaude() {
   return null;
 }
 
-function runClaude() {
-  if (claudeRun.running) { claudeRun.queued = true; return true; }
+// A job a tool lists in apps/<tool>/claude-jobs.json: { "jobs": { "<name>": { "label": "...", "prompt": "..." } } }
+// Only for tools in apps/installed.json. Returns null for anything else.
+function toolJob(toolId, name) {
+  const tool = installedTools().find(function (t) { return t && t.id === toolId; });
+  const app = tool && typeof tool.app === "string" ? tool.app : "";
+  if (!/^apps\/[a-z0-9-]+\/$/.test(app) || app === "apps/shared/" || app === "apps/server/") return null;
+  let jobs = null;
+  try { jobs = JSON.parse(fs.readFileSync(path.join(ROOT, ...app.split("/"), "claude-jobs.json"), "utf8")).jobs; } catch (e) { return null; }
+  const job = jobs && Object.prototype.hasOwnProperty.call(jobs, name) ? jobs[name] : null;
+  if (!job || typeof job.prompt !== "string" || !job.prompt.trim()) return null;
+  return { key: toolId + ":" + name, label: typeof job.label === "string" ? job.label.slice(0, 80) : name, prompt: job.prompt.slice(0, 4000) + UNWATCHED };
+}
+
+function runClaude(job) {
+  if (!findClaude()) { claudeRun.lastResult = "not-installed"; return false; }
+  // A job already running is queued once more, so it also sees anything added since it started
+  if (!claudeQueue.some(function (j) { return j.key === job.key; })) claudeQueue.push(job);
+  if (claudeRun.running) claudeRun.queued = true; else startNext();
+  return true;
+}
+
+function startNext() {
+  const job = claudeQueue.shift();
+  claudeRun.queued = claudeQueue.length > 0;
+  if (!job) return;
   const bin = findClaude();
-  if (!bin) { claudeRun.lastResult = "not-installed"; return false; }
+  if (!bin) { claudeRun.lastResult = "not-installed"; claudeQueue.length = 0; claudeRun.queued = false; return; }
   claudeRun.running = true;
+  claudeRun.job = job.key;
   claudeRun.startedAt = new Date().toISOString();
   const log = fs.openSync(CLAUDE_LOG, "a");
-  fs.writeSync(log, "\n--- " + claudeRun.startedAt + " sorting the brain dump\n");
+  fs.writeSync(log, "\n--- " + claudeRun.startedAt + " " + job.label + "\n");
   const isCmd = /\.cmd$/i.test(bin);
-  const child = spawn(isCmd ? "cmd.exe" : bin, isCmd ? ["/d", "/c", bin, "-p", SORT_PROMPT] : ["-p", SORT_PROMPT],
+  const child = spawn(isCmd ? "cmd.exe" : bin, isCmd ? ["/d", "/c", bin, "-p", job.prompt] : ["-p", job.prompt],
     { cwd: ROOT, stdio: ["ignore", log, log], windowsHide: true });
   const limit = setTimeout(function () { child.kill(); }, RUN_LIMIT_MS);
+  let done = false;
   function finished(result) {
+    if (done) return;
+    done = true;
     clearTimeout(limit);
     try { fs.closeSync(log); } catch (e) { /* already closed */ }
     claudeRun.running = false;
+    claudeRun.lastJob = job.key;
+    claudeRun.job = null;
     claudeRun.lastRunAt = new Date().toISOString();
     claudeRun.lastResult = result;
-    if (claudeRun.queued) { claudeRun.queued = false; runClaude(); }
+    startNext();
   }
   child.on("error", function () { finished("failed"); });
   child.on("exit", function (code) { finished(code === 0 ? "ok" : "failed"); });
-  return true;
 }
 
 const TYPES = {
@@ -133,7 +167,7 @@ function installedTools() {
 // The file behind /api/data/<tool>/<file>, or null if that tool isn't installed or the file isn't one of its own
 function dataFileFor(toolId, fileName) {
   // Home's own file: which boxes show, in what order and how wide
-  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : null;
+  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : fileName === "braindump.json" ? BRAIN_DUMP : null;
   for (const tool of installedTools()) {
     if (!tool || tool.id !== toolId || !Array.isArray(tool.dataFiles)) continue;
     // A tool may only save inside its own app folder, never another tool's data or the shared parts
@@ -216,13 +250,17 @@ async function handleApi(req, res, url) {
   }
   if (url === "/api/claude/status" && req.method === "GET") {
     return sendJson(res, 200, { available: AUTO_CLAUDE && !!findClaude(), running: claudeRun.running, queued: claudeRun.queued,
-      startedAt: claudeRun.startedAt, lastRunAt: claudeRun.lastRunAt, lastResult: claudeRun.lastResult });
+      job: claudeRun.job, startedAt: claudeRun.startedAt, lastRunAt: claudeRun.lastRunAt, lastResult: claudeRun.lastResult, lastJob: claudeRun.lastJob });
   }
-  if (url === "/api/claude/sort-brain-dump" && req.method === "POST") {
+  // /api/claude/sort-brain-dump (Task List OS's voice notes) or /api/claude/run/<tool>/<job>
+  const run = /^\/api\/claude\/run\/([a-z0-9-]+)\/([a-z0-9-]+)$/.exec(url);
+  if ((url === "/api/claude/sort-brain-dump" || run) && req.method === "POST") {
     // Only the app may ask: same origin, and a JSON request (other websites can't send one without permission)
     if (!originOk(req) || !/application\/json/i.test(req.headers["content-type"] || "")) return sendJson(res, 403, { error: "forbidden" });
+    const job = run ? toolJob(run[1], run[2]) : SORT_JOB;
+    if (!job) return sendJson(res, 404, { error: "no such job" });
     if (!AUTO_CLAUDE) return sendJson(res, 503, { error: "turned off" });
-    return runClaude() ? sendJson(res, 202, { started: true }) : sendJson(res, 503, { error: "claude not installed" });
+    return runClaude(job) ? sendJson(res, 202, { started: true }) : sendJson(res, 503, { error: "claude not installed" });
   }
   return sendJson(res, 404, { error: "not found" });
 }

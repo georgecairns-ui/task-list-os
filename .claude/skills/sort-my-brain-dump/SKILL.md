@@ -16,7 +16,7 @@ The person says "sort my brain dump", "deal with my notes", "go through what I w
 
 ## Steps
 
-1. Read `apps/task-list/data/tasks.json` right now. Take every `dump` item with `"status": "unsorted"`. If the person pasted a list instead, add each line to `dump` first, as unsorted.
+1. Read `apps/task-list/data/tasks.json` right now. Take what you've been given: the part of a shared brain dump note that `.claude/skills/sort-brain-dump` handed you (from `apps/home/data/braindump.json`; use its id as `source.ref`), and every `dump` item here with `"status": "unsorted"`. If the person pasted a list instead, add each line to `dump` first, as unsorted.
 2. **Voice notes** (`"kind": "voice"`) are one long, spoken paragraph, not neat lines. Read the whole thing first, then pull out every separate thing they mentioned, in the order they said it. Ignore filler ("um", "so anyway", "what else"). People ramble; one sentence can hold 3 jobs, and a job can be spread across several sentences.
 3. For each line (or each thing pulled from a voice note), decide what it is:
    - **A task.** Write a clear title that starts with a verb ("ask Priya if she can do 4 days in November" becomes "Ask Priya about 4 days a week in November"). Choose a category. Pull out any date ("before the 20th" becomes `due`), amount or name into `notes`, `due` and `personId`.

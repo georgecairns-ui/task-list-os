@@ -16,6 +16,7 @@ In Claude Code, every skill is also a command: type `/` and its name, for exampl
 | `sort-my-day` | "Sort my day" | Claude checks your list, inbox and calendar and proposes today's plan in the app |
 | `plan-my-week` | "Plan my week" | A suggested day for each task that needs one, around your meetings |
 | `spot-claude-tasks` | "What can you do off my list?" (also on every check-in) | The tasks Claude could do for you get a "Claude can do this" tag and a ready prompt: press Open in Claude |
+| `sort-brain-dump` | Press **Brain dump** on any page (or V) and talk | Claude sorts it and sends each part to the right tool: tasks to your list, sales to your pipeline |
 | `sort-my-brain-dump` | "Sort my brain dump" | Everything you typed into Brain dump becomes proper tasks, with a suggested time and a how-to guide where needed |
 | `research-task` | "How do I pay my tax bill?" | A short how-to guide with official links, added to the task |
 | `schedule-it` | "When should I do this?" | A suggested time from your free calendar slots; approve it and add it to your calendar in one click |

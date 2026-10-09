@@ -70,7 +70,7 @@ When a request matches a skill in `.claude/skills/`, read that skill's `SKILL.md
 | "Set me up", "carry on setting up" | `.claude/skills/setup` |
 | "Open my task list", "it's not loading" | `.claude/skills/open-task-list` |
 | "Plan my week", "what does my week look like" | `.claude/skills/plan-my-week` |
-| "Sort my brain dump", "turn my notes into tasks" | `.claude/skills/sort-my-brain-dump` |
+| "Sort my brain dump", "turn my notes into tasks" (and every note from the Brain dump button) | `.claude/skills/sort-brain-dump` (shared by every tool; it hands tasks to `sort-my-brain-dump`) |
 | "Wrap up my day", "what did I get done" | `.claude/skills/wrap-up-my-day` |
 | "Weekly review", "how did this week go" | `.claude/skills/weekly-review` |
 | "Reply to this", "help me answer Tom" | `.claude/skills/draft-a-reply` |

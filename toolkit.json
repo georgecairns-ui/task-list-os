@@ -2,7 +2,7 @@
   "id": "task-list",
   "name": "Task List OS",
   "version": "1.0.0",
-  "sharedVersion": "3",
+  "sharedVersion": "5",
   "attachingVersion": "1",
   "app": "apps/task-list/",
   "dataFiles": [
