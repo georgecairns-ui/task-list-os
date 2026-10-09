@@ -140,7 +140,23 @@
     } else {
       const finalEl = dlg.querySelector(".voice__final"), interimEl = dlg.querySelector(".voice__interim"), hintEl = dlg.querySelector(".voice__hint");
       const statusEl = dlg.querySelector(".voice__status"), micEl = dlg.querySelector(".voice__mic"), timeEl = dlg.querySelector(".voice__time");
-      let finalText = "", listening = true, failed = false;
+      let finalText = "", listening = true, failed = false, typeBox = null;
+      // No microphone (blocked, missing or offline): swap to a typing box, keeping anything heard so far
+      const switchToTyping = function () {
+        if (typeBox) return;
+        clearInterval(clock);
+        timeEl.hidden = true;
+        const box = dlg.querySelector(".voice__text");
+        typeBox = document.createElement("textarea");
+        typeBox.className = "textarea voice__type";
+        typeBox.rows = 6;
+        typeBox.setAttribute("aria-label", "Type your brain dump");
+        typeBox.placeholder = "Type it instead: things to do, people to chase, how a call went, a new lead. Claude sorts it out.";
+        typeBox.value = (finalText + " " + interimEl.textContent).replace(/\s+/g, " ").trim();
+        box.replaceWith(typeBox);
+        dlg.querySelector(".voice__small").textContent = "Only the text is saved.";
+        setTimeout(function () { typeBox.focus(); }, 30);
+      };
       const started = Date.now();
       const clock = setInterval(function () { const s = Math.floor((Date.now() - started) / 1000); timeEl.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }, 500);
       const Recognition = recognition();
@@ -168,8 +184,9 @@
           "audio-capture": "No microphone was found. Check one is connected, then try again.",
           "network": "Your browser couldn’t reach its speech service. Check your internet connection and try again."
         };
-        statusEl.textContent = messages[e.error] || "Something went wrong with the microphone. Please try again.";
+        statusEl.textContent = (messages[e.error] || "Something went wrong with the microphone. Please try again.") + " Or type it below.";
         statusEl.classList.add("is-error");
+        switchToTyping();
       };
       // Browsers stop listening after a pause; carry on until Done
       rec.onend = function () { if (listening && !failed) { try { rec.start(); } catch (err) { /* already restarting */ } } };
@@ -177,11 +194,11 @@
         listening = false;
         clearInterval(clock);
         try { rec.stop(); } catch (err) { /* already stopped */ }
-        const text = (finalText + " " + interimEl.textContent).replace(/\s+/g, " ").trim();
+        const text = (typeBox ? typeBox.value : finalText + " " + interimEl.textContent).replace(/\s+/g, " ").trim();
         const about = getAbout();
         dlg.close(); dlg.remove();
-        if (save && text) saveNote(text, about, "voice");
-        else if (save) ui.toast("Nothing was heard, so nothing was saved", { icon: "info" });
+        if (save && text) saveNote(text, about, typeBox ? "typed" : "voice");
+        else if (save) ui.toast(typeBox ? "Nothing was typed, so nothing was saved" : "Nothing was heard, so nothing was saved", { icon: "info" });
       };
       try { rec.start(); } catch (err) { rec.onerror({ error: "audio-capture" }); }
     }
