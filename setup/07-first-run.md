@@ -8,7 +8,7 @@ Read `apps/task-list/CLAUDE.md` first. It explains the task file and how to edit
 
 Edit `apps/task-list/data/tasks.json`:
 
-1. Remove every task with `"example": true`.
+1. The task list starts empty (no sample tasks), so everything you add now is their real work.
 2. **People:** add their team, key clients and suppliers from `context/people.md` to `people`.
 3. **Calendar:** copy events from yesterday to 14 days ahead into `events` (see `apps/task-list/CLAUDE.md`).
 4. **Inbox:** follow `.claude/skills/triage-inbox` for the **last 7 days**. Emails that need an answer go into `replies`, each with a draft in their voice. Requests and promises become suggested tasks. Fill in `triage` with the counts.

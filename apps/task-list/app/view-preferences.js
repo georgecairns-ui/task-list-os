@@ -69,8 +69,7 @@
         '<div class="pref-row"><span>Light or dark</span><button type="button" class="btn btn--sm" data-theme-toggle>' + icon("moon") + "Switch</button></div>" +
         '<div class="pref-row"><span>Your own colours, font and logo</span>' + C.say("Make it match my brand") + "</div>") +
 
-      section("Sample data",
-        '<label class="switch"><input type="checkbox" data-change="demo"' + (where.demo ? " checked" : "") + '><span class="switch__track" aria-hidden="true"></span>Show sample data instead of mine (for screenshots and videos)</label>' +
+      section("Where your tasks live",
         '<div class="pref-row"><span class="muted">Your tasks are saved in: ' + esc(where.folder) + "</span>" + (where.canChange ? '<button type="button" class="btn btn--sm" data-action="change-folder">Use a different folder</button>' : "") + "</div>") +
 
       '<div class="prefs__save"><button type="submit" class="btn btn--primary">Save preferences</button></div>' +

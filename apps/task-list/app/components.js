@@ -76,6 +76,24 @@
       '<div class="tcard__meta">' + catChip(t.category) + when + "</div>" +
       '<div class="tcard__foot">' + who + claude + "</div></article>";
   }
+  // Claude's plan for today, as a card in the To do column: same size and rows as every card,
+  // with Approve and Skip in place of who it's for
+  function planCard(d, t, item, o) {
+    o = o || {};
+    const cat = (item && item.category) || t.category;
+    const reason = item && item.reason ? ' title="' + esc(item.reason) + '"' : "";
+    return '<article class="tcard tcard--suggested' + (o.anim ? o.anim("plan-" + t.id) : "") + '" data-task="' + esc(t.id) + '" data-kind="plan" style="--edge:' + esc(catColour(cat)) + '"' + reason + ">" +
+      '<div class="tcard__top"><span class="tcard__badge">' + icon("sparkle") + 'Suggested</span><button type="button" class="tcard__title" data-action="open-task">' + esc(t.title) + "</button></div>" +
+      '<div class="tcard__meta">' + catChip(cat) + (dateChip(t) || "") + "</div>" +
+      '<div class="tcard__foot tcard__foot--decide"><button type="button" class="btn btn--approve btn--sm" data-action="approve">' + icon("check") + "<span>Approve</span></button>" +
+      '<button type="button" class="btn btn--ghost btn--sm" data-action="skip" aria-label="Skip: ' + esc(t.title) + '">Skip</button></div></article>';
+  }
+  // A card that tells people what to do next, for an empty column
+  function nudgeCard(title, text, sayText) {
+    return '<article class="tcard tcard--nudge"><div class="tcard__top"><span class="tcard__badge">' + icon("sparkle") + esc(title) + "</span></div>" +
+      '<p class="tcard__nudge">' + esc(text) + "</p>" + (sayText ? '<div class="tcard__foot">' + say(sayText) + "</div>" : "") + "</article>";
+  }
+
   // "Due today", "Overdue 3 days", "Thu", "14 Oct"
   function dateChip(t) {
     if (t.status === "done") return "";
@@ -162,6 +180,17 @@
       (art ? '<div class="empty__art"><img src="' + ART[art] + '" alt="" width="96" height="96"></div>' : "") +
       "<h3>" + esc(title) + "</h3>" + (text ? "<p>" + esc(text) + "</p>" : "") + (extra || "") + "</div>";
   }
+  // Shown on a fresh install, before /setup: what to do next, step by step
+  function setupCard() {
+    return '<section class="panel setup-card"><div class="setup-card__art"><img src="' + ART.welcome + '" alt="" width="72" height="72"></div>' +
+      '<div class="setup-card__body"><h2>Let\u2019s set up your task list</h2>' +
+      '<p class="muted">It\u2019s empty for now. Claude fills it with your real work in about 20 minutes, and you approve everything.</p>' +
+      '<ol class="setup-card__steps">' +
+      "<li>Open Claude Code in your <strong>Task List OS</strong> folder (in the Claude desktop app, the Code tab).</li>" +
+      "<li>Type " + say("/setup") + " and answer Claude\u2019s questions. It connects your email, calendar and calls first.</li>" +
+      "<li>Your tasks, replies and today\u2019s plan appear here. Then press <strong>Brain dump</strong> any time your head\u2019s full.</li>" +
+      "</ol></div></section>";
+  }
   function say(text) {
     return '<span class="say">“' + esc(text) + '”<button type="button" class="say__copy" data-action="copy" data-text="' + esc(text) + '">Copy</button></span>';
   }
@@ -177,8 +206,8 @@
 
   window.TL.c = {
     ART: ART, avatar: avatar, initials: initials, colourFor: colourFor, personLabel: personLabel,
-    catDot: catDot, catChip: catChip, catColour: catColour, claudeLink: claudeLink, setFolder: setFolder, taskCard: taskCard, dateChip: dateChip, sourceChip: sourceChip, sourceLine: sourceLine, whoChip: whoChip,
+    catDot: catDot, catChip: catChip, catColour: catColour, claudeLink: claudeLink, setFolder: setFolder, taskCard: taskCard, planCard: planCard, nudgeCard: nudgeCard, dateChip: dateChip, sourceChip: sourceChip, sourceLine: sourceLine, whoChip: whoChip,
     taskRow: taskRow, taskList: taskList, groupedList: groupedList,
-    sectionHead: sectionHead, empty: empty, say: say, categoryOptions: categoryOptions, personOptions: personOptions
+    sectionHead: sectionHead, empty: empty, say: say, setupCard: setupCard, categoryOptions: categoryOptions, personOptions: personOptions
   };
 })();

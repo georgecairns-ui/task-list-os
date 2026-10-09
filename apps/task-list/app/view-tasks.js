@@ -2,7 +2,7 @@
   TASKS: every task, one page
   ---------------------------
   2 sets of buttons at the top:
-    Which tasks:  Today (with Claude's plan above), This week, All
+    Which tasks:  Today (Claude's plan shows as Suggested cards in To do), This week, All
     How:          Board (columns by where each task is: To do, In progress, Waiting on, Done),
                   List (the same groups as rows), Calendar (Day, Week or Month to match)
   Drag a card between columns to move it on. "Claude can do" shows only the tasks Claude has
@@ -84,45 +84,72 @@
   }
 
   // ---------- Board ----------
-  function board(ctx, groups) {
+  function board(ctx, groups, planned) {
     const d = ctx.d;
+    planned = planned || [];
     return '<div class="sboard" role="list">' + M.STAGES.map(function (s) {
       const all = groups[s.key];
       const shown = s.key === "done" ? all.slice(0, DONE_SHOWN) : all;
+      const first = s.key === "todo";
+      const extra = first ? planned.map(function (x) { return C.planCard(d, x.task, x.item, { anim: ctx.anim }); }).join("") + planNudge(ctx) : "";
+      const approveAll = first && planned.length > 1 ? '<button type="button" class="btn btn--approve btn--sm scol__approve" data-action="approve-plan">' + icon("check") + "Approve all</button>" : "";
       return '<section class="scol scol--' + s.key + '" data-drop-stage="' + s.key + '" role="listitem" aria-label="' + esc(M.stageLabel(d, s.key)) + '">' +
-        '<header class="scol__head"><span class="scol__name">' + esc(M.stageLabel(d, s.key)) + '</span><span class="scol__count num">' + all.length + "</span></header>" +
-        '<div class="scol__cards">' + (shown.length ? shown.map(function (t) { return C.taskCard(d, t, { anim: ctx.anim, draggable: true }); }).join("") :
-          '<p class="scol__empty">' + (s.key === "done" ? "Nothing done yet" : "Drop a task here") + "</p>") +
+        '<header class="scol__head"><span class="scol__name">' + esc(M.stageLabel(d, s.key)) + '</span><span class="scol__count num">' + (all.length + (first ? planned.length : 0)) + "</span>" + approveAll + "</header>" +
+        '<div class="scol__cards">' + extra + (shown.length ? shown.map(function (t) { return C.taskCard(d, t, { anim: ctx.anim, draggable: true }); }).join("") :
+          (extra ? "" : '<p class="scol__empty">' + (s.key === "done" ? "Nothing done yet" : "Drop a task here") + "</p>")) +
         (all.length > shown.length ? '<button type="button" class="scol__more" data-action="tasks-view" data-value="list">' + (all.length - shown.length) + " more in List</button>" : "") +
         "</div></section>";
     }).join("") + "</div>";
   }
 
   // ---------- List ----------
-  function list(ctx, groups) {
+  function list(ctx, groups, planned) {
     const d = ctx.d;
+    planned = planned || [];
     return M.STAGES.map(function (s) {
       const tasks = groups[s.key];
-      const head = '<span class="scol__name">' + esc(M.stageLabel(d, s.key)) + '</span><span class="scol__count num">' + tasks.length + "</span>";
-      const body = tasks.length ? C.taskList(d, tasks, { anim: ctx.anim, keySuffix: "-list", showCat: true }) : '<p class="muted list-empty">Nothing here.</p>';
+      const first = s.key === "todo";
+      const sugg = first && planned.length ? '<ul class="proposals" role="list">' + planned.map(function (x) {
+        return window.TL.views.review.proposalRow(ctx, x.task, { kind: "plan", category: x.item.category, reason: x.item.reason });
+      }).join("") + "</ul>" : "";
+      const nudge = first ? planNudge(ctx) : "";
+      const head = '<span class="scol__name">' + esc(M.stageLabel(d, s.key)) + '</span><span class="scol__count num">' + (tasks.length + (first ? planned.length : 0)) + "</span>" +
+        (first && planned.length > 1 ? '<button type="button" class="btn btn--approve btn--sm scol__approve" data-action="approve-plan">' + icon("check") + "Approve all</button>" : "");
+      const body = sugg + (nudge ? '<div class="slist__nudge">' + nudge + "</div>" : "") + (tasks.length ? C.taskList(d, tasks, { anim: ctx.anim, keySuffix: "-list", showCat: true }) : (sugg || nudge ? "" : '<p class="muted list-empty">Nothing here.</p>'));
       if (s.key === "done") return '<details class="panel panel--flush slist"' + (tasks.length && tasks.length < 6 ? " open" : "") + '><summary class="slist__head">' + head + "</summary>" + body + "</details>";
       return '<section class="panel panel--flush slist"><h2 class="slist__head">' + head + "</h2>" + body + "</section>";
     }).join("");
   }
 
+  // Claude's plan for today, shown inside the To do column (Board) or group (List)
+  function planItems(ctx) {
+    const d = ctx.d, st = ctx.state;
+    if (st.tasksScope !== "today" || st.claudeOnly) return [];
+    return M.proposals(d).map(function (i) { return { item: i, task: M.taskById(d, i.taskId) }; }).filter(function (x) {
+      return x.task && (!st.filterCat || st.filterCat === "all" || (x.item.category || x.task.category) === st.filterCat);
+    });
+  }
+  function planNudge(ctx) {
+    const d = ctx.d, st = ctx.state;
+    if (st.tasksScope !== "today" || st.claudeOnly || M.proposals(d).length || M.claudeHasPlanned(d)) return "";
+    return C.nudgeCard("No plan yet", "Ask Claude to sort your day. It checks your list, inbox and calendar, then suggests tasks here for you to approve.", "Sort my day");
+  }
+
   function render(ctx) {
     const d = ctx.d, st = ctx.state;
-    const tasks = tasksFor(ctx);
+    const planned = planItems(ctx);
+    const plannedIds = planned.map(function (x) { return x.task.id; });
+    const tasks = tasksFor(ctx).filter(function (t) { return plannedIds.indexOf(t.id) === -1; });
     const groups = byStage(tasks);
     const bar = controls(ctx, tasks);
     if (st.tasksView === "calendar") {
       st.calMode = st.tasksScope === "today" ? "day" : st.tasksScope === "week" ? "week" : "month";
       return '<div class="tasks-page tasks-page--calendar">' + bar + window.TL.views.calendar.render(ctx, { hideModes: true }) + "</div>";
     }
-    const plan = st.tasksScope === "today" ? window.TL.views.today.planSection(ctx) : "";
-    const nothing = !tasks.length ? C.empty("thinking", st.claudeOnly ? "Nothing for Claude here yet." : "Nothing here.",
-      st.claudeOnly ? "When Claude checks in, it marks the tasks it could do for you." : st.tasksScope === "today" ? "Nothing is planned for today. Approve Claude's plan, or add a task with New." : "Add a task with New, or ask Claude to add one.", "", true) : "";
-    return '<div class="page page--wide tasks-page">' + bar + plan + (nothing || (st.tasksView === "list" ? list(ctx, groups) : board(ctx, groups))) + "</div>";
+    const nothing = !tasks.length && !planned.length && !planNudge(ctx) ? C.empty("thinking", st.claudeOnly ? "Nothing for Claude here yet." : "Nothing here.",
+      st.claudeOnly ? "When Claude checks in, it marks the tasks it could do for you." : st.tasksScope === "today" ? "Nothing is planned for today. Add a task with New, or say \u201cSort my day\u201d to Claude." : "Add a task with New, or ask Claude to add one.", "", true) : "";
+    const fresh = M.notSetUp(d) ? C.setupCard() : "";
+    return '<div class="page page--wide tasks-page">' + fresh + bar + (fresh ? board(ctx, groups, []) : nothing || (st.tasksView === "list" ? list(ctx, groups, planned) : board(ctx, groups, planned))) + "</div>";
   }
 
   // Dragging cards between columns

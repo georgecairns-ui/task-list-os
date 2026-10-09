@@ -24,7 +24,6 @@
   "home": {
     "scripts": [
       "app/model.js",
-      "app/demo-data.js",
       "home-boxes.js"
     ]
   }

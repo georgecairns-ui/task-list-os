@@ -27,7 +27,6 @@
   const ui = window.TaskListOS.ui, esc = ui.esc, icon = ui.icon;
   const FILE = "/api/data/home/braindump.json";
   const JOB = "/api/claude/sort-brain-dump";
-  const DEMO_KEY = "task-list-os-demo-mode";
   const providers = {};
   let tools = [];
   let timer = null;
@@ -36,7 +35,6 @@
   function pageTool() { return document.body.getAttribute("data-tool") || "home"; }
   function recognition() { return window.SpeechRecognition || window.webkitSpeechRecognition; }
   function supported() { return typeof recognition() === "function"; }
-  function isDemo() { try { return localStorage.getItem(DEMO_KEY) === "on"; } catch (e) { return false; } }
   function makeId() { return "b-" + Math.random().toString(36).slice(2, 8).padEnd(6, "0"); }
 
   function register(toolId, provider) { providers[toolId] = provider || {}; }
@@ -202,7 +200,6 @@
     }).then(function (d) { if (!Array.isArray(d.items)) d.items = []; return d; });
   }
   function saveNote(text, about, kind) {
-    if (isDemo()) { ui.toast("Demo mode: nothing is saved, so Claude can't sort it. In your own folder, Claude sorts it straight away", { icon: "info", duration: 8000 }); return; }
     if (!/^https?:$/.test(location.protocol)) { ui.toast("Brain dump needs the app's link. Ask Claude to open it, then try again", { icon: "alert", duration: 8000 }); return; }
     const item = { id: makeId(), text: String(text).slice(0, 20000), kind: kind, from: pageTool(),
       about: (about || []).map(function (a) { return { type: a.type, id: a.id || "", label: a.label || "", tool: a.tool || (a.type === "tool" ? a.id : "") }; }),
