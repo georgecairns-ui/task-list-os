@@ -35,3 +35,24 @@ Shared version 6, 9 October 2026. Everything in `SHARED-V3-CHANGES.md`, `SHARED-
 Each tool copies `apps/shared/js/braindump.js`. Nothing else changes and `VERSION` stays `6`.
 
 Test: block the microphone for the app's page (or use a browser with no microphone), press Brain dump, type a note and press Done. The note saves and Claude sorts it.
+
+## Added later in version 6: fits every screen size
+
+Checked from a 320 pixel phone to a 3440 pixel ultrawide. Before this, the page title could be cut to 2 letters on a laptop, the board scrolled sideways below 1280 pixels, and Home sat in a narrow strip on big monitors.
+
+| Path | Change |
+|---|---|
+| `apps/home/home.css` | Screen height uses `100dvh` (with `100vh` as the fallback) so phones don't hide the bottom behind the browser bar. Home is up to 1520 pixels wide on screens of 1800 pixels or more. The page, its one column on phones and the inside of each box can't grow wider than the screen (`minmax(0, 1fr)` on `.home`, `.home__grid`, `.hbox__body`, `.hlist` and `.hcal`), This week shows 4 days a row instead of scrolling sideways, and a suggestion's name shows in full with Approve and Skip underneath (`.hrow--plan`) |
+| `apps/home/index.html` | The Customise button's word is in `.topbar__customise-label`, hidden below 420 pixels (the button keeps its `aria-label`) |
+
+What each tool does in its own `app/app.css` (Task List OS's has all of it):
+
+- `.shell` and `.main`: add `height: 100dvh` after `height: 100vh`.
+- Top bar: the page name (`h1`) never shrinks (`flex: none`); the line beside it and the search box give way first. The search box is `flex: 0 1 320px; min-width: 150px`. Below 560 pixels it folds to its icon and opens across the top bar when tapped. "All changes saved" shows as just the dot below 1200 pixels.
+- Boards and other side-by-side columns: no sideways scrolling. Make the page a container (`container-type: inline-size`) and use `@container` rules: 2 columns under 1000 pixels (the first column runs down the left), 1 column under 560.
+- Pages: on screens of 1800 pixels or more, `.page` is up to 1360 pixels wide, `.page--narrow` 900, and `.page--split` 1420.
+- Home boxes with buttons beside a name: add `hrow--plan` to the row so the name gets the full width on phones.
+
+`VERSION` stays `6`.
+
+Test: open every page at 375, 768, 1024, 1440 and 2560 pixels wide. Nothing runs off the side, nothing scrolls sideways, and the page name is always whole.

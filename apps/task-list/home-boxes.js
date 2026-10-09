@@ -43,7 +43,7 @@
     const note = M.planIsToday(data) && data.plan.note ? '<p class="hplan__note">' + esc(data.plan.note) + "</p>" : "";
     const rows = props.slice(0, 4).map(function (i) {
       const t = M.taskById(data, i.taskId);
-      return '<li class="hrow"><span class="hrow__main"><span class="hrow__title">' + esc(t.title) + "</span>" +
+      return '<li class="hrow hrow--plan"><span class="hrow__main"><span class="hrow__title">' + esc(t.title) + "</span>" +
         (i.reason ? '<span class="hrow__sub">' + esc(i.reason) + "</span>" : "") + "</span>" +
         '<span class="hrow__actions"><button type="button" class="btn btn--sm btn--approve" data-home-action="task-list:approve" data-id="' + esc(t.id) + '">' + icon("check") + "Approve</button>" +
         '<button type="button" class="btn btn--sm btn--ghost" data-home-action="task-list:skip" data-id="' + esc(t.id) + '">Skip</button></span></li>';
