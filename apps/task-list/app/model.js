@@ -157,6 +157,8 @@
   function personById(d, id) { return id ? d.people.find(function (p) { return p.id === id; }) : null; }
   function planIsToday(d) { return d.plan && d.plan.date === todayISO(); }
   function claudeHasPlanned(d) { return planIsToday(d) && !!d.plan.preparedAt; }
+  // A fresh install that Claude hasn't set up yet: no name, no tasks
+  function notSetUp(d) { return !(d.settings && d.settings.yourName) && !d.tasks.length; }
 
   // A new task Claude spotted that the person has not approved yet
   // Claude has looked at this task and written a prompt it could act on (see the spot-claude-tasks skill)
@@ -620,7 +622,7 @@
     validate: validate, normalise: normalise,
     todayISO: todayISO, mondayOf: mondayOf, weekDates: weekDates, toMinutes: toMinutes, fromMinutes: fromMinutes,
     splitLocal: splitLocal, timeLabel: timeLabel,
-    taskById: taskById, personById: personById, planIsToday: planIsToday, claudeHasPlanned: claudeHasPlanned,
+    taskById: taskById, personById: personById, planIsToday: planIsToday, claudeHasPlanned: claudeHasPlanned, notSetUp: notSetUp,
     isSuggestion: isSuggestion, isOnList: isOnList, proposals: proposals, approvedToday: approvedToday,
     reviewQueue: reviewQueue, reviewCount: reviewCount, plannedDate: plannedDate, tasksForDate: tasksForDate,
     overdue: overdue, unscheduled: unscheduled, openTasks: openTasks, waitingList: waitingList,

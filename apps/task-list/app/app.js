@@ -2,7 +2,7 @@
   TASK LIST OS: the app
   ---------------------
   Ties everything together:
-  1. Connects to data/tasks.json through the shared store (or Demo mode).
+  1. Connects to data/tasks.json through the shared store.
   2. Shows the welcome screen until a folder is connected, then the app.
   3. Moves between pages (Today, Review, Brain dump, This week, Calendar, All tasks,
      Waiting on, People, Done) using the address bar, so Back and Forward work.
@@ -63,22 +63,21 @@
     dataPaths: ["data", "", "apps/task-list/data"],
     // The helper on this computer (apps/server), which Claude starts during setup
     api: "/api/tasks",
-    makeDemoData: window.makeTaskDemoData,
     validate: M.validate,
     onStatus: function (s, detail) {
       const previous = status;
       status = s;
       statusDetail = detail || {};
       renderChrome();
-      if (!(data && (s === "ready" || s === "demo" || s === "error")) || previous !== s) render();
+      if (!(data && (s === "ready" || s === "error")) || previous !== s) render();
     },
     onData: function (d, reason) {
       data = M.normalise(d);
       // First time on Tasks in this browser: open it the way Preferences says
       if (!state.tasksScope) state.tasksScope = data.settings.defaultScope || "today";
       if (!state.tasksView) state.tasksView = data.settings.defaultView || "board";
-      // A different set of data (a folder opened, or Demo switched): start with a clean screen
-      if (reason === "load" || reason === "demo") { seen.clear(); state.drawer = null; }
+      // A different set of data (a folder opened): start with a clean screen
+      if (reason === "load") { seen.clear(); state.drawer = null; }
       render();
       if (reason === "external") ui.toast("Claude updated your list", { icon: "sparkle" });
     }
@@ -124,7 +123,7 @@
   }
 
   function renderGate(message) {
-    if (status === "checking" || ((status === "ready" || status === "demo") && !data)) {
+    if (status === "checking" || (status === "ready" && !data)) {
       return showGate('<div class="gate__loading" aria-busy="true" aria-label="Opening your task list"><div class="skeleton" style="width:220px;height:14px"></div><div class="skeleton" style="width:320px;height:28px"></div><div class="skeleton" style="width:260px;height:14px"></div></div>');
     }
     if (status === "needs-helper") {
@@ -166,7 +165,7 @@
   // 3. The app
   // ============================================================
 
-  function inApp() { return !!data && (status === "ready" || status === "demo" || status === "error"); }
+  function inApp() { return !!data && (status === "ready" || status === "error"); }
 
   function render() {
     if (!inApp()) { renderChrome(); return renderGate(); }
@@ -184,8 +183,8 @@
   }
 
   function storeInfo() {
-    return { demo: store.isDemo(), canChange: !store.isDemo() && !store.isHelper(),
-      folder: store.isDemo() ? "Sample data (nothing is saved)" : store.isHelper() ? "Your Task List OS folder, on this computer" : store.folderName() };
+    return { canChange: !store.isHelper(),
+      folder: store.isHelper() ? "Your Task List OS folder, on this computer" : store.folderName() };
   }
 
   function ctx() {
@@ -208,10 +207,7 @@
     } else pill.hidden = true;
 
     const banner = $("#banner");
-    if (status === "demo") {
-      banner.innerHTML = '<div class="banner banner--demo">' + icon("info") + "<span><strong>Demo mode.</strong> Sample data for a made-up business. Nothing is saved.</span>" +
-        '<button type="button" class="btn btn--sm" data-action="demo-off">Turn off demo</button></div>';
-    } else if (status === "error" && data) {
+    if (status === "error" && data) {
       const f = friendlyError(statusDetail.error);
       banner.innerHTML = '<div class="banner banner--error">' + icon("alert") + "<span><strong>" + esc(f.title) + "</strong> " + esc(f.body) + "</span>" +
         '<button type="button" class="btn btn--sm" data-action="retry">Try again</button></div>';
@@ -606,7 +602,7 @@
     const action = btn.getAttribute("data-action");
     const holder = btn.closest("[data-task]");
     const taskId = holder && holder.getAttribute("data-task");
-    const proposal = btn.closest(".proposal, .wcard--ghost");
+    const proposal = btn.closest(".proposal, .wcard--ghost, .tcard--suggested");
 
     switch (action) {
       // getting in
@@ -618,8 +614,6 @@
       case "reconnect": store.reconnect().catch(function () { renderGate(); }); break;
       case "change-folder": data = null; store.forget(); break;
       case "retry": store.retry(); break;
-      case "demo-on": data = null; store.setDemo(true); break;
-      case "demo-off": data = null; store.setDemo(false); break;
 
       // tasks
       case "toggle-done": toggleDone(taskId); break;
@@ -864,7 +858,6 @@
     if (kind === "filter-person") state.filterPerson = el.value;
     if (kind === "sort-by") state.sortBy = el.value;
     if (kind === "filter-cat") { state.filterCat = el.value; seen.clear(); }
-    if (kind === "demo") { data = null; store.setDemo(el.checked); return; }
     renderView();
   });
 

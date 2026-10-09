@@ -31,8 +31,15 @@ import json, sys, pathlib, re
 root = pathlib.Path(sys.argv[1])
 problems = []
 data = json.loads((root / "apps/task-list/data/tasks.json").read_text())
-if any(not t.get("example") for t in data.get("tasks", [])):
-    problems.append("apps/task-list/data/tasks.json has tasks that are not the examples")
+if data.get("tasks"):
+    problems.append("apps/task-list/data/tasks.json has tasks in it (a fresh install starts empty)")
+# No demo mode and no sample business ships (the demo lives in ~/Claude/08_Artifacts/Task-List-OS-Demo)
+if (root / "apps/task-list/app/demo-data.js").exists():
+    problems.append("apps/task-list/app/demo-data.js is back: the demo lives outside the kit")
+for f in list((root / "apps").rglob("*.js")) + list((root / "apps").rglob("*.html")):
+    txt = f.read_text(errors="ignore")
+    if re.search(r"makeDemoData|setDemo|demo-mode|data-action=\"demo|Demo mode", txt):
+        problems.append(f"{f.relative_to(root)} still has demo mode in it")
 if data.get("plan", {}).get("date") or data.get("activity"):
     problems.append("apps/task-list/data/tasks.json has a plan or activity in it")
 for key in ("events", "people", "dump", "replies", "meetings"):

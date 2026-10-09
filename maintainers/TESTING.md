@@ -37,7 +37,7 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] Tick a task done. The time saved panel (last 7 days) goes up.
 - [ ] Ask Claude "add call the bank to my list" with the app open: it appears within a few seconds with "Claude updated your list".
 - [ ] Reload the page: everything is still there.
-- [ ] Demo switch on and off: demo shows Fern & Finch, and switching off returns your real list untouched.
+- [ ] Fresh install (empty task file, no name): Tasks and Home show "Let's set up your task list" with /setup to copy; nothing mentions a demo.
 - [ ] Review: approve, edit and skip all work; Approve all clears the page.
 - [ ] Calendar: your real meetings show (after "sort my day"). Drag a task from To schedule onto a time slot; drag it to a new time. Day, Week and Month all work.
 - [ ] Brain dump: type 3 lines, press Cmd or Ctrl and Enter. Say "sort my brain dump" to Claude; the lines become New suggestions in Review.
@@ -72,7 +72,8 @@ Then unzip `dist/task-list-os.zip` into a test location, for example `Documents/
 - [ ] Today shows Claude's plan on top. Old links (#today, #week, #calendar, #all, #waiting, #done) open the matching Tasks view.
 - [ ] New task: type a new name in "Who's it for"; it's added to the contacts and the task shows it.
 - [ ] Preferences (the cog): rename a column, rename and recolour a category, add one, remove one (its tasks move to "Can wait"), set how Tasks opens. Save, reload: all kept, on the board and in the task panel.
-- [ ] Claude can do this: in Demo mode 4 tasks show the tag; the filter shows only them; a task's panel has Open in Claude (opens the Claude desktop app with the prompt typed in, in this folder) and Copy the prompt. After a real check-in, tasks Claude could do get the tag.
+- [ ] Today on Board: Claude's plan shows as Suggested cards at the top of To do with Approve and Skip, and Approve all in the column head when there are 2 or more; List shows the same in the To do group; with no plan yet, To do shows a "No plan yet" card with "Sort my day".
+- [ ] Claude can do this: tasks Claude wrote a prompt for show the tag; the filter shows only them; a task's panel has Open in Claude (opens the Claude desktop app with the prompt typed in, in this folder) and Copy the prompt. After a real check-in, tasks Claude could do get the tag.
 - [ ] The Brain dump button at the top records a voice note; the sidebar shows only Tasks, Inbox, Review and Calls.
 - [ ] Add meeting: it shows dashed in This week's calendar at once and opens in Google Calendar or Outlook with the title, time, place and guests filled in. Its panel can open it again or remove it.
 - [ ] Setup step 5 offers to match the brand from a website or brand guidelines, and the colour, font and logo change in light and dark.

@@ -18,16 +18,15 @@
   4. Every save re-reads the file first, applies just the one change, then writes it back.
      That way the app never overwrites something Claude has just written.
      The previous version is kept as "<name>.backup.json" next to it, as a safety net.
-  5. Demo mode swaps in made-up sample data held in memory. Nothing is saved to any file.
 
   Works in Chrome and Microsoft Edge (Mac and Windows). Safari and Firefox do not support
-  editing local files from a web page, so they get a friendly message and the demo instead.
+  editing local files from a web page, so they get a friendly message saying what to do.
+  There is no demo mode: a fresh install shows the person's own (empty) list and guides them.
 */
 (function () {
   "use strict";
 
   const POLL_MS = 2500;
-  const DEMO_KEY = "task-list-os-demo-mode";
 
   // ---------- Tiny wrapper around the browser's built-in IndexedDB, used only to remember the folder ----------
   function idb() {
@@ -66,31 +65,23 @@
     return typeof window.showDirectoryPicker === "function";
   }
 
-  function readDemoFlag() {
-    try { return localStorage.getItem(DEMO_KEY) === "on"; } catch (e) { return false; }
-  }
-  function writeDemoFlag(on) {
-    try { on ? localStorage.setItem(DEMO_KEY, "on") : localStorage.removeItem(DEMO_KEY); } catch (e) { /* private window: demo just will not be remembered */ }
-  }
-
   /*
     createStore(options)
       moduleId     e.g. "task-list" (used to remember which folder belongs to which app)
       fileName     e.g. "tasks.json"
       dataPaths    where to look for the file inside the folder the person picks
       api          the helper's address for the task file, for example "/api/tasks" (see apps/server)
-      makeDemoData function returning fresh sample data for Demo mode
       validate     function(data) that throws if the file is not in the expected shape
       onData       function(data, reason) called whenever data arrives. reason is
-                   "load", "save", "external" (Claude changed the file) or "demo"
+                   "load", "save" or "external" (Claude changed the file)
       onStatus     function(status, detail) called when the connection state changes:
-                   "checking", "unsupported", "needs-helper", "needs-connect", "needs-permission", "ready", "demo", "error"
+                   "checking", "unsupported", "needs-helper", "needs-connect", "needs-permission", "ready", "error"
   */
   function createStore(options) {
     const opts = options;
     const backupName = opts.fileName.replace(/\.json$/, "") + ".backup.json";
     const state = {
-      mode: "none",          // "file" or "demo"
+      mode: "none",          // "helper" or "file"
       folder: null,          // the folder the customer picked
       dataDir: null,         // the folder that actually holds the data file
       lastModified: 0,       // when the file last changed, so we can spot Claude's edits
@@ -255,7 +246,6 @@
     // ---------- Public actions ----------
     async function start() {
       setStatus("checking");
-      if (readDemoFlag()) return startDemo();
       // Opened from the helper's link: everything just works, no folder to pick
       if (await helperAvailable()) {
         try { return await openHelper(); } catch (e) { return setStatus("error", { error: e, folderName: "Task List OS", helper: true }); }
@@ -312,11 +302,6 @@
       file first, apply the change, keep a backup and save. Saves run one at a time, in order.
     */
     function update(change) {
-      if (state.mode === "demo") {
-        change(state.data);
-        opts.onData(state.data, "save");
-        return Promise.resolve(state.data);
-      }
       if (state.mode === "helper") {
         const runHelper = async function () {
           state.busy = true;
@@ -372,22 +357,6 @@
       return next;
     }
 
-    // ---------- Demo mode ----------
-    function startDemo() {
-      stopWatching();
-      state.mode = "demo";
-      state.data = opts.makeDemoData();
-      setStatus("demo");
-      opts.onData(state.data, "demo");
-    }
-    function setDemo(on) {
-      writeDemoFlag(on);
-      if (on) return startDemo();
-      state.mode = "none";
-      state.data = null;
-      return start();
-    }
-
     function retry() {
       if (state.mode === "helper" || (opts.api && /^https?:$/.test(location.protocol))) return start();
       if (state.folder) return openFolder(state.folder).catch(function (e) { setStatus("error", { error: e, folderName: state.folder.name }); });
@@ -396,8 +365,7 @@
 
     return {
       start: start, connect: connect, reconnect: reconnect, forget: forget, update: update,
-      setDemo: setDemo, retry: retry,
-      isDemo: function () { return state.mode === "demo"; },
+      retry: retry,
       isHelper: function () { return state.mode === "helper"; },
       isSupported: isSupported,
       getData: function () { return state.data; },

@@ -1,10 +1,9 @@
 /*
   TASK LIST OS ON HOME: the boxes this tool adds to the Home dashboard
   -------------------------------------------------------------------
-  Loaded by apps/home/home.js after app/model.js and app/demo-data.js (see "home" in menu.json).
+  Loaded by apps/home/home.js after app/model.js (see "home" in menu.json).
   It reads and saves the same task file as the task list itself, through the same shared store,
-  so Approve, Skip and ticking a task off on Home are exactly the same as in the task list,
-  and Demo mode shows the same sample business.
+  so Approve, Skip and ticking a task off on Home are exactly the same as in the task list.
 */
 (function () {
   "use strict";
@@ -39,6 +38,7 @@
     const list = M.tasksForDate(data, today(), { includeDone: true })
       .concat(M.approvedToday(data).map(function (i) { return M.taskById(data, i.taskId); }))
       .filter(function (t, i, all) { return t && all.indexOf(t) === i; });
+    if (M.notSetUp(data)) return '<div class="hbox__setup"><p><strong>Let\u2019s set up your task list.</strong> In the Claude desktop app, open the Code tab in your Task List OS folder and type <code>/setup</code>. Claude connects your email, calendar and calls, then fills this page with your real work.</p></div>';
     if (!props.length && !list.length) return empty("Claude hasn't sorted today yet. Say \"sort my day\" to Claude and the plan appears here.");
     const note = M.planIsToday(data) && data.plan.note ? '<p class="hplan__note">' + esc(data.plan.note) + "</p>" : "";
     const rows = props.slice(0, 4).map(function (i) {
@@ -157,7 +157,6 @@
         fileName: "tasks.json",
         dataPaths: ["data", "", "apps/task-list/data"],
         api: "/api/tasks",
-        makeDemoData: window.makeTaskDemoData,
         validate: M.validate,
         onStatus: function () {},
         onData: function (d) { data = M.normalise(d); def.ready = true; ctx.refresh(); }
