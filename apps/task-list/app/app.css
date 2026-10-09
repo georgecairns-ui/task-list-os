@@ -18,7 +18,7 @@
 .accent { color: var(--color-accent); }
 
 /* ============ Before connecting: the gate ============ */
-.gate { min-height: 100vh; display: grid; place-items: center; padding: var(--space-6); background: var(--color-sidebar); }
+.gate { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: var(--space-6); background: var(--color-sidebar); }
 .gate__card {
   width: min(940px, 100%); display: grid; grid-template-columns: 1.15fr 0.85fr; overflow: hidden;
   background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 16px; box-shadow: var(--shadow-md);
@@ -46,18 +46,21 @@
 }
 
 /* ============ The shell: sidebar, main area, record panel ============ */
-.shell { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); height: 100vh; overflow: hidden; }
-.main { display: flex; flex-direction: column; min-width: 0; height: 100vh; }
+/* dvh: on phones the screen height changes as the browser bar slides away; vh is the fallback */
+.shell { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); height: 100vh; height: 100dvh; overflow: hidden; }
+.main { display: flex; flex-direction: column; min-width: 0; height: 100vh; height: 100dvh; }
 .view { flex: 1; overflow: auto; outline: none; }
 body.has-drawer .main { margin-right: 0; }
 
 /* ---------- Top bar ---------- */
-.topbar { display: flex; align-items: center; gap: var(--space-3); height: var(--topbar-height); flex: none; padding: 0 var(--space-5); border-bottom: 1px solid var(--color-line); background: var(--color-bg); }
+.topbar { position: relative; display: flex; align-items: center; gap: var(--space-3); height: var(--topbar-height); flex: none; padding: 0 var(--space-5); border-bottom: 1px solid var(--color-line); background: var(--color-bg); }
 .topbar__menu { display: none; }
-.topbar__title { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: 1; }
-.topbar__title h1 { font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
-.topbar__sub { color: var(--color-muted); font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar__search { position: relative; width: min(320px, 34vw); }
+/* The page name never gets cut: the line beside it and the search box give way first */
+.topbar__title { display: flex; align-items: baseline; gap: 10px; flex: 1; }
+.topbar__title h1 { flex: none; font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
+.topbar__sub { flex: 1 1 0; width: 0; min-width: 0; color: var(--color-muted); font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar__search { position: relative; flex: 0 1 320px; min-width: 150px; }
+@media (max-width: 1200px) { .save-status__text { display: none; } }
 .topbar__search .input { padding-left: 32px; padding-right: 30px; height: 34px; background: var(--color-sidebar); border-color: var(--color-line); border-radius: var(--radius-md); }
 .topbar__search .input:focus { background: var(--color-surface); }
 .topbar__search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--color-muted); pointer-events: none; }
@@ -350,7 +353,7 @@ body.has-drawer .main { margin-right: 0; }
 .cal-allday__cell.is-over { background: var(--color-accent-soft); }
 .cal-chip { display: block; width: 100%; padding: 2px 6px; border: 0; border-radius: 4px; text-align: left; font-size: var(--text-xs); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cal-chip--event { background: var(--event-bg); color: var(--event-text); }
-.cal-scroll { overflow: auto; min-height: 0; max-height: calc(100vh - 200px); }
+.cal-scroll { overflow: auto; min-height: 0; max-height: calc(100vh - 200px); max-height: calc(100dvh - 200px); }
 .cal-body { position: relative; }
 .cal-gutter { position: relative; }
 .cal-gutter__h { position: absolute; right: 8px; transform: translateY(-50%); font-size: 10px; color: var(--color-muted); }
@@ -446,20 +449,34 @@ body.has-drawer .main { margin-right: 0; }
 .shortcuts { gap: 10px; }
 .shortcuts div { display: flex; align-items: center; gap: 6px; }
 
+/* ============ Big monitors: pages use more of the width ============ */
+@media (min-width: 1800px) {
+  .page { max-width: 1360px; }
+  .page--narrow { max-width: 900px; }
+  .page--split { max-width: 1420px; grid-template-columns: minmax(0, 1fr) 340px; }
+  .page--wide { max-width: none; }
+}
+
 /* ============ Phones and small screens ============ */
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; }
   .topbar { padding: 0 var(--space-3); gap: var(--space-2); }
   .topbar__menu { display: inline-grid; }
   .topbar__sub { display: none; }
-  .topbar__search { width: auto; flex: 0 1 220px; }
+  .topbar__search { flex: 0 1 220px; min-width: 120px; }
   .topbar__search-kbd { display: none; }
   .page { padding: var(--space-4) var(--space-3) var(--space-8); gap: var(--space-4); }
   .board { grid-template-columns: 200px repeat(7, 220px); }
 }
 @media (max-width: 560px) {
   .save-status__text, .topbar__new-label { display: none; }
-  .topbar__search { flex: 1; }
+  /* Search folds down to its icon, and opens across the top bar when tapped */
+  .topbar__search { flex: 0 0 36px; min-width: 0; }
+  .topbar__search .input { padding-right: 0; }
+  .topbar__search .input::placeholder { color: transparent; }
+  .topbar__search:focus-within { position: absolute; z-index: 5; left: var(--space-3); right: var(--space-3); top: 50%; transform: translateY(-50%); }
+  .topbar__search:focus-within .input { padding-right: 30px; }
+  .topbar__search:focus-within .input::placeholder { color: var(--color-faint); }
   .greeting { font-size: var(--text-xl); }
   .drawer { width: 100vw; }
   .prop { grid-template-columns: 84px minmax(0, 1fr); }
@@ -556,7 +573,7 @@ body.has-drawer .main { margin-right: 0; }
 .cal-block--pending { border-style: dashed; border-left-style: solid; opacity: 0.9; }
 
 /* ============ Tasks: one page, switches along the top ============ */
-.tasks-page { display: grid; gap: var(--space-4); align-content: start; }
+.tasks-page { display: grid; gap: var(--space-4); align-content: start; container-type: inline-size; }
 .tasks-page--calendar { padding: var(--space-5) var(--space-6) var(--space-4); height: 100%; grid-template-rows: auto 1fr; }
 .tasks-page--calendar > .page { padding: 0; max-width: none; }
 .tasks-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
@@ -574,6 +591,17 @@ body.has-drawer .main { margin-right: 0; }
 .scol--doing .scol__name::before { background: var(--color-accent); }
 .scol--waiting .scol__name::before { background: var(--cat-waiting); }
 .scol__cards { display: grid; gap: 8px; align-content: start; min-width: 0; }
+/* Narrower screens: no sideways scrolling. 2 columns with To do down the left, then 1 column on a phone */
+@container (max-width: 1000px) {
+  .sboard { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow-x: visible; }
+  .sboard > .scol:first-child { grid-row: span 3; }
+  .sboard > .scol:not(:first-child) { min-height: 0; }
+}
+@container (max-width: 560px) {
+  .sboard { grid-template-columns: minmax(0, 1fr); }
+  .sboard > .scol:first-child { grid-row: auto; }
+  .scol { min-height: 0; }
+}
 .scol__empty { margin: 0; padding: var(--space-5) 0; text-align: center; font-size: var(--text-xs); color: var(--color-faint); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-md); }
 .is-drag-active .scol__empty { color: var(--color-accent-text); border-color: var(--color-accent-line); }
 .scol__more { border: 0; background: none; color: var(--color-accent-text); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; padding: 6px; }
