@@ -139,14 +139,14 @@ Older files have a `week` section with goals. The app no longer shows weekly goa
 
 ### Brain dump
 
-What the person said into **Brain dump** (the button at the top of the app, which records a voice note), plus anything they asked you to note. One item per note or line:
+**Brain dump** (the button at the top of every page, shared by every tool) saves what the person says to `apps/home/data/braindump.json`, and the helper starts `.claude/skills/sort-brain-dump`, which hands the task list's part to `sort-my-brain-dump`. The `dump` list below is older: anything they asked you to note in chat, and notes from older copies. One item per note or line:
 
 ```json
 { "id": "b-x7k2p9", "text": "ask Priya if she can do 4 days in November", "createdAt": "2026-10-06T07:20:00.000Z", "status": "unsorted" }
 ```
 
 - `status` is `unsorted`, `sorted` (you or the person turned it into tasks; `taskIds` lists them) or `dismissed` (removed, or nothing to do).
-- `"kind": "voice"` marks a voice note: one long spoken paragraph from the app's Voice note button. When one is added, the task list asks you to sort it straight away (a `claude -p` run started by the helper, with nobody watching).
+- `"kind": "voice"` marks a voice note: one long spoken paragraph. New voice notes go to the shared brain dump file instead (see above).
 - See `.claude/skills/sort-my-brain-dump` for how to turn lines into suggested tasks.
 
 ### Replies: emails that need an answer (the Inbox page)
@@ -197,7 +197,7 @@ The app adds a line to `activity` when a task is ticked off (`task-done`), added
 |---|---|
 | "Sort my day", "plan my day", "what should I do today" | `.claude/skills/sort-my-day`: copy in the calendar, check the inbox, propose today's plan |
 | "Plan my week", "what does my week look like" | `.claude/skills/plan-my-week`: suggest goals and a day for the tasks that need one |
-| "Sort my brain dump", "deal with my notes" | `.claude/skills/sort-my-brain-dump` |
+| "Sort my brain dump", "deal with my notes" | `.claude/skills/sort-brain-dump` (shared; it uses `sort-my-brain-dump` for tasks) |
 | "Check my inbox", "anything new?", "check in" | `.claude/skills/check-in` (calendar, inbox, calls) |
 | "What needs a reply?", "triage my inbox" | `.claude/skills/triage-inbox` |
 | "Write up my calls", "what came out of the call with Tom?" | `.claude/skills/process-calls` |

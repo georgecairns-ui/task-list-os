@@ -35,6 +35,7 @@ DATA = os.path.join(APPS, "task-list", "data", "tasks.json")
 INSTALLED = os.path.join(APPS, "installed.json")
 # A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
 HOME_LAYOUT = os.path.join(APPS, "home", "data", "layout.json")
+BRAIN_DUMP = os.path.join(APPS, "home", "data", "braindump.json")  # the shared Brain dump, every tool's notes
 DATA_FILE_RE = re.compile(r"^apps/[a-z0-9-]+/data/[a-z0-9-]+\.json$")
 DATA_URL_RE = re.compile(r"^/api/data/([a-z0-9-]+)/([a-z0-9-]+\.json)(/meta)?$")
 MAX_BODY = 10 * 1024 * 1024
@@ -44,9 +45,9 @@ _logs = os.path.join(os.path.expanduser("~"), "Library", "Logs")
 CLAUDE_LOG = os.path.join(_logs if os.path.isdir(_logs) else os.environ.get("TMPDIR", "/tmp"), "task-list-os-claude.log")
 RUN_LIMIT_S = 10 * 60
 UNWATCHED = " Nobody is watching this run, so do not ask questions: make your best reading of anything unclear and say so in your notes."
-SORT_JOB = {"key": "task-list:sort-brain-dump", "label": "sorting the brain dump",
-            "prompt": ("A new voice note has just been added to the brain dump in the task list. "
-                       "Follow .claude/skills/sort-my-brain-dump for the unsorted brain dump items only. Be quick and change nothing else." + UNWATCHED)}
+SORT_JOB = {"key": "shared:brain-dump", "label": "sorting the brain dump",
+            "prompt": ("A new brain dump has just been added. Follow .claude/skills/sort-brain-dump for the unsorted items in apps/home/data/braindump.json "
+                       "(and any unsorted items in apps/task-list/data/tasks.json's dump). Be quick and change nothing else." + UNWATCHED)}
 RUN_URL_RE = re.compile(r"^/api/claude/run/([a-z0-9-]+)/([a-z0-9-]+)$")
 # One run at a time. Asking again for a job that's already waiting doesn't queue it twice.
 claude_run = {"running": False, "queued": False, "job": None, "startedAt": None, "lastRunAt": None, "lastResult": None, "lastJob": None}
@@ -161,7 +162,7 @@ def data_file_for(tool_id, file_name):
     """The file behind /api/data/<tool>/<file>, or None if that tool isn't installed or the file isn't one of its own."""
     # Home's own file: which boxes show, in what order and how wide
     if tool_id == "home":
-        return HOME_LAYOUT if file_name == "layout.json" else None
+        return HOME_LAYOUT if file_name == "layout.json" else BRAIN_DUMP if file_name == "braindump.json" else None
     for tool in installed_tools():
         if not isinstance(tool, dict) or tool.get("id") != tool_id or not isinstance(tool.get("dataFiles"), list):
             continue

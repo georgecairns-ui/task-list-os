@@ -4,6 +4,8 @@
       "Read(./**)",
       "Edit(./apps/task-list/data/**)",
       "Write(./apps/task-list/data/**)",
+      "Write(./apps/home/data/**)",
+      "Edit(./apps/home/data/**)",
       "Edit(./context/**)",
       "Write(./context/**)",
       "Edit(./files/**)",

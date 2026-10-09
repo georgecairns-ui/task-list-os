@@ -42,6 +42,7 @@ const APPS = path.join(ROOT, "apps");                         // the only folder
 const DATA = path.join(APPS, "task-list", "data", "tasks.json");
 const INSTALLED = path.join(APPS, "installed.json");
 const HOME_LAYOUT = path.join(APPS, "home", "data", "layout.json");
+const BRAIN_DUMP = path.join(APPS, "home", "data", "braindump.json");   // the shared Brain dump, every tool's notes
 // A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
 const DATA_FILE_RE = /^apps\/[a-z0-9-]+\/data\/[a-z0-9-]+\.json$/;
 const MAX_BODY = 10 * 1024 * 1024;
@@ -51,9 +52,9 @@ const AUTO_CLAUDE = (process.env.TLOS_AUTO_CLAUDE || "on") !== "off";
 const CLAUDE_LOG = path.join(fs.existsSync(path.join(os.homedir(), "Library", "Logs")) ? path.join(os.homedir(), "Library", "Logs") : os.tmpdir(), "task-list-os-claude.log");
 const RUN_LIMIT_MS = 10 * 60 * 1000;
 const UNWATCHED = " Nobody is watching this run, so do not ask questions: make your best reading of anything unclear and say so in your notes.";
-const SORT_JOB = { key: "task-list:sort-brain-dump", label: "sorting the brain dump",
-  prompt: "A new voice note has just been added to the brain dump in the task list. " +
-    "Follow .claude/skills/sort-my-brain-dump for the unsorted brain dump items only. Be quick and change nothing else." + UNWATCHED };
+const SORT_JOB = { key: "shared:brain-dump", label: "sorting the brain dump",
+  prompt: "A new brain dump has just been added. Follow .claude/skills/sort-brain-dump for the unsorted items in apps/home/data/braindump.json " +
+    "(and any unsorted items in apps/task-list/data/tasks.json's dump). Be quick and change nothing else." + UNWATCHED };
 // One run at a time. Asking again for a job that's already waiting doesn't queue it twice.
 const claudeRun = { running: false, queued: false, job: null, startedAt: null, lastRunAt: null, lastResult: null, lastJob: null };
 const claudeQueue = [];
@@ -166,7 +167,7 @@ function installedTools() {
 // The file behind /api/data/<tool>/<file>, or null if that tool isn't installed or the file isn't one of its own
 function dataFileFor(toolId, fileName) {
   // Home's own file: which boxes show, in what order and how wide
-  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : null;
+  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : fileName === "braindump.json" ? BRAIN_DUMP : null;
   for (const tool of installedTools()) {
     if (!tool || tool.id !== toolId || !Array.isArray(tool.dataFiles)) continue;
     // A tool may only save inside its own app folder, never another tool's data or the shared parts
