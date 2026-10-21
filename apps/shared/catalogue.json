@@ -19,19 +19,19 @@
     },
     {
       "id": "skill-map",
-      "name": "Skill Map OS",
-      "description": "See everything Claude could take off your plate, mapped across your whole business. It shows what's already covered and what to set up next, so you know where the hours are.",
+      "name": "Skill and Folder Map OS",
+      "description": "See every skill Claude has and every folder and file you keep, drawn as two glowing maps. It shows what you use, what is doubled up, which parts of your business have no skill yet, and what to tidy first.",
       "icon": "map",
       "app": "apps/skill-map/",
-      "repository": "skill-map-os"
+      "repository": "skill-and-folder-map-os"
     },
     {
       "id": "proposals",
-      "name": "Proposal Writer OS",
-      "description": "Paste your notes from a call and get a proposal in your brand. Claude writes it in your words and your prices, and you check it before it goes anywhere.",
+      "name": "Proposal OS",
+      "description": "Put everything about a client in one folder and get a proposal in your brand. Claude writes it with your packages and prices, and you check it before it goes anywhere.",
       "icon": "fileText",
       "app": "apps/proposals/",
-      "repository": "proposal-writer-os"
+      "repository": "proposal-writing-os"
     },
     {
       "id": "content",
