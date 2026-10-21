@@ -17,3 +17,6 @@ desktop.ini
 
 # Home layout: one person's choice of boxes, made while testing
 apps/home/data/
+
+# Photos and videos added to posts: they stay on this computer, never in the kit
+apps/*/data/media/

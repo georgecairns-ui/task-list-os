@@ -62,6 +62,10 @@ if "Setup status: not started" not in (root / "setup/progress.md").read_text():
     problems.append("setup/progress.md is not blank")
 if "Setup: not done yet" not in (root / "CLAUDE.md").read_text():
     problems.append("CLAUDE.md says setup is done")
+# A person's own photos and videos never ship: apps/<tool>/data/media may hold nothing but a .gitkeep
+for f in sorted((root / "apps").glob("*/data/media/**/*")):
+    if f.is_file() and f.name != ".gitkeep":
+        problems.append(f"{f.relative_to(root)} is a person's own photo or video and must not ship")
 for p in problems:
     print("  - " + p, file=sys.stderr)
 sys.exit(1 if problems else 0)
