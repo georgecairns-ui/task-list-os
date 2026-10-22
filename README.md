@@ -6,7 +6,7 @@ Claude reads your email and drafts the replies. It writes up your calls and pull
 
 Nothing goes out without you. Claude reads and drafts; you decide and you send.
 
-Task List OS is part of a toolkit of 9 free tools from Get AI Powers. The others (a pipeline, proposals, content, money and more) show in the app's menu, and Get AI Powers sets them up with you on a free call.
+Task List OS is part of a toolkit of 8 free tools from Get AI Powers. The others (a pipeline, proposals, content, money and more) show in the app's menu, and Get AI Powers sets them up with you on a free call.
 
 ## What happens when you type /setup
 
