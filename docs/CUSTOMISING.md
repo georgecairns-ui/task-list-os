@@ -14,7 +14,7 @@ Task List OS comes with a clean, calm look in light or dark (the moon or sun but
 |---|---|
 | Colours, fonts, corner roundness, spacing | `apps/shared/theme.css` (every look-and-feel setting is in this one file, with a light set and a dark set). The `match-my-brand` skill does it for you from your website or brand guidelines |
 | What Home shows | The **Customise** button on Home: show or hide boxes, drag them into order, make them wide. **Reset** puts it back |
-| The Get AI Powers slab-serif headings | `apps/shared/theme.css`: follow the note at the bottom of the file |
+| Serif headings, as on getaipowers.com | `apps/shared/theme.css`: follow the note at the bottom of the file |
 | Your name, business name, time saved per task and per plan | The Settings button (the cog) in the app, or `settings` in your task file |
 | The words on the category labels | `CATEGORIES` near the top of `apps/task-list/app/model.js` |
 | The logo in the sidebar | Ask Claude ("put our logo on it"). It saves your logo in `apps/shared/images/` and points the sidebar at it. A wide logo shows at its own shape in place of your business name, and a dark logo gets a light background in dark mode |

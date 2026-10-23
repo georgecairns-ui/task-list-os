@@ -5,6 +5,7 @@
 # Builds dist/task-list-os.zip: a clean copy of the kit for customers to download.
 #
 # Run it from the task-list-os folder with:   bash maintainers/make-release.sh
+# After changing the kit's own colours or fonts on purpose: bash maintainers/make-release.sh --record-look
 #
 # What it does:
 #   1. Checks the files that ship are still blank templates, so nobody's real tasks,
@@ -26,8 +27,20 @@ OUT="$STAGE/$NAME"
 
 fail() { echo "RELEASE STOPPED: $1" >&2; exit 1; }
 
+# ---------- 0. --record-look: after changing the kit's own look on purpose ----------
+if [ "${1:-}" = "--record-look" ]; then
+  if grep -q '/\* Brand:' "$ROOT/apps/shared/theme.css"; then fail "theme.css has someone's brand in it (a /* Brand: */ line), so it isn't the kit's own look"; fi
+  {
+    echo "# The kit's own look: theme.css and every font that ships. make-release.sh refuses anything different."
+    echo "# Re-record only after changing the kit's look on purpose: bash maintainers/make-release.sh --record-look"
+    (cd "$ROOT" && for f in apps/shared/theme.css apps/shared/fonts/*; do [ "$(basename "$f")" = ".DS_Store" ] || shasum -a 256 "$f"; done)
+  } > "$ROOT/maintainers/shipped-look.txt"
+  echo "Recorded the kit's look in maintainers/shipped-look.txt"
+  exit 0
+fi
+
 # ---------- 1. Is everything that ships still a blank template? ----------
-python3 - "$ROOT" <<'PYEOF' || fail "the files above contain real data or someone's own documents, skills or look. Restore the kit's files with: git checkout -- apps/task-list/data apps/shared/theme.css context setup/progress.md CLAUDE.md, and move anything else listed out of this folder"
+python3 - "$ROOT" <<'PYEOF' || fail "the files above contain real data or someone's own documents, skills or look. Restore the kit's files with: git checkout -- apps/task-list/data apps/shared/theme.css apps/shared/fonts context setup/progress.md CLAUDE.md, and move anything else listed out of this folder"
 import json, sys, pathlib, re
 root = pathlib.Path(sys.argv[1])
 problems = []
@@ -77,11 +90,23 @@ for f in list((root / "apps").rglob("index.html")):
     txt = f.read_text(errors="ignore")
     if "brand-logo" in txt or "sidebar__brand--" in txt:
         problems.append(f"{f.relative_to(root)} shows someone's logo in the sidebar")
-KIT_FONTS = {"OFL.txt", "Figtree-Variable.woff2", "Figtree-Italic-Variable.woff2", "SourceSerif4-Variable.woff2", "SourceSerif4-Italic-Variable.woff2",
-             "ZillaSlab-Regular.woff2", "ZillaSlab-Medium.woff2", "ZillaSlab-SemiBold.woff2", "ZillaSlab-Bold.woff2"}
-for f in sorted((root / "apps/shared/fonts").iterdir()):
-    if f.is_file() and f.name not in KIT_FONTS and f.name != ".DS_Store":
-        problems.append(f"{f.relative_to(root)} is not one of the kit's fonts (add it to KIT_FONTS in this script if it should ship)")
+# theme.css and every font must match the kit's own look, recorded in maintainers/shipped-look.txt
+import hashlib
+look = root / "maintainers/shipped-look.txt"
+if not look.exists():
+    problems.append("maintainers/shipped-look.txt is missing: run bash maintainers/make-release.sh --record-look on a clean copy of the kit")
+else:
+    shipped = dict(line.split("  ", 1)[::-1] for line in look.read_text().splitlines() if line and not line.startswith("#"))
+    current = {str(f.relative_to(root)): hashlib.sha256(f.read_bytes()).hexdigest()
+               for f in [root / "apps/shared/theme.css", *sorted((root / "apps/shared/fonts").iterdir())]
+               if f.is_file() and f.name != ".DS_Store"}
+    for path in sorted(set(shipped) | set(current)):
+        if path not in current:
+            problems.append(f"{path} is missing (the kit ships it)")
+        elif path not in shipped:
+            problems.append(f"{path} is not one of the kit's fonts: is it someone's own?")
+        elif shipped[path] != current[path]:
+            problems.append(f"{path} is different from the kit's own: has it been changed to someone's brand?")
 if "Setup status: not started" not in (root / "setup/progress.md").read_text():
     problems.append("setup/progress.md is not blank")
 if "Setup: not done yet" not in (root / "CLAUDE.md").read_text():
