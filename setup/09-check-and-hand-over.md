@@ -7,7 +7,7 @@ Goal: prove it all works, both ways, then leave them with a clear picture of wha
 Check these yourself. Fix anything that fails, then check again.
 
 **The task file** (`apps/task-list/data/tasks.json`)
-- [ ] Valid, and reads back cleanly. No task still has `"example": true`.
+- [ ] Valid, and reads back cleanly.
 - [ ] Every task has a unique `id`, a `title`, a valid `category` and `status`. Every suggested task has a `source`.
 - [ ] `replies` has a draft for every email that needs an answer, in their voice, with `to` filled in.
 - [ ] `meetings` has the recent calls (if a recorder is connected), each with `actionTaskIds` that point at real tasks.

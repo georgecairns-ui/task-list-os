@@ -8,7 +8,8 @@
 #
 # What it does:
 #   1. Checks the files that ship are still blank templates, so nobody's real tasks,
-#      business notes or setup progress can go out by mistake. Stops if not.
+#      business notes, setup progress, documents, own skills, logo, fonts or colours
+#      can go out by mistake. Stops if not.
 #   2. Copies the kit into a temporary folder called "Task List OS", leaving out this
 #      maintainers folder, git history, old builds, backups and computer clutter.
 #   3. Checks the copy is complete and the data file is valid.
@@ -26,7 +27,7 @@ OUT="$STAGE/$NAME"
 fail() { echo "RELEASE STOPPED: $1" >&2; exit 1; }
 
 # ---------- 1. Is everything that ships still a blank template? ----------
-python3 - "$ROOT" <<'PYEOF' || fail "the files above contain real data. Restore them with: git checkout -- apps/task-list/data context setup/progress.md CLAUDE.md"
+python3 - "$ROOT" <<'PYEOF' || fail "the files above contain real data or someone's own documents, skills or look. Restore the kit's files with: git checkout -- apps/task-list/data apps/shared/theme.css context setup/progress.md CLAUDE.md, and move anything else listed out of this folder"
 import json, sys, pathlib, re
 root = pathlib.Path(sys.argv[1])
 problems = []
@@ -58,6 +59,29 @@ if [f.name for f in (root / "skills-to-upload").iterdir() if f.name not in ("REA
     problems.append("skills-to-upload/ has someone's own skills in it")
 if "(Claude fills this in during setup)" not in (root / "skills-to-upload/README.md").read_text():
     problems.append("skills-to-upload/README.md lists someone's own skills")
+# A person's documents never ship: files/ holds only the README in each numbered folder
+for f in sorted((root / "files").rglob("*")):
+    if f.is_file() and f.name not in ("README.md", ".gitkeep", ".DS_Store"):
+        problems.append(f"{f.relative_to(root)} is someone's own document and must not ship")
+# Every skill that ships is one of the kit's own: listed in .claude/skills/README.md (setup step 6 writes a business's own skills here too)
+skills_readme = (root / ".claude/skills/README.md").read_text()
+for d in sorted((root / ".claude/skills").iterdir()):
+    if d.is_dir() and not d.name.startswith(".") and f"`{d.name}`" not in skills_readme:
+        problems.append(f".claude/skills/{d.name} is not one of the kit's skills (not in .claude/skills/README.md): is it someone's own?")
+# A business's own look never ships: match-my-brand marks theme.css, saves brand-logo.* and adds fonts
+if "/* Brand:" in (root / "apps/shared/theme.css").read_text():
+    problems.append("apps/shared/theme.css has someone's brand in it (a /* Brand: */ line)")
+for f in sorted((root / "apps/shared/images").glob("brand-logo*")):
+    problems.append(f"{f.relative_to(root)} is someone's logo")
+for f in list((root / "apps").rglob("index.html")):
+    txt = f.read_text(errors="ignore")
+    if "brand-logo" in txt or "sidebar__brand--" in txt:
+        problems.append(f"{f.relative_to(root)} shows someone's logo in the sidebar")
+KIT_FONTS = {"OFL.txt", "Figtree-Variable.woff2", "Figtree-Italic-Variable.woff2", "SourceSerif4-Variable.woff2", "SourceSerif4-Italic-Variable.woff2",
+             "ZillaSlab-Regular.woff2", "ZillaSlab-Medium.woff2", "ZillaSlab-SemiBold.woff2", "ZillaSlab-Bold.woff2"}
+for f in sorted((root / "apps/shared/fonts").iterdir()):
+    if f.is_file() and f.name not in KIT_FONTS and f.name != ".DS_Store":
+        problems.append(f"{f.relative_to(root)} is not one of the kit's fonts (add it to KIT_FONTS in this script if it should ship)")
 if "Setup status: not started" not in (root / "setup/progress.md").read_text():
     problems.append("setup/progress.md is not blank")
 if "Setup: not done yet" not in (root / "CLAUDE.md").read_text():

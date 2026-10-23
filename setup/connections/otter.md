@@ -8,7 +8,7 @@ One line: turns call recordings into Calls entries and drafted follow-ups, with 
 
 1. Say "Let's connect your call recordings" to the person. Say "connect" and "a connection", never MCP, API, JSON or repo.
 2. In the Claude app or on claude.ai, go to Settings, Connectors, Browse connectors (ask the person what they see if this differs), find "Otter.ai", click Connect, sign in to Otter, and Authorize access.
-3. In Claude Code: it appears automatically once Claude Code is signed in with a claude.ai subscription. Check with `/mcp`.
+3. In Claude Code: it appears once Claude Code is signed in with a claude.ai subscription. Check your own list of connections; if it isn't there yet, ask them to close Claude Code and open it again (in the Terminal, `/mcp` also lists them).
 
 ## Route 2: API key
 
