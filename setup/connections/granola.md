@@ -8,7 +8,7 @@ One line: turns call notes into Calls entries and drafted follow-ups, with the a
 
 1. Say "Let's connect your call notes" to the person. Say "connect" and "a connection", never MCP, API, JSON or repo.
 2. In the Claude app or on claude.ai, go to the connectors area (ask the person what they see), find "Granola", click Connect, sign in to Granola in the browser window, and approve.
-3. In Claude Code: it appears automatically once Claude Code is signed in with a claude.ai subscription. Check with `/mcp`.
+3. In Claude Code: it appears once Claude Code is signed in with a claude.ai subscription. Check your own list of connections; if it isn't there yet, ask them to close Claude Code and open it again (in the Terminal, `/mcp` also lists them).
 4. Backup, inside Claude Code only: `claude mcp add granola --transport http https://mcp.granola.ai/mcp`, then open a new terminal, run `claude`, run `/mcp`, select Granola, and choose Authenticate.
 
 ## Route 2: API key

@@ -6,7 +6,11 @@
 
 **Claude, this file is for you.** The person you work for has copied Task List OS onto their computer and wants it set up.
 
-**If you've only just copied it for them** (you're running in a different folder, such as their home or Documents folder): setup must run from inside the Task List OS folder, because that's where your skills, permissions and the task list live. Copy it with `git clone https://github.com/georgecairns-ui/task-list-os.git "$HOME/Documents/Task List OS"` (on Windows, into their Documents folder the same way). If git isn't installed, tell them in one sentence and help them install it. Then give them the one line to open it, `cd ~/Documents/"Task List OS" && claude` (in the Claude desktop app: open the Code tab and choose that folder), tell them to pick "Yes, I trust this folder", then type `/setup`. Stop there; don't start the setup from the wrong folder. Follow this file, then the step files in `setup/`, in order.
+**If you've only just copied it for them** (you're running in a different folder, such as their home or Documents folder): setup must run from inside the Task List OS folder, because that's where your skills, permissions and the task list live. Copy it as a plain folder, so it's theirs alone and not linked to the public version (nothing to install first):
+  - Mac: `mkdir -p "$HOME/Documents/Task List OS" && curl -sL https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz | tar -xz --strip-components 1 -C "$HOME/Documents/Task List OS"`
+  - Windows (PowerShell): `$d = "$HOME\Documents\Task List OS"; New-Item -ItemType Directory -Force $d | Out-Null; curl.exe -sL -o "$env:TEMP\task-list-os.tar.gz" https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz; tar -xzf "$env:TEMP\task-list-os.tar.gz" --strip-components 1 -C $d`
+
+  If you've already copied it another way (for example with `git clone`, or into a different folder), that's fine: use that folder. Then give them the one line to open it, `cd ~/Documents/"Task List OS" && claude` (in the Claude desktop app: open the Code tab and choose that folder), tell them to pick "Yes, I trust this folder", then type `/setup`. Stop there; don't start the setup from the wrong folder. Follow this file, then the step files in `setup/`, in order.
 
 ## What Task List OS is
 
@@ -24,8 +28,9 @@ This folder is their workspace from now on: `context/` holds what you know about
 ## Before you begin
 
 1. Read `setup/progress.md`. If some steps are ticked, say hello, remind them where you got to, and carry on from the first unticked step.
-2. Read `CLAUDE.md` in this folder: the standing rules.
-3. If setup is already complete, don't run it again. Ask what they'd like to do.
+2. If setup hasn't started and this folder has a hidden `.git` folder (it was copied with `git clone`), it is still linked to the public version of Task List OS. Their notes and tasks would then sit inside that link, and a later update could clash with them. Ask once: "This folder is still linked to the public copy of Task List OS online. Shall I unlink it, so everything you put in it is yours alone? It doesn't change anything you can see." With a yes, remove it: `rm -rf .git` (Mac) or `Remove-Item -Recurse -Force .git` (Windows), from inside this folder only. With a no, leave it and note it in `setup/progress.md`. Only offer it when `git status --short` shows nothing and `git branch` shows only `main`. Never do it in a folder where setup has already started, or in one someone is developing Task List OS in (more branches, or changes of their own).
+3. Read `CLAUDE.md` in this folder: the standing rules.
+4. If setup is already complete, don't run it again. Ask what they'd like to do.
 
 ## The steps
 
