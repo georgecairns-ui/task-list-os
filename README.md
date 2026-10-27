@@ -93,4 +93,4 @@ maintainers/           for people developing Task List OS itself
 
 Free to use and change for your own business. Not for resale. See [LICENSE](LICENSE) for the plain-English terms.
 
-Fonts: Zilla Slab and Source Serif 4, under the SIL Open Font License (see `apps/shared/fonts/OFL.txt`).
+Fonts: Figtree, Source Serif 4 and Zilla Slab, under the SIL Open Font License (see `apps/shared/fonts/OFL.txt`).

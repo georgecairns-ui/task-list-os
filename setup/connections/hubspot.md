@@ -8,7 +8,7 @@ One line: fills People with contacts, and Review with deals going quiet or ticke
 
 1. Say "Let's connect your customer records" to the person. Say "connect" and "a connection", never MCP, API, JSON or repo.
 2. In the Claude app or on claude.ai, go to Connectors, Browse, find "HubSpot", click Connect, authenticate, and choose permissions.
-3. In Claude Code: it appears automatically once Claude Code is signed in with a claude.ai subscription. Check with `/mcp`. Backup if needed: `claude mcp add --transport http hubspot --scope user https://mcp.hubspot.com`, then `/mcp` to sign in.
+3. In Claude Code: it appears once Claude Code is signed in with a claude.ai subscription. Check your own list of connections; if it isn't there yet, ask them to close Claude Code and open it again (in the Terminal, `/mcp` also lists them). Backup if needed: `claude mcp add --transport http hubspot --scope user https://mcp.hubspot.com`, then `/mcp` to sign in.
 4. HubSpot recommends setting the connector to always ask before updates; choose that option if offered.
 
 ## Route 2: API key
