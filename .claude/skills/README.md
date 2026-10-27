@@ -43,6 +43,7 @@ In Claude Code, every skill is also a command: type `/` and its name, for exampl
 | `match-my-brand` | "Make it match my brand" | Your colours, font and logo on the app, from your website or brand guidelines |
 | `setup` | `/setup` | Runs the setup, or carries on where it left off |
 | `open-task-list` | "Open my task list" | Starts your task list if needed and gives you the link, http://localhost:4747 |
+| `get-updates` | "Get the latest version", "any updates?" | Your copy brought up to date with a safe backup first. Your records, notes, skills and brand stay exactly as they are |
 | `keep-context-fresh` | (automatic) | When you mention a new client or a change, Claude offers to update its notes |
 
 ## The rules every skill follows
