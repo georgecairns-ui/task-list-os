@@ -14,8 +14,8 @@
       "Edit(./skills-to-upload/**)",
       "Write(./skills-to-upload/**)",
       "WebSearch",
-      "Bash(bash setup/scripts/start-task-list.sh)",
-      "Bash(powershell -ExecutionPolicy Bypass -File setup\\scripts\\start-task-list.ps1)"
+      "Bash(bash setup/scripts/start-app.sh)",
+      "Bash(powershell -ExecutionPolicy Bypass -File setup\\scripts\\start-app.ps1)"
     ]
   }
 }

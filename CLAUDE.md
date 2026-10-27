@@ -42,7 +42,7 @@ If one still says "Status: not filled in yet", work with what you have and offer
 
 | Folder | What's in it |
 |---|---|
-| **http://localhost:4747** | The app. It opens on Home (a dashboard of boxes they arrange themselves), then the task list's pages: Tasks (Today, This week or All, as a Board, List or Calendar), Inbox, Review and Calls, plus Preferences (the cog). The Brain dump button at the top records a voice note. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-task-list` |
+| **http://localhost:4747** | The app. It opens on Home (a dashboard of boxes they arrange themselves), then the task list's pages: Tasks (Today, This week or All, as a Board, List or Calendar), Inbox, Review and Calls, plus Preferences (the cog). The Brain dump button at the top records a voice note. A small helper in `apps/server/` runs it on this computer. If it isn't running, use `.claude/skills/open-the-app` |
 | `Open Task List.html` | Double-clicking it goes to the link above when the task list is running |
 | `apps/task-list/` | The task list app. `CLAUDE.md` in there explains its data. Their tasks are in `apps/task-list/data/tasks.json` |
 | `apps/shared/` | The app's look: `theme.css` holds every colour and font. Also the toolkit menu: `catalogue.json` lists all 7 tools and the booking link |
@@ -68,7 +68,7 @@ When a request matches a skill in `.claude/skills/`, read that skill's `SKILL.md
 | "How do I...?", "research this" | `.claude/skills/research-task` |
 | "When should I do this?", "put it in my diary" | `.claude/skills/schedule-it` |
 | "Set me up", "carry on setting up" | `.claude/skills/setup` |
-| "Open my task list", "it's not loading" | `.claude/skills/open-task-list` |
+| "Open my task list", "open the app", "it's not loading" | `.claude/skills/open-the-app` |
 | "Plan my week", "what does my week look like" | `.claude/skills/plan-my-week` |
 | "Sort my brain dump", "turn my notes into tasks" (and every note from the Brain dump button) | `.claude/skills/sort-brain-dump` (shared by every tool; it hands tasks to `sort-my-brain-dump`) |
 | "Wrap up my day", "what did I get done" | `.claude/skills/wrap-up-my-day` |

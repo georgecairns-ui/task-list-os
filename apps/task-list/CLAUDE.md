@@ -2,7 +2,7 @@
 
 This folder is the task list app inside Task List OS. You (Claude) and the app share one file, `data/tasks.json`. The person you work for sees it as a proper piece of software: Home (a dashboard), Tasks (Today, This week or All, as a Board with To do, In progress, Waiting on and Done columns, a List or a Calendar), Inbox, Review, Calls and Preferences, with a Brain dump button at the top of every page. They approve your suggestions there with one click. You keep it sorted and up to date. Read this file every time you work with the task list.
 
-The app runs at **http://localhost:4747**, served by a small helper on this computer (`apps/server/`, started by `.claude/skills/open-task-list`). The helper reads and saves this same file, so you keep editing it directly as described below; the app picks up your changes within a few seconds. If setup has not happened yet (`CLAUDE.md` in the main folder says "Setup: not done yet"), follow `START-HERE.md` there first.
+The app runs at **http://localhost:4747**, served by a small helper on this computer (`apps/server/`, started by `.claude/skills/open-the-app`). The helper reads and saves this same file, so you keep editing it directly as described below; the app picks up your changes within a few seconds. If setup has not happened yet (`CLAUDE.md` in the main folder says "Setup: not done yet"), follow `START-HERE.md` there first.
 
 The routines live as skills in `.claude/skills/` in the main folder: `check-in` (the regular update), `triage-inbox`, `process-calls`, `sort-my-day`, `plan-my-week`, `sort-my-brain-dump`, `research-task`, `schedule-it` and `wrap-up-my-day`. This file is the reference for the data they read and write.
 
@@ -225,4 +225,4 @@ The app adds a line to `activity` when a task is ticked off (`task-done`), added
 - The app says "Your task file has a small mistake in it": the file is not valid JSON. Fix it, using `data/tasks.backup.json` as reference, and tell the person it's sorted.
 - The person says the app doesn't show your changes: check the file saved and parses, check `plan.date` is today and `plan.preparedAt` is set, then ask them to click on the app window (it checks again when it comes back into view).
 - The calendar is empty: check `events` has entries for this week and that `start` uses the `YYYY-MM-DDTHH:MM` shape.
-- The person says the task list won't load or says it stopped running: follow `.claude/skills/open-task-list`.
+- The person says the task list won't load or says it stopped running: follow `.claude/skills/open-the-app`.
