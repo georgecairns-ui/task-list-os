@@ -1,0 +1,12 @@
+# The kit's own look: theme.css and every font that ships. make-release.sh refuses anything different.
+# Re-record only after changing the kit's look on purpose: bash maintainers/make-release.sh --record-look
+af49c280992ef140c7da8a9f0fb118dca70cd7e2f5a8c0efb716c4347c9e28b9  apps/shared/theme.css
+7242fa62d13d46172816b266f03c027999faa3755a52c2124bc2c440f6f4b983  apps/shared/fonts/Figtree-Italic-Variable.woff2
+4ba7d3d096695818fe0686be4f1e82c6b05134e18a22260336130335027462dd  apps/shared/fonts/Figtree-Variable.woff2
+c50845d21e2e88c9a14b4c057adfdfbb6266eab9804918d4d4079903da8c4d5c  apps/shared/fonts/OFL.txt
+3857a2ebc2eeaec67ede54844695d7520fc7e451494842fce0ec9b9f6edb7ca6  apps/shared/fonts/SourceSerif4-Italic-Variable.woff2
+1f42a5908945fb103f9206086941c71ef4f276054b87bd367c5b933a18809033  apps/shared/fonts/SourceSerif4-Variable.woff2
+1f6941f1d0593aa140f80bf9848ec9dc45d8a4544d3118b70cbadaab8824d078  apps/shared/fonts/ZillaSlab-Bold.woff2
+57f42d7c4918ffdf9474a01005b9aae11a92e8b3348219a2b6c68a1488e94dda  apps/shared/fonts/ZillaSlab-Medium.woff2
+08429da59fac6cea75196dc91e4e94a4c5ad798db28f362825dc7dd53e1fa7d9  apps/shared/fonts/ZillaSlab-Regular.woff2
+bb5ac231bbf856d72390e6c24c11a98bd0e1b2f3a1d7e692dbaebd68e8fccf28  apps/shared/fonts/ZillaSlab-SemiBold.woff2

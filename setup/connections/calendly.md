@@ -9,7 +9,7 @@ One line: fills Calendar and People with upcoming bookings, and flags meetings t
 1. Say "Let's connect your bookings" to the person. Say "connect" and "a connection", never MCP, API, JSON or repo.
 2. In the Claude app or on claude.ai, go to Customize, Connect your tools, search "Calendly", sign in, and Approve.
 3. Then, in a chat, click the + button, Connectors, and toggle Calendly on.
-4. In Claude Code: it appears automatically once Claude Code is signed in with a claude.ai subscription. Check with `/mcp`. Backup if needed: `claude mcp add --transport http calendly https://mcp.calendly.com/`.
+4. In Claude Code: it appears once Claude Code is signed in with a claude.ai subscription. Check your own list of connections; if it isn't there yet, ask them to close Claude Code and open it again (in the Terminal, `/mcp` also lists them). Backup if needed: `claude mcp add --transport http calendly https://mcp.calendly.com/`.
 
 ## Route 2: API key
 

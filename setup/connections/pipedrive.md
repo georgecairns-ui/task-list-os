@@ -9,7 +9,7 @@ One line: fills People with contacts, and Review with deals going quiet.
 1. Say "Let's connect your sales pipeline" to the person. Say "connect" and "a connection", never MCP, API, JSON or repo.
 2. In the Claude app or on claude.ai, go to Customize, Connectors. If "Pipedrive" is already listed, click Connect. If not, click the + button, Add custom connector, name it "Pipedrive MCP BETA", and use the URL `https://mcp.pipedrive.ai/mcp`.
 3. Sign in to Pipedrive and approve.
-4. In Claude Code: it appears automatically once Claude Code is signed in with a claude.ai subscription. Check with `/mcp`. Backup if needed: `claude mcp add --transport http pipedrive https://mcp.pipedrive.ai/mcp`.
+4. In Claude Code: it appears once Claude Code is signed in with a claude.ai subscription. Check your own list of connections; if it isn't there yet, ask them to close Claude Code and open it again (in the Terminal, `/mcp` also lists them). Backup if needed: `claude mcp add --transport http pipedrive https://mcp.pipedrive.ai/mcp`.
 
 ## Route 2: API key
 

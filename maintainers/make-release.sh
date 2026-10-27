@@ -5,10 +5,12 @@
 # Builds dist/task-list-os.zip: a clean copy of the kit for customers to download.
 #
 # Run it from the task-list-os folder with:   bash maintainers/make-release.sh
+# After changing the kit's own colours or fonts on purpose: bash maintainers/make-release.sh --record-look
 #
 # What it does:
 #   1. Checks the files that ship are still blank templates, so nobody's real tasks,
-#      business notes or setup progress can go out by mistake. Stops if not.
+#      business notes, setup progress, documents, own skills, logo, fonts or colours
+#      can go out by mistake. Stops if not.
 #   2. Copies the kit into a temporary folder called "Task List OS", leaving out this
 #      maintainers folder, git history, old builds, backups and computer clutter.
 #   3. Checks the copy is complete and the data file is valid.
@@ -25,8 +27,20 @@ OUT="$STAGE/$NAME"
 
 fail() { echo "RELEASE STOPPED: $1" >&2; exit 1; }
 
+# ---------- 0. --record-look: after changing the kit's own look on purpose ----------
+if [ "${1:-}" = "--record-look" ]; then
+  if grep -q '/\* Brand:' "$ROOT/apps/shared/theme.css"; then fail "theme.css has someone's brand in it (a /* Brand: */ line), so it isn't the kit's own look"; fi
+  {
+    echo "# The kit's own look: theme.css and every font that ships. make-release.sh refuses anything different."
+    echo "# Re-record only after changing the kit's look on purpose: bash maintainers/make-release.sh --record-look"
+    (cd "$ROOT" && for f in apps/shared/theme.css apps/shared/fonts/*; do [ "$(basename "$f")" = ".DS_Store" ] || shasum -a 256 "$f"; done)
+  } > "$ROOT/maintainers/shipped-look.txt"
+  echo "Recorded the kit's look in maintainers/shipped-look.txt"
+  exit 0
+fi
+
 # ---------- 1. Is everything that ships still a blank template? ----------
-python3 - "$ROOT" <<'PYEOF' || fail "the files above contain real data. Restore them with: git checkout -- apps/task-list/data context setup/progress.md CLAUDE.md"
+python3 - "$ROOT" <<'PYEOF' || fail "the files above contain real data or someone's own documents, skills or look. Restore the kit's files with: git checkout -- apps/task-list/data apps/shared/theme.css apps/shared/fonts context setup/progress.md CLAUDE.md, and move anything else listed out of this folder"
 import json, sys, pathlib, re
 root = pathlib.Path(sys.argv[1])
 problems = []
@@ -58,6 +72,41 @@ if [f.name for f in (root / "skills-to-upload").iterdir() if f.name not in ("REA
     problems.append("skills-to-upload/ has someone's own skills in it")
 if "(Claude fills this in during setup)" not in (root / "skills-to-upload/README.md").read_text():
     problems.append("skills-to-upload/README.md lists someone's own skills")
+# A person's documents never ship: files/ holds only the README in each numbered folder
+for f in sorted((root / "files").rglob("*")):
+    if f.is_file() and f.name not in ("README.md", ".gitkeep", ".DS_Store"):
+        problems.append(f"{f.relative_to(root)} is someone's own document and must not ship")
+# Every skill that ships is one of the kit's own: listed in .claude/skills/README.md (setup step 6 writes a business's own skills here too)
+skills_readme = (root / ".claude/skills/README.md").read_text()
+for d in sorted((root / ".claude/skills").iterdir()):
+    if d.is_dir() and not d.name.startswith(".") and f"`{d.name}`" not in skills_readme:
+        problems.append(f".claude/skills/{d.name} is not one of the kit's skills (not in .claude/skills/README.md): is it someone's own?")
+# A business's own look never ships: match-my-brand marks theme.css, saves brand-logo.* and adds fonts
+if "/* Brand:" in (root / "apps/shared/theme.css").read_text():
+    problems.append("apps/shared/theme.css has someone's brand in it (a /* Brand: */ line)")
+for f in sorted((root / "apps/shared/images").glob("brand-logo*")):
+    problems.append(f"{f.relative_to(root)} is someone's logo")
+for f in list((root / "apps").rglob("index.html")):
+    txt = f.read_text(errors="ignore")
+    if "brand-logo" in txt or "sidebar__brand--" in txt:
+        problems.append(f"{f.relative_to(root)} shows someone's logo in the sidebar")
+# theme.css and every font must match the kit's own look, recorded in maintainers/shipped-look.txt
+import hashlib
+look = root / "maintainers/shipped-look.txt"
+if not look.exists():
+    problems.append("maintainers/shipped-look.txt is missing: run bash maintainers/make-release.sh --record-look on a clean copy of the kit")
+else:
+    shipped = dict(line.split("  ", 1)[::-1] for line in look.read_text().splitlines() if line and not line.startswith("#"))
+    current = {str(f.relative_to(root)): hashlib.sha256(f.read_bytes()).hexdigest()
+               for f in [root / "apps/shared/theme.css", *sorted((root / "apps/shared/fonts").iterdir())]
+               if f.is_file() and f.name != ".DS_Store"}
+    for path in sorted(set(shipped) | set(current)):
+        if path not in current:
+            problems.append(f"{path} is missing (the kit ships it)")
+        elif path not in shipped:
+            problems.append(f"{path} is not one of the kit's fonts: is it someone's own?")
+        elif shipped[path] != current[path]:
+            problems.append(f"{path} is different from the kit's own: has it been changed to someone's brand?")
 if "Setup status: not started" not in (root / "setup/progress.md").read_text():
     problems.append("setup/progress.md is not blank")
 if "Setup: not done yet" not in (root / "CLAUDE.md").read_text():
