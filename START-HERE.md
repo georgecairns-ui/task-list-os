@@ -7,8 +7,8 @@
 **Claude, this file is for you.** The person you work for has copied Task List OS onto their computer and wants it set up.
 
 **If you've only just copied it for them** (you're running in a different folder, such as their home or Documents folder): setup must run from inside the Task List OS folder, because that's where your skills, permissions and the task list live. Copy it as a plain folder, so it's theirs alone and not linked to the public version (nothing to install first):
-  - Mac: `D="$HOME/Documents/Task List OS"; mkdir -p "$D/setup/as-installed" && curl -sL -o "$D/setup/as-installed/task-list-os.tar.gz" https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz && tar -xzf "$D/setup/as-installed/task-list-os.tar.gz" --strip-components 1 -C "$D"`
-  - Windows (PowerShell): `$d = "$HOME\Documents\Task List OS"; New-Item -ItemType Directory -Force "$d\setup\as-installed" | Out-Null; curl.exe -sL -o "$d\setup\as-installed\task-list-os.tar.gz" https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz; tar -xzf "$d\setup\as-installed\task-list-os.tar.gz" --strip-components 1 -C $d`
+  - Mac: `D="$HOME/Documents/Task List OS"; mkdir -p "$D/setup/as-installed" && curl -fsL -o "$D/setup/as-installed/task-list-os.tar.gz" https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz && tar -xzf "$D/setup/as-installed/task-list-os.tar.gz" --strip-components 1 -C "$D"`
+  - Windows (PowerShell): `$d = "$HOME\Documents\Task List OS"; New-Item -ItemType Directory -Force "$d\setup\as-installed" | Out-Null; curl.exe -fsL -o "$d\setup\as-installed\task-list-os.tar.gz" https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz; tar -xzf "$d\setup\as-installed\task-list-os.tar.gz" --strip-components 1 -C $d`
 
   The download is kept in `setup/as-installed/` on purpose: it is what lets you bring this folder up to date later, without losing anything of theirs (the `get-updates` skill).
 
