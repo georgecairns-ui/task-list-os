@@ -53,4 +53,5 @@ Mention it once. Never suggest the task list is broken without it.
    - Their link, **http://localhost:4747**, and whether it starts with their computer.
    - Whether you're checking in automatically, and when.
    - The phrases that do most of the work: "sort my day", "check my inbox", "plan my week", "sort my brain dump", "wrap up my day". In Claude Code each also works as a command, for example `/sort-my-day`.
+   - That they can say "get the latest version" any time and you will bring the app up to date, keeping everything of theirs.
    - That they can ask for anything in plain words, and change how the app looks by asking you (see `docs/CUSTOMISING.md`).

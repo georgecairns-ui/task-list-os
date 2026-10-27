@@ -11,6 +11,7 @@
 #   1. Checks the files that ship are still blank templates, so nobody's real tasks,
 #      business notes, setup progress, documents, own skills, logo, fonts or colours
 #      can go out by mistake. Stops if not.
+#      That includes anything in setup/as-installed/ except its README (a customer's saved download).
 #   2. Copies the kit into a temporary folder called "Task List OS", leaving out this
 #      maintainers folder, git history, old builds, backups and computer clutter.
 #   3. Checks the copy is complete and the data file is valid.
@@ -81,6 +82,10 @@ skills_readme = (root / ".claude/skills/README.md").read_text()
 for d in sorted((root / ".claude/skills").iterdir()):
     if d.is_dir() and not d.name.startswith(".") and f"`{d.name}`" not in skills_readme:
         problems.append(f".claude/skills/{d.name} is not one of the kit's skills (not in .claude/skills/README.md): is it someone's own?")
+# A customer's saved downloads never ship: setup/as-installed/ holds only its README
+for f in sorted((root / "setup/as-installed").rglob("*")):
+    if f.is_file() and f.name not in ("README.md", ".DS_Store"):
+        problems.append(f"{f.relative_to(root)} is a customer's saved download and must not ship")
 # A business's own look never ships: match-my-brand marks theme.css, saves brand-logo.* and adds fonts
 if "/* Brand:" in (root / "apps/shared/theme.css").read_text():
     problems.append("apps/shared/theme.css has someone's brand in it (a /* Brand: */ line)")
@@ -123,6 +128,7 @@ PYEOF
 # ---------- 2. Copy, leaving out what customers don't need ----------
 mkdir -p "$OUT" "$DIST"
 rsync -a \
+  --include 'setup/as-installed/README.md' --exclude 'setup/as-installed/*' \
   --exclude '.git' --exclude '.gitignore' --exclude 'dist' --exclude 'maintainers' \
   --exclude '.claude/launch.json' --exclude '.claude/settings.local.json' --exclude '.claude/.cc-writes' \
   --exclude '*.backup.json' --exclude 'apps/home/data' --exclude '.DS_Store' --exclude '._*' --exclude 'Thumbs.db' --exclude 'desktop.ini' \
@@ -131,7 +137,7 @@ rsync -a \
 find "$OUT" -mindepth 2 -type d -name .claude -empty -prune -exec rm -rf {} +
 
 # ---------- 3. Checks ----------
-for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" ".claude/skills/README.md" ".claude/settings.json" "setup/scripts/save-key.sh" "setup/scripts/start-task-list.sh" "apps/server/server.js" "apps/server/server.py" "setup/connections/README.md" "toolkit.json" "ATTACHING.md" "apps/installed.json" "apps/shared/catalogue.json" "apps/shared/VERSION" "apps/shared/sidebar.css" "apps/shared/js/sidebar.js" "apps/shared/js/theme.js" "apps/shared/js/braindump.js" ".claude/skills/sort-brain-dump/SKILL.md" "apps/shared/images/claude-icon.png" "apps/task-list/menu.json" "apps/task-list/app/view-tasks.js" "apps/task-list/app/view-preferences.js" ".claude/skills/spot-claude-tasks/SKILL.md" "apps/home/index.html" "apps/home/home.js" "apps/home/home.css" "apps/task-list/home-boxes.js" "apps/shared/fonts/Figtree-Variable.woff2" "apps/task-list/ATTACH-CLAUDE.md" "setup/06-build-your-skills.md" "setup/09-check-and-hand-over.md" "skills-to-upload/README.md"; do
+for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" ".claude/skills/README.md" ".claude/settings.json" "setup/scripts/save-key.sh" "setup/scripts/start-task-list.sh" "apps/server/server.js" "apps/server/server.py" "setup/connections/README.md" "toolkit.json" "ATTACHING.md" "apps/installed.json" "apps/shared/catalogue.json" "apps/shared/VERSION" "apps/shared/sidebar.css" "apps/shared/js/sidebar.js" "apps/shared/js/theme.js" "apps/shared/js/braindump.js" ".claude/skills/sort-brain-dump/SKILL.md" "apps/shared/images/claude-icon.png" "apps/task-list/menu.json" "apps/task-list/app/view-tasks.js" "apps/task-list/app/view-preferences.js" ".claude/skills/spot-claude-tasks/SKILL.md" "apps/home/index.html" "apps/home/home.js" "apps/home/home.css" "apps/task-list/home-boxes.js" "apps/shared/fonts/Figtree-Variable.woff2" "apps/task-list/ATTACH-CLAUDE.md" "setup/06-build-your-skills.md" "setup/09-check-and-hand-over.md" "skills-to-upload/README.md" "setup/as-installed/README.md" ".claude/skills/get-updates/SKILL.md"; do
   [ -e "$OUT/$f" ] || fail "missing $f"
 done
 python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$OUT/apps/task-list/data/tasks.json" || fail "tasks.json is not valid"

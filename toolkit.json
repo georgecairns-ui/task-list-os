@@ -2,8 +2,8 @@
   "id": "task-list",
   "name": "Task List OS",
   "version": "1.0.0",
-  "sharedVersion": "6",
-  "attachingVersion": "3",
+  "sharedVersion": "10",
+  "attachingVersion": "4",
   "app": "apps/task-list/",
   "dataFiles": [
     "apps/task-list/data/tasks.json"
