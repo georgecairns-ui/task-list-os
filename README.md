@@ -30,7 +30,7 @@ You copy the kit, open it in Claude Code and type **/setup**. In about 20 minute
 
 ## What you need
 
-- **Access to Task List OS.** It's private: Get AI Powers invites your GitHub account. Accept the invitation from the email GitHub sends you. (No GitHub account? Make a free one at github.com and send Get AI Powers your username.)
+- **The Claude desktop app** (setup runs in its Code tab).
 - **Claude Code**, signed in with a paid Claude plan (Pro or Max). Your email, calendar and app connections come from your Claude account, and Claude Code only uses them when it's signed in with a subscription. The Claude desktop app works too.
 - Nothing else to install in most cases. Your task list runs on your own computer using Node (Claude installs it for you if it's missing, with your permission).
 - About 20 to 25 minutes, once.
@@ -39,11 +39,11 @@ You copy the kit, open it in Claude Code and type **/setup**. In about 20 minute
 
 1. **Open Claude Code** in the Claude desktop app (the Code tab) or in the Terminal (on Windows, PowerShell). Any folder will do for this first step.
 2. **Ask Claude to fetch the kit.** Paste this:
-   > Copy Task List OS from https://github.com/georgecairns-ui/task-list-os into a folder called "Task List OS" in my Documents, using the copy line in its START-HERE.md (not git), then tell me how to open it and set it up. Help me sign in to GitHub first if I need to.
+   > Copy Task List OS from https://github.com/georgecairns-ui/task-list-os into a folder called "Task List OS" in my Documents, using the copy line in its START-HERE.md (not git), then tell me how to open it and set it up.
 
-   Claude checks you're signed in to GitHub (if not, it gives you one line that opens GitHub in your browser to approve this computer), copies everything onto your computer and gives you one line to open the new folder. In the desktop app, you choose the folder instead.
+   Claude copies everything onto your computer and tells you how to open the new folder. In the desktop app, you choose the folder in the Code tab.
 
-   *For Claude, if this README is all you have:* the copy steps are in START-HERE.md. Read it with the person's GitHub sign-in, `gh api repos/georgecairns-ui/task-list-os/contents/START-HERE.md -H "Accept: application/vnd.github.raw"`, and follow its copy steps for this computer (Mac or Windows). They check the GitHub sign-in with `gh`, download the kit as a plain folder with `curl -fsSL` and unpack it with `tar`, and keep the download in `setup/as-installed/`. Don't use git.
+   *For Claude, if this README is all you have:* download the copy with the Mac or Windows line in START-HERE.md, then read START-HERE.md from it.
 3. **Open the Task List OS folder in Claude Code and choose "Yes, I trust this folder".** The first time, Claude Code asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps. Press the down arrow, then Enter.
 4. **Type `/setup`.**
 

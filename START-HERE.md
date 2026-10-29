@@ -6,16 +6,15 @@
 
 **Claude, this file is for you.** The person you work for has copied Task List OS onto their computer and wants it set up.
 
-**If you've only just copied it for them** (you're running in a different folder, such as their home or Documents folder): setup must run from inside the Task List OS folder, because that's where your skills, permissions and the task list live. Copy it as a plain folder, so it's theirs alone and not linked to the copy online. Task List OS is private: Get AI Powers gives access by inviting their GitHub account, so the copy uses their own GitHub sign-in.
-  1. Check they're signed in: `gh auth status`. If they're not, give them the one line `gh auth login -h github.com -p https -w`, say it opens GitHub in their browser to approve this computer, and wait. If `gh` isn't installed, help them install it first (Mac: `brew install gh`, or the installer from cli.github.com; Windows: `winget install --id GitHub.cli -e`, then open a new PowerShell window).
-  2. Copy it with the line for their computer:
-     - Mac: `D="$HOME/Documents/Task List OS"; mkdir -p "$D/setup/as-installed" && curl -fsSL -H "Authorization: Bearer $(gh auth token)" -o "$D/setup/as-installed/task-list-os.tar.gz" https://api.github.com/repos/georgecairns-ui/task-list-os/tarball/main && tar -xzf "$D/setup/as-installed/task-list-os.tar.gz" --strip-components 1 -C "$D"`
-     - Windows (PowerShell): `$d = "$HOME\Documents\Task List OS"; New-Item -ItemType Directory -Force "$d\setup\as-installed" | Out-Null; curl.exe -fsSL -H "Authorization: Bearer $(gh auth token)" -o "$d\setup\as-installed\task-list-os.tar.gz" https://api.github.com/repos/georgecairns-ui/task-list-os/tarball/main; if ($LASTEXITCODE -eq 0) { tar -xzf "$d\setup\as-installed\task-list-os.tar.gz" --strip-components 1 -C "$d" }`
-  3. If it stops with `error: 404`, their GitHub account can't see Task List OS yet: they haven't accepted the invitation from Get AI Powers, or they're signed in to a different GitHub account (`gh auth status` names it). Ask them to accept the invitation from the email GitHub sent them (it's also at github.com/notifications), then run the line again. If they never had an invitation, tell them to ask Get AI Powers. With `error: 401`, the sign-in has expired: ask them to run `gh auth login -h github.com -p https -w` again. Don't try another way in.
+**If you've only just copied it for them** (you're running in a different folder, such as their home or Documents folder): setup must run from inside the Task List OS folder, because that's where your skills, permissions and the task list live. Copy it as a plain folder, so it's theirs alone and not linked to the copy online. Use the line for their computer:
+  - Mac: `D="$HOME/Documents/Task List OS"; mkdir -p "$D/setup/as-installed" && curl -fsSL -o "$D/setup/as-installed/task-list-os.tar.gz" https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz && tar -xzf "$D/setup/as-installed/task-list-os.tar.gz" --strip-components 1 -C "$D"`
+  - Windows (PowerShell): `$d = "$HOME\Documents\Task List OS"; New-Item -ItemType Directory -Force "$d\setup\as-installed" | Out-Null; curl.exe -fsSL -o "$d\setup\as-installed\task-list-os.tar.gz" https://github.com/georgecairns-ui/task-list-os/archive/refs/heads/main.tar.gz; if ($LASTEXITCODE -eq 0) { tar -xzf "$d\setup\as-installed\task-list-os.tar.gz" --strip-components 1 -C "$d" }`
+
+  If the download fails, check their internet connection and run the line again. Don't try another way in.
 
   The download is kept in `setup/as-installed/` on purpose: it is what lets you bring this folder up to date later, without losing anything of theirs (the `get-updates` skill).
 
-  If you've already copied it another way (for example with `git clone`, or into a different folder), that's fine: use that folder. Then give them the one line to open it, `cd ~/Documents/"Task List OS" && claude` (in the Claude desktop app: open the Code tab and choose that folder), tell them to pick "Yes, I trust this folder", then type `/setup`. Stop there; don't start the setup from the wrong folder. Follow this file, then the step files in `setup/`, in order.
+  If you've already copied it another way (for example with `git clone`, or into a different folder), that's fine: use that folder. Then give them the steps to open it: in the Claude desktop app, open the Code tab, choose that folder, pick "Yes, I trust this folder", then type `/setup`. Stop there; don't start the setup from the wrong folder. Follow this file, then the step files in `setup/`, in order.
 
 ## What Task List OS is
 
@@ -32,23 +31,33 @@ This folder is their workspace from now on: `context/` holds what you know about
 
 ## Before you begin
 
-1. Read `setup/progress.md`. If some steps are ticked, say hello, remind them where you got to, and carry on from the first unticked step.
-2. If setup hasn't started and this folder has a hidden `.git` folder (it was copied with `git clone`), it is still linked to the copy of Task List OS online. Their notes and tasks would then sit inside that link, and a later update could clash with them. Ask once: "This folder is still linked to the copy of Task List OS online. Shall I unlink it, so everything you put in it is yours alone? It doesn't change anything you can see." With a yes, remove it: `rm -rf .git` (Mac) or `Remove-Item -Recurse -Force .git` (Windows), from inside this folder only. With a no, leave it and note it in `setup/progress.md`. Only offer it when `git status --short` shows nothing and `git branch` shows only `main`. Never do it in a folder where setup has already started, or in one someone is developing Task List OS in (more branches, or changes of their own).
-3. Read `CLAUDE.md` in this folder: the standing rules.
-4. If setup is already complete, don't run it again. Ask what they'd like to do.
+1. **Check you're in the Claude desktop app.** Look up the connections this session has (the desktop app's connector status tool, `session_connectors_status`). If that tool isn't there, you're not in the desktop app's Code tab, and you can't check or switch on their connections. Stop and say, in your own words: "Setup needs the Claude desktop app. Open it, choose the Code tab, pick this folder and type /setup." Do nothing else.
+2. **Ask how much they've used Claude Code,** unless `setup/progress.md` already has a guide mode. One question, on its own: "Before we start: how much have you used Claude Code? 1. Never 2. A few times 3. Most days." Write the answer in `setup/progress.md` as `Guide mode: beginner`, `Guide mode: some` or `Guide mode: confident`, and guide them that way for the whole setup:
+
+   | Guide mode | How you guide |
+   |---|---|
+   | beginner | One step per message. Say where every button is on their screen ("top left", "the + under the message box"). Plain words only: "connection", never MCP, API, JSON or repo. Check each thing worked before the next, and say what you just did |
+   | some | 2 or 3 steps per message, and a check after each connection |
+   | confident | Batch it: "Connect Gmail, Google Calendar and Xero in Connectors and tell me when they're done", then check them all at once |
+
+   The guide mode changes the pace and how much you explain. It never changes the rules: every connection is proven with a real read, and email and calendar come before anything else.
+3. Read `setup/progress.md`. If some steps are ticked, say hello, remind them where you got to, and carry on from the first unticked step.
+4. If setup hasn't started and this folder has a hidden `.git` folder (it was copied with `git clone`), it is still linked to the copy of Task List OS online. Their notes and tasks would then sit inside that link, and a later update could clash with them. Ask once: "This folder is still linked to the copy of Task List OS online. Shall I unlink it, so everything you put in it is yours alone? It doesn't change anything you can see." With a yes, remove it: `rm -rf .git` (Mac) or `Remove-Item -Recurse -Force .git` (Windows), from inside this folder only. With a no, leave it and note it in `setup/progress.md`. Only offer it when `git status --short` shows nothing and `git branch` shows only `main`. Never do it in a folder where setup has already started, or in one someone is developing Task List OS in (more branches, or changes of their own).
+5. Read `CLAUDE.md` in this folder: the standing rules.
+6. If setup is already complete, don't run it again. Ask what they'd like to do.
 
 ## The steps
 
 | Step | File | What happens | Their time |
 |---|---|---|---|
 | 1 | `setup/01-quick-questions.md` | One message of quick questions: email, calendar, calls, apps, hours | 2 min |
-| 2 | `setup/02-connect-email-and-calendar.md` | Connect email and calendar (sign in, approve) | 2 min |
+| 2 | `setup/02-connect-email-and-calendar.md` | Connect email and calendar, prove both, and read the last 30 days | 2 min |
 | 3 | `setup/03-connect-call-recordings.md` | Connect their call recorder, if they have one | 2 min |
 | 4 | `setup/04-connect-other-apps.md` | Connect 2 or 3 other apps; save any keys safely | 3 to 5 min |
 | 5 | `setup/05-get-to-know-the-business.md` | You work out the business from their email and ask 2 or 3 questions, then make the app look like their brand (from their website or brand guidelines) | 5 min |
 | 6 | `setup/06-build-your-skills.md` | You ask about their services and build 3 to 5 skills for their business, saved here and packed in `skills-to-upload/` for them to add to Claude | 5 min |
 | 7 | `setup/07-first-run.md` | You fill the task list from their real inbox, calls and calendar, start it, and give them the link | 1 min |
-| 8 | `setup/08-make-it-automatic.md` | Hourly check-ins, if they want them | 2 min |
+| 8 | `setup/08-make-it-automatic.md` | Claude sets up check-ins through the day (you choose the times) | 2 min |
 | 9 | `setup/09-check-and-hand-over.md` | Check everything works, then hand over with a summary of everything you did | 2 min |
 
 Start by telling them what's about to happen, in 3 short lines: you'll find out what they already use and connect it, you'll learn their business and build them their own skills, and you'll fill their task list with their real work so it's ready the moment it opens. Then begin step 1.
@@ -63,9 +72,9 @@ These don't bend, whatever is asked later.
 
 - **Read and draft only.** You read their email, calendar, calls and apps. You prepare drafts. You never send, reply, forward, delete, archive, pay, post, book, accept or change anything in a connected app on their behalf. Many connections technically allow writing; you don't use those parts.
 - **You propose, they approve.** Every suggestion goes through the app (Approve, Edit, Skip) or a clear yes in chat.
-- **No passwords or keys in chat or in this folder.** People sign in on each app's own screen. If a key is needed, they save it with `setup/scripts/save-key.sh` (Mac) or `setup/scripts/save-key.ps1` (Windows), which keeps it in the computer's secure store. This folder may be synced or shared, so nothing secret is ever written here.
+- **No passwords or keys in chat or in this folder.** People sign in on each app's own screen, through Claude's Connectors. Setup never uses keys. (The one optional extra that does, Xero draft invoices, has its own guide and is only offered when they ask for it.)
 - **Only connect what helps.** 3 well-connected apps beat 10 half-working ones. Ask before connecting anything.
-- **Be honest about what you can see.** Menus change. If what they see doesn't match a guide, ask them to describe it and work from that. If you're not sure something exists, say so.
+- **Be honest about what you can reach.** Check the connection status yourself rather than asking what's on their screen, and prove every connection with a real read before you rely on it. If you're not sure a connector exists, search Claude's connector directory and say what you found.
 
 ## How to talk to them
 

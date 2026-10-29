@@ -26,19 +26,12 @@ Make **one** temporary folder outside their workspace, once, and fetch every too
 - Mac: `T="$(mktemp -d)" || exit 1; echo "$T"`
 - Windows (PowerShell): `$T = Join-Path $env:TEMP ("update-" + (Get-Random)); New-Item -ItemType Directory -Force $T | Out-Null; $T`
 
-**Their GitHub sign-in.** Every tool is private: Get AI Powers gives access by inviting the person's GitHub account, and every download uses their own sign-in. Check it first with `gh auth status`. If they are not signed in, give them the one line `gh auth login -h github.com -p https -w`, say it opens GitHub in their browser to approve this computer, and wait. If `gh` is not installed, help them install it (Mac: `brew install gh`, or the installer from cli.github.com; Windows: `winget install --id GitHub.cli -e`, then open a new PowerShell window).
-
 **The downloads.** For each tool in `apps/installed.json`, find its `repository` in the catalogue (for the whole toolkit, `small-business-toolkit`, once), and run, with `<T>` the path you noted:
 
-- Mac: `T="<T>"; mkdir -p "$T/new/<repository>" && curl -fsSL -H "Authorization: Bearer $(gh auth token)" -o "$T/new/<repository>.tar.gz" https://api.github.com/repos/georgecairns-ui/<repository>/tarball/main && tar -xzf "$T/new/<repository>.tar.gz" --strip-components 1 -C "$T/new/<repository>"`
-- Windows (PowerShell): `$T = "<T>"; New-Item -ItemType Directory -Force "$T\new\<repository>" | Out-Null; curl.exe -fsSL -H "Authorization: Bearer $(gh auth token)" -o "$T\new\<repository>.tar.gz" https://api.github.com/repos/georgecairns-ui/<repository>/tarball/main; if ($LASTEXITCODE -eq 0) { tar -xzf "$T\new\<repository>.tar.gz" --strip-components 1 -C "$T\new\<repository>" }`
+- Mac: `T="<T>"; mkdir -p "$T/new/<repository>" && curl -fsSL -o "$T/new/<repository>.tar.gz" https://github.com/georgecairns-ui/<repository>/archive/refs/heads/main.tar.gz && tar -xzf "$T/new/<repository>.tar.gz" --strip-components 1 -C "$T/new/<repository>"`
+- Windows (PowerShell): `$T = "<T>"; New-Item -ItemType Directory -Force "$T\new\<repository>" | Out-Null; curl.exe -fsSL -o "$T\new\<repository>.tar.gz" https://github.com/georgecairns-ui/<repository>/archive/refs/heads/main.tar.gz; if ($LASTEXITCODE -eq 0) { tar -xzf "$T\new\<repository>.tar.gz" --strip-components 1 -C "$T\new\<repository>" }`
 
-`-f` makes curl stop with an error on a failed download instead of saving the error page as if it were the kit. If a download fails, say so in 1 sentence and stop:
-
-- `error: 404`: their GitHub account cannot see that tool. Either they have not accepted the invitation from Get AI Powers yet, or they are signed in to a different GitHub account (`gh auth status` names it). Ask them to accept the invitation from the email GitHub sent them (it is also at github.com/notifications), then try again. If they never had an invitation, tell them to ask Get AI Powers.
-- `error: 401`: the sign-in has expired. Ask them to sign in again with `gh auth login -h github.com -p https -w`.
-
-Do not try another way in.
+`-f` makes curl stop with an error on a failed download instead of saving the error page as if it were the kit. If a download fails, say so plainly, change nothing, and try again later.
 
 **The old copies.** Unpack each `setup/as-installed/*.tar.gz` the same way into `$T/old/<repository>` (`mkdir -p` it, then `tar -xzf <the file> --strip-components 1 -C <the folder>`).
 
