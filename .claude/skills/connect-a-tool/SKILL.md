@@ -44,7 +44,7 @@ Do one harmless read from the guide (for example "show me the last 3 emails" or 
 
 If the read fails, go back to 2.
 
-After a **Fix it** that reconnected or re-added an app, check that `.claude/settings.local.json` still lists that app's read tools under their current names (the names include an id that may change). If it doesn't, redo the pre-approval step of this folder's check-in setup for that app (the check-in step of this folder's setup), using the rule in its guide.
+After a **Fix it** that reconnected or re-added an app, check that `.claude/settings.local.json` still lists that app's read tools under their current names (the names include an id that may change). If it doesn't, redo the pre-approval step of this folder's check-in setup for that app, using the rule in its guide.
 
 ## 4. No connector
 
