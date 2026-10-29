@@ -47,6 +47,16 @@ Copy each path from Task List OS's branch with `rsync -a`. Only the guides a too
 | `maintainers/test-helper-safety.js` | New check: Home's connections file reads and saves, and a real other Home file (`secrets.json`) is refused (17 checks per helper) |
 | `maintainers/SHARED-V13-CHANGES.md` | This file |
 
+## Shared wording: the check-in prompt's rule sentence
+
+Every tool's scheduled check-in prompt ends with this exact sentence (the rest of the prompt names the tool's own folder and skill):
+
+> Never send anything except emails the person has already approved in the app; apart from those, never reply, forward, delete, archive, label, pay or post anything.
+
+It replaces "Read only: never send, reply, forward, delete, archive, label, pay or post anything." The check-in may send only emails the person has already approved in the app (`sendStatus: "queued"`). Task List OS's `setup/08-make-it-automatic.md` and Pipeline OS's `setup/pipeline-03-check-ins.md` carry it; the other tools copy it word for word.
+
+Also shared (follow-up): `docs/PRIVACY-AND-SAFETY.md` no longer mentions pasting a key into the Terminal. Apps connect through Claude's Connectors, signed in on each app's own page, with no keys in setup; an app with no connector is read from a CSV or PDF export dropped in the files folder. (Money View OS's optional Xero draft invoices are the one exception and stay out of Task List OS's and Pipeline OS's docs.)
+
 ## Each tool adapts
 
 Task List OS's own versions are the reference. "Its own equivalent" means the same change in the tool's own file or wording.

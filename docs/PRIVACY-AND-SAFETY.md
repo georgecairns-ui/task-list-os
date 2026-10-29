@@ -28,7 +28,7 @@ No. When Claude spots a task in an email, it writes a short task title and notes
 
 ## What about passwords and keys?
 
-Claude never asks for your passwords. When you connect an app, you sign in on that app's own screen. If an app needs a key (a long code for a direct connection), Claude gives you one line to paste into the Terminal. It asks for the key and stores it in your computer's secure keychain (on Windows, your user settings). The key never goes into the chat or into this folder.
+Claude never asks for your passwords, and setup uses no keys. Apps connect through Claude's Connectors: you sign in on each app's own page, never in the chat or in this folder. If an app has no Claude connector, Claude reads a CSV or PDF export of it instead: you drop the export in the files folder and Claude reads it whenever you ask.
 
 ## Can I see what's connected and switch it off?
 

@@ -27,7 +27,7 @@ Create it from this session, in this folder: a scheduled task runs in the folder
 
 First look with `list_scheduled_tasks` for an existing check-in task for this folder. If there is one, update it to the agreed times rather than making another. If not, create it yourself with the desktop app's scheduled tasks tool (`create_scheduled_task`):
 - **Title:** "<their business> check-in", for example "Harbour Bakery check-in".
-- **Prompt:** `In <full path of this folder>, follow .claude/skills/check-in/SKILL.md. Read only: never send, reply, forward, delete, archive, label, pay or post anything.` Fill in this folder's full path.
+- **Prompt:** `In <full path of this folder>, follow .claude/skills/check-in/SKILL.md. Never send anything except emails the person has already approved in the app; apart from those, never reply, forward, delete, archive, label, pay or post anything.` Fill in this folder's full path.
 - **When:** the times they agreed, on their working days.
 
 Then run it once now (`run_scheduled_task`) and check it finished without stopping to ask anything (`list_task_runs`). If it stopped at a permission, ask the person before adding that tool, and only if it is read-only under 8.2's rule; then run it again. If the stop is at a tool that isn't read-only, tell them and leave it. Only ever one check-in task for this folder.
