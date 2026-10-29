@@ -44,7 +44,7 @@ Do one harmless read from the guide (for example "show me the last 3 emails" or 
 
 If the read fails, go back to 2.
 
-After a **Fix it** that reconnected or re-added an app, check that `.claude/settings.local.json` still lists that app's read tools under their current names (the names include an id that may change). If it doesn't, redo the pre-approval step of this folder's check-in setup for that app (in Task List OS, step 8's 8.2), using the rule in its guide.
+After a **Fix it** that reconnected or re-added an app, check that `.claude/settings.local.json` still lists that app's read tools under their current names (the names include an id that may change). If it doesn't, redo the pre-approval step of this folder's check-in setup for that app (the check-in step of this folder's setup), using the rule in its guide.
 
 ## 4. No connector
 
@@ -52,7 +52,7 @@ Say exactly this, with the app's name: "There's no Claude connector for <app>, s
 
 ## 5. If it still won't connect
 
-Outside step 2 of setup (email and calendar, which don't move on until proven or there's no connector), an app that still won't connect after the loop is recorded as `needs-attention`, with what went wrong in `note`. The Connections box shows a **Fix it** button, which brings you back here.
+Outside the email and calendar step of setup (email and calendar, which don't move on until proven or there's no connector), an app that still won't connect after the loop is recorded as `needs-attention`, with what went wrong in `note`. The Connections box shows a **Fix it** button, which brings you back here.
 
 ## Rules
 

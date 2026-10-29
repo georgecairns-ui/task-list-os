@@ -8,7 +8,7 @@ The tools named in this step are often not loaded yet: search your tools for the
 
 Suggest times from their working hours in `context/routines.md`, for example: "I'll check in at 7am, 12pm and 4pm on weekdays, so it's fresh when you start, after lunch and before you finish. Shall I use those, or would other times suit you better?" Say plainly: "It uses a little of your Claude allowance each time, and it only runs while your computer is on and the Claude app is open."
 
-If they say no, note it in `setup/progress.md`, tell them they can say "check in" any time, and go to step 9.
+If they say no, tick this step in `setup/progress.md` with the note 'Check-ins: said no', tell them they can say "check in" any time, and go to step 9.
 
 ## 8.2 Let check-ins read without stopping
 
@@ -16,7 +16,7 @@ A check-in that runs on its own stops if it has to ask permission, and the task 
 
 1. From your own list of tools, collect the names of that connection's read tools: exactly the ones its guide in `setup/connections/` lists under "Pre-approve for check-ins". For an app without a guide, only names that start with `get_`, `list_`, `search_`, `read_`, `find_`, `fetch_` or `query_`, or end with `_search` or `_get`, and only if they only read. Never any name containing create, update, delete, send, mark, archive, add, remove, set, move, post, reply, label, trash or write, whatever else it matches.
 2. Show them the list in one line per app, for example: "Gmail: search and read emails. Google Calendar: read events." Ask: "Can I let your check-ins do just these without asking each time?"
-3. If they say no, tell them plainly: "Then the scheduled check-in will stop at each permission prompt and the app will go out of date. If you'd rather, say 'check in' whenever you want one." Note it in `setup/progress.md`, skip 8.3 and go to step 9.
+3. If they say no, tell them plainly: "Then the scheduled check-in will stop at each permission prompt and the app will go out of date. If you'd rather, say 'check in' whenever you want one." Tick this step in `setup/progress.md` with the note 'Check-ins: said no', skip 8.3 and go to step 9.
    With a yes, add them to `permissions.allow` in this folder's `.claude/settings.local.json` (create it if it isn't there, as `{ "permissions": { "allow": [] } }`), using the full tool names as they appear in your list (they start `mcp__`). Never add anything that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything.
 
 `.claude/settings.local.json` stays on this computer and is never part of an update.
