@@ -16,7 +16,7 @@ Microsoft does not publish a standalone Teams transcript connector; transcripts 
 
 ## If their email isn't a work account
 
-If the business uses a personal outlook.com, hotmail.com or live.com account, Microsoft 365 is not available for it, and there's no Claude connector for it. Say plainly: "There's no Claude connector for [provider], so I can't connect to your email live." Offer the one alternative: forward work email to a Gmail account and connect that (`setup/connections/gmail-and-google-calendar.md`). Record it as `no-connector`. The task list still works from their brain dump.
+If the business uses a personal outlook.com, hotmail.com or live.com account, Microsoft 365 is not available for it, and there's no Claude connector for it. Say plainly: "There's no Claude connector for [provider], so I can't connect to your email live." Offer the one alternative: forward work email to a Gmail account and connect that (`setup/connections/gmail-and-google-calendar.md`). Record it as `no-connector`. The rest of setup still works without email.
 
 ## Prove it
 
