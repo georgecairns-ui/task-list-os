@@ -2,15 +2,16 @@
 
 What it gives your app: payments to follow up on and failed charges, in Review.
 
-**Connector:** "Stripe" in Claude's connector directory, which signs in on Stripe's own page. **Plans:** any Claude plan works for the connector; Team and Enterprise need an owner to add it first.
-**Route:** directory.
+**Connector:** "Stripe" in Claude's connector directory, which signs in on Stripe's own page, or, if it isn't listed, a custom connector at `https://mcp.stripe.com/`. **Plans:** any Claude plan works for the connector; Team and Enterprise need an owner to add it first.
+**Route:** directory (custom-address if it isn't listed).
 
 ## Connect
 
 1. Say "Let's connect your payments." Say "connect" and "a connection", never MCP, API, JSON or repo.
 2. Look up this session's connections (`session_connectors_status`) and follow the table in `.claude/skills/connect-a-tool` ("Check, switch on, or point to Connect").
 3. If they need to add it: in the Claude desktop app, Customize, then Connectors, then "Stripe", then Connect (or, in a chat, the + button, then Connectors, then enable "Stripe"). A Stripe window opens: sign in to Stripe there and set permissions per environment (for example live or test) on that sign-in screen.
-If it won't connect, an administrator in Stripe's Dashboard settings can switch off access for AI tools for the whole team, and a managed network can block `mcp.stripe.com`: say so plainly and offer to draft a short message to the person's administrator. Claude never sends this itself.
+   If "Stripe" isn't listed: Customize, then Connectors, then the + button, then Add custom connector. Name it "Stripe" and use exactly `https://mcp.stripe.com/`. Then sign in and approve. Use no other address.
+4. If it won't connect, an administrator in Stripe's Dashboard settings can switch off access for AI tools for the whole team, and a managed network can block Stripe's connection address: say so plainly and offer to draft a short message to the person's administrator. Claude never sends this itself.
 
 ## If there's no connector
 

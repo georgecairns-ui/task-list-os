@@ -7,10 +7,11 @@ What it gives your app: unpaid invoices and estimates in Review.
 
 ## Connect
 
-1. Say "Let's connect your accounts." Say "connect" and "a connection", never MCP, API, JSON or repo.
-2. Look up this session's connections (`session_connectors_status`) and follow the table in `.claude/skills/connect-a-tool` ("Check, switch on, or point to Connect").
-3. If they need to add it: in the Claude desktop app, Customize, then Connectors, then "Intuit QuickBooks", then Connect, then sign in with Intuit and approve.
-4. Use only the connector named "Intuit QuickBooks". Claude's directory also lists other QuickBooks connectors from third parties (searched 2026-10-29); they can create and change records, so don't use them.
+1. If they're not a US QuickBooks customer, there's no Claude connector for them: go to "If there's no connector".
+2. Say "Let's connect your accounts." Say "connect" and "a connection", never MCP, API, JSON or repo.
+3. Look up this session's connections (`session_connectors_status`) and follow the table in `.claude/skills/connect-a-tool` ("Check, switch on, or point to Connect").
+4. If they need to add it: in the Claude desktop app, Customize, then Connectors, then "Intuit QuickBooks", then Connect, then sign in with Intuit and approve.
+5. Use only the connector named "Intuit QuickBooks". Claude's directory also lists other QuickBooks connectors from third parties (searched 2026-10-29); they can create and change records, so don't use them.
 
 ## If there's no connector
 
@@ -26,7 +27,7 @@ This connector is not read-only: Intuit says it can create, update and send invo
 
 A separate, developer-run version exists too (Intuit's own `quickbooks-online-mcp-server` on GitHub), but it needs an Intuit Developer app with a client ID, secret and refresh token, and a public HTTPS callback. Never set it up or use it.
 
-Pre-approve for check-ins (step 8): the connector's read-only tools (search, list, get or read tools), checked against Claude's own tool list on the day. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins (step 8): only tools whose names start or end with get, list, search, read, find, fetch or query (as get_x or x_search), and no others; never a tool that creates, updates, sends or deletes. The exact read tool names could not be confirmed for QuickBooks (it isn't in Claude's own tool list on 2026-10-29, and the names its directory listing shows don't follow the pattern), so apply this rule to whatever the connector shows on the day.
 
 ## Record
 
@@ -40,4 +41,4 @@ Verified on 2026-10-06; rewritten into the connected-onboarding shape on 2026-10
 - https://claude.com/connectors/intuit-quickbooks
 - https://quickbooks.intuit.com/learn-support/en-us/help-article/accounting-bookkeeping/use-quickbooks-connector-claude/L3YBlo6Ht_US_en_US
 - https://github.com/intuit/quickbooks-online-mcp-server
-- Claude's connector directory searched for "QuickBooks" on 2026-10-29: found "Intuit QuickBooks" (Intuit's own), plus third-party QuickBooks connectors ("Meridian Connector for QuickBooks", "NumbersGame MCP", "Breezing"), "Intuit Developer" (for building integrations) and an unrelated project tool. Only "Intuit QuickBooks" is used, so the route is directory for US customers and export for everyone else. The read-only tool names of the Intuit connector could not be confirmed from the directory listing, so check-ins use the generic rule above.
+- Claude's connector directory searched for "QuickBooks" on 2026-10-29: found "Intuit QuickBooks" (Intuit's own), plus third-party QuickBooks connectors ("Meridian Connector for QuickBooks", "NumbersGame MCP", "Breezing"), "Intuit Developer" (for building integrations) and an unrelated project tool. Only "Intuit QuickBooks" is used, so the route is directory for US customers and export for everyone else. The read-only tool names of the Intuit connector could not be confirmed from the directory listing (its listed names such as `profit-loss-generator` and `quickbooks-transaction-import` do not follow the get, list, search, read, find, fetch or query pattern), so check-ins use the mechanical rule above.
