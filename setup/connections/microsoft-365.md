@@ -24,7 +24,7 @@ Ask first: "Can I take a quick look at your last few emails and today's calendar
 
 ## What Claude may and may not do
 
-Read only by default: `outlook_email_search`, `outlook_calendar_search`, `find_meeting_availability`, `sharepoint_search`, `sharepoint_folder_search`, `chat_message_search`, `read_resource`, plus reading meeting transcripts, AI insights and attendance. Whether Claude can also send email, update the calendar, create files or send Teams messages depends entirely on what the person's IT admin has enabled. Treat all of that as off: never send, reply, delete, create a file or post a Teams message, unless the person asks for that one specific action in this conversation.
+Read only by default: `outlook_email_search`, `outlook_calendar_search`, `find_meeting_availability`, `sharepoint_search`, `sharepoint_folder_search`, `chat_message_search`, `read_resource`, plus reading meeting transcripts, AI insights and attendance. Whether Claude can also send email, update the calendar, create files or send Teams messages depends entirely on what the person's IT admin has enabled. Treat all of that as off: never send, reply, forward, delete, move, create a file or post a Teams message, unless the person asks for that one specific action in this conversation.
 
 Pre-approve for check-ins (step 8), read-only tools only: `outlook_email_search`, `outlook_calendar_search`, `find_meeting_availability`, `sharepoint_search`, `sharepoint_folder_search`, `chat_message_search`, `read_resource`. Nothing that sends, replies, forwards, deletes, moves, creates or changes anything is pre-approved.
 
@@ -36,7 +36,7 @@ Pre-approve for check-ins (step 8), read-only tools only: `outlook_email_search`
 
 ## Sources
 
-Verified on 2026-10-06; the status check verified on 2026-10-28 in the Claude desktop app.
+Verified on 2026-10-06.
 - https://support.claude.com/en/articles/15183774-connect-to-microsoft-365
 - https://claude.com/connectors/microsoft-365
 - https://support.claude.com/en/articles/12684923-microsoft-365-connector-security-guide

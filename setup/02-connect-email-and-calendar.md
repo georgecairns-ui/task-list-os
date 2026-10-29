@@ -50,10 +50,12 @@ Keep the counts for the hand-over. Drafts stay drafts: nothing is sent, labelled
 
 ## 2.5 The only ways past this step
 
-- **Proven:** 2.3 worked for email and calendar. Record them (2.6) and go on.
+- **Proven:** 2.3 worked for email and calendar, and 2.4 (the 30-day read) is done. Record them (2.6) and go on.
 - **No Claude connector for their provider** (Outlook.com, Hotmail, iCloud, Yahoo, a hosting company's email). Say plainly: "There's no Claude connector for [provider], so I can't connect to your email live." Offer the one alternative: forward work email to a Gmail account and connect that. Record it as `no-connector` (2.6) and go on. The task list still works from their brain dump.
 
 If they don't want to connect email, say in one line what won't work without it ("I won't be able to find emails that need a reply or draft them for you"), and ask once if they'd like to go ahead. If they still say no, stop setup here, note it in `setup/progress.md`, and tell them they can type `/setup` whenever they're ready. Don't go on to step 3 without email.
+
+If they're waiting on someone else first (for example their IT administrator has to approve the connector, or they need a password reset), stop in the same way: note it in `setup/progress.md` and tell them to type `/setup` when it's sorted. Don't go on to step 3.
 
 ## 2.6 Record it
 

@@ -15,7 +15,7 @@ You copy the kit, open it in the Claude desktop app (the Code tab) and type **/s
 - **Finds out what you already use.** It checks which apps your Claude account is already connected to, asks a few quick questions, and connects your email, calendar, call recorder and the other apps you name, one by one.
 - **Interviews you about your business.** Your services, your prices, how a new client goes from first message to finished work, and the things you explain again and again.
 - **Builds you your own skills.** 3 to 5 sets of saved instructions written for your business, such as your quotes, replies to new enquiries and welcoming a new client. They work straight away, and Claude saves them in the **skills-to-upload** folder so you can add them to Claude and use them everywhere, including on your phone.
-- **Fills your task list with your real work.** Your last week of email sorted with replies drafted, your recent calls written up, your calendar copied in, and today's plan ready, before you've opened the app.
+- **Fills your task list with your real work.** Your last 30 days of email sorted with replies drafted, your recent calls written up, your calendar copied in, and today's plan ready, before you've opened the app.
 
 ## What it does
 
