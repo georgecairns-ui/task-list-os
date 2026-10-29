@@ -16,6 +16,8 @@ Find their provider's guide:
 | Outlook or Microsoft 365 with a work account | `setup/connections/microsoft-365.md` |
 | Outlook.com, Hotmail, iCloud, Yahoo or another provider | There's no Claude connector for it. Go to 2.5 |
 
+Email and calendar can come from different providers (for example iCloud mail with Google Calendar). Find the guide for each half separately. A half with no connector goes to 2.5; the other half still goes through 2.2 and 2.3 and must be proven.
+
 Then look up this session's connections (`session_connectors_status`) and act on what you find, for the email connector and the calendar connector separately:
 
 | What you find | What you do |
@@ -44,7 +46,7 @@ Tell them first: "I'll now read the last 30 days of your email, so your task lis
 2. Leave out newsletters, receipts, automatic notifications and no-reply senders.
 3. Open only the threads from real people, in batches. After each batch, one progress line: "Read 140 of 380 conversations, 12 need a reply so far."
 4. Follow `.claude/skills/triage-inbox` for what you read: threads still waiting on them go into `replies` with a draft; requests and promises become suggested tasks. Fill in `triage` with the counts.
-5. Copy calendar events from 30 days ago to 14 days ahead into `events` (see `apps/task-list/CLAUDE.md`).
+5. Copy calendar events from yesterday to 14 days ahead into `events` (see `apps/task-list/CLAUDE.md`). Read the last 30 days of the calendar only to learn who they meet and what's recurring (people, routines), without copying it into `events`.
 
 Keep the counts for the hand-over. Drafts stay drafts: nothing is sent, labelled, archived or marked as read.
 
@@ -52,6 +54,7 @@ Keep the counts for the hand-over. Drafts stay drafts: nothing is sent, labelled
 
 - **Proven:** 2.3 worked for email and calendar, and 2.4 (the 30-day read) is done. Record them (2.6) and go on.
 - **No Claude connector for their provider** (Outlook.com, Hotmail, iCloud, Yahoo, a hosting company's email). Say plainly: "There's no Claude connector for [provider], so I can't connect to your email live." Offer the one alternative: forward work email to a Gmail account and connect that. Record it as `no-connector` (2.6) and go on. The task list still works from their brain dump.
+  This exit covers only the half that has no connector. If their email has no connector but their calendar does (or the other way round), the other half still goes through 2.2 and 2.3, must be proven, and gets its part of 2.4.
 
 If they don't want to connect email, say in one line what won't work without it ("I won't be able to find emails that need a reply or draft them for you"), and ask once if they'd like to go ahead. If they still say no, stop setup here, note it in `setup/progress.md`, and tell them they can type `/setup` whenever they're ready. Don't go on to step 3 without email.
 
@@ -59,7 +62,7 @@ If they're waiting on someone else first (for example their IT administrator has
 
 ## 2.6 Record it
 
-In `apps/home/data/connections.json` (format: `setup/connections/README.md`, "Recording a connection"): `"status": "connected"` and today's date in `checked` for each one proven, or `no-connector`. Email and calendar from 1 provider share 1 row, keyed `gmail-and-google-calendar` or `microsoft-365`, the same row step 1 started.
+In `apps/home/data/connections.json` (format: `setup/connections/README.md`, "Recording a connection"): `"status": "connected"` and today's date in `checked` for each one proven, or `no-connector`. Email and calendar from the same provider share 1 row, keyed `gmail-and-google-calendar` or `microsoft-365`, the same row step 1 started. From different providers, each has its own row: a no-connector email row is keyed by the provider's name in lower case with hyphens (for example `icloud-mail`), and a proven calendar keeps its guide's key (`gmail-and-google-calendar` or `microsoft-365`). The same goes the other way round.
 
 In `context/tools.md` ("Connected apps"): app, how connected, today's date, "Read; prepare drafts", and "Never send, reply, forward, delete, archive, label or unsubscribe". Tick step 2 in `setup/progress.md`.
 

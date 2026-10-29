@@ -20,7 +20,7 @@ Rule of thumb: connect what holds **money owed or due**, **customers going quiet
 
 `setup/connections/README.md` lists every guide. If their app isn't listed, follow `.claude/skills/connect-a-tool`.
 
-Suggest a shortlist of 2 or 3 with a reason each, and let them choose.
+Suggest a shortlist of 2 or 3 with a reason each, and let them choose. Apps they named in step 1 but didn't put on the shortlist stay `not-connected` in `apps/home/data/connections.json`, with the note "Chose not to connect yet".
 
 ## 4.2 Connect each one
 
@@ -30,4 +30,4 @@ An app with no connector gets this sentence, word for word with its name: "There
 
 ## 4.3 Record
 
-Each app goes into `apps/home/data/connections.json` and `context/tools.md` (see `connect-a-tool`, part 3). An app that still won't connect after the loop is `needs-attention`: the Connections box on Home shows a Fix it button for it, so setup doesn't stall on it. Tick step 4.
+Each app goes into `apps/home/data/connections.json` and `context/tools.md` (see `connect-a-tool`, part 3). An app that still won't connect after the loop is `needs-attention`: the Connections box on Home shows a Fix it button for it, so setup doesn't stall on it. Apps left off the shortlist stay `not-connected` with the note "Chose not to connect yet". Tick step 4.

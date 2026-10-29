@@ -17,8 +17,9 @@ Check these yourself. Fix anything that fails, then check again.
 
 **Connections and notes**
 - [ ] Every connected app is in `context/tools.md` with what you may and may not do.
-- [ ] Email and calendar are `connected` in `apps/home/data/connections.json` with today's date (or `no-connector`, said plainly).
-- [ ] Every app they named is `connected`, `export-only`, `no-connector` or `needs-attention`, none left as `not-connected`.
+- [ ] Email is `connected` in `apps/home/data/connections.json` with a checked date from this setup, or `no-connector`, said plainly.
+- [ ] Calendar is checked the same way, separately: `connected` with a checked date from this setup, or `no-connector`, said plainly. (When they come from different providers, each has its own row.)
+- [ ] Their call recorder and every app on the step 4 shortlist is `connected`, `export-only`, `no-connector` or `needs-attention`. Other apps they named may stay `not-connected` with the note "Chose not to connect yet".
 - [ ] The check-in task exists (`list_scheduled_tasks`) and its first run finished without stopping, or they said no to it.
 - [ ] Every `context/` file says "Status: filled in", or `setup/progress.md` says why not.
 

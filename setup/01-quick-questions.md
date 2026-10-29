@@ -4,7 +4,7 @@ Goal: in one short exchange, learn what the person uses, so every later step is 
 
 ## 1.1 Check what you can reach (quietly, before asking anything)
 
-1. **This folder.** Read `setup/progress.md`, write a test line to its "Notes for next time" section, read it back and remove it. If you can't, stop and ask them to open this folder in Claude Code (`cd` into it and run `claude`), or give the Claude app access to it.
+1. **This folder.** Read `setup/progress.md`, write a test line to its "Notes for next time" section, read it back and remove it. If you can't, stop and ask them to open this folder in the Claude desktop app's Code tab, or give the Claude app access to it.
 2. **Their connections, checked for real.** Look up this session's connections (`session_connectors_status`). For each one that is for email, calendar, call recording, files, accounts, customers or payments, note its name and status: on (`connected`), switched off for this session, needs signing in (`needs_auth`) or not working (`failed`). Step 2 and step 4 act on this list. Never ask the person to describe their screen; you can see the status yourself.
 3. **Where the folder lives.** From its path: Downloads or Desktop (suggest moving it to Documents first, because the task list app remembers the location), a cloud-synced folder (fine, it's backed up), or a folder shared with other people (point out that anyone with access can read their tasks).
 4. **Their computer.** Mac or Windows, from the path or by running a harmless command.
@@ -36,7 +36,7 @@ Fill in `context/tools.md`:
 
 Set `settings.yourName`, `settings.businessName`, `settings.dayStarts` and `settings.dayEnds` in `apps/task-list/data/tasks.json`, and `settings.emailProvider` (`gmail`, `outlook-work`, `outlook-personal` or `other`) and `settings.calendarProvider` (`google`, `outlook-work`, `outlook-personal` or `other`), so the app's Draft and Add to calendar buttons open the right place.
 
-Create `apps/home/data/connections.json` if it isn't there, in the format in `setup/connections/README.md` ("Recording a connection"), with one row per app they named (email and calendar from the same provider share one row, keyed by the guide's file name: `gmail-and-google-calendar` or `microsoft-365`), each `"status": "not-connected"`. Only ever set `connected` after a real read works.
+Create `apps/home/data/connections.json` if it isn't there, in the format in `setup/connections/README.md` ("Recording a connection"), with one row per app they named (email and calendar from the same provider share one row, keyed by the guide's file name: `gmail-and-google-calendar` or `microsoft-365`; from different providers, they get a row each, keyed as in step 2's 2.6), each `"status": "not-connected"`. Only ever set `connected` after a real read works.
 
 Tick step 1 in `setup/progress.md`.
 
