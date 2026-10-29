@@ -136,11 +136,18 @@ for f in sorted(root.rglob("*")):
         problems.append(f"{rel} uses raw.githubusercontent.com: read files from the downloaded copy instead")
     # Shared version 13: setup never gives up on a connection, never asks what's on screen, and never uses keys or GitHub sign-in
     v13_scope = rel == "START-HERE.md" or rel == "README.md" or rel.startswith("setup/") or rel.startswith(".claude/skills/connect-a-tool/") or rel.startswith(".claude/skills/get-updates/")
+    # The give-up checks apply only to the files that connect apps (elsewhere "move on" or "skip it" is harmless)
+    connect_scope = (re.fullmatch(r"setup/0[2-4][^/]*\.md", rel) or re.fullmatch(r"setup/[^/]*(connect|check-ins|make-it-automatic)[^/]*\.md", rel)
+                     or re.fullmatch(r"setup/connections/[^/]+\.md", rel) or rel.startswith(".claude/skills/connect-a-tool/"))
     if v13_scope and f.suffix == ".md" and rel != "setup/connections/xero-drafts.md":
-        for pattern, why in (
+        give_up = (
             (r"and (move|carry) on\b(?! (from|setting up))", "lets Claude give up on a step"),
+            (r"\bthen move on\b", "lets Claude give up on a step"),
+            (r"\bskip it\b", "lets Claude give up on a step"),
             (r"try once more", "lets Claude give up on a connection"),
             (r"ask (the person |them )?what they (actually |can )?see", "asks the person what's on screen: Claude checks the connection status itself"),
+        ) if connect_scope else ()
+        for pattern, why in give_up + (
             (r"Route 2: API key", "offers an API key route"),
             (r"claude mcp add", "adds a server outside Claude's Connectors screen"),
             (r"save-key", "asks for a key"),
