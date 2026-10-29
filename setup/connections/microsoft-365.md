@@ -26,7 +26,7 @@ Ask first: "Can I take a quick look at your last few emails and today's calendar
 
 Read only by default: `outlook_email_search`, `outlook_calendar_search`, `find_meeting_availability`, `sharepoint_search`, `sharepoint_folder_search`, `chat_message_search`, `read_resource`, plus reading meeting transcripts, AI insights and attendance. Whether Claude can also send email, update the calendar, create files or send Teams messages depends entirely on what the person's IT admin has enabled. Treat all of that as off: never send, reply, delete, create a file or post a Teams message, unless the person asks for that one specific action in this conversation.
 
-Pre-approve for check-ins (step 8): the connector's read tools (names starting get_, list_, search_ or read_), such as `find_meeting_availability` and `read_resource`. The Outlook email and calendar search tools above are read-only but their names start with `outlook_`, so they are not pre-approved: the person approves them when asked.
+Pre-approve for check-ins (step 8), read-only tools only: `outlook_email_search`, `outlook_calendar_search`, `find_meeting_availability`, `sharepoint_search`, `sharepoint_folder_search`, `chat_message_search`, `read_resource`. Nothing that sends, replies, forwards, deletes, moves, creates or changes anything is pre-approved.
 
 ## Record
 
