@@ -132,8 +132,22 @@ for f in sorted(root.rglob("*")):
         continue
     txt = f.read_text(errors="ignore")
     rel = str(f.relative_to(root))
-    if "archive/refs/heads" in txt or "raw.githubusercontent.com" in txt:
-        problems.append(f"{rel} uses an old public download address: since shared version 12 every download uses the person's GitHub sign-in (gh)")
+    if "raw.githubusercontent.com" in txt:
+        problems.append(f"{rel} uses raw.githubusercontent.com: read files from the downloaded copy instead")
+    # Shared version 13: setup never gives up on a connection, never asks what's on screen, and never uses keys or GitHub sign-in
+    v13_scope = rel == "START-HERE.md" or rel == "README.md" or rel.startswith("setup/") or rel.startswith(".claude/skills/connect-a-tool/") or rel.startswith(".claude/skills/get-updates/")
+    if v13_scope and f.suffix == ".md" and rel != "setup/connections/xero-drafts.md":
+        for pattern, why in (
+            (r"and (move|carry) on\b(?! (from|setting up))", "lets Claude give up on a step"),
+            (r"try once more", "lets Claude give up on a connection"),
+            (r"ask (the person |them )?what they (actually |can )?see", "asks the person what's on screen: Claude checks the connection status itself"),
+            (r"Route 2: API key", "offers an API key route"),
+            (r"claude mcp add", "adds a server outside Claude's Connectors screen"),
+            (r"save-key", "asks for a key"),
+            (r"\bgh (auth|api|repo)\b", "needs a GitHub sign-in while the tools are public"),
+        ):
+            if re.search(pattern, txt, re.I):
+                problems.append(f"{rel} {why} (shared version 13): matched {pattern!r}")
     for old in ("open-task-list", "start-task-list"):
         if old in txt:
             problems.append(f"{rel} uses the old name {old} (it is now open-the-app / start-app, the same in every tool)")
@@ -156,7 +170,7 @@ rsync -a \
 find "$OUT" -mindepth 2 -type d -name .claude -empty -prune -exec rm -rf {} +
 
 # ---------- 3. Checks ----------
-for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" ".claude/skills/README.md" ".claude/settings.json" "setup/scripts/save-key.sh" "setup/scripts/start-app.sh" "apps/server/server.js" "apps/server/server.py" "setup/connections/README.md" "toolkit.json" "ATTACHING.md" "apps/installed.json" "apps/shared/catalogue.json" "apps/shared/VERSION" "apps/shared/sidebar.css" "apps/shared/js/sidebar.js" "apps/shared/js/theme.js" "apps/shared/js/braindump.js" ".claude/skills/sort-brain-dump/SKILL.md" "apps/shared/images/claude-icon.png" "apps/task-list/menu.json" "apps/task-list/app/view-tasks.js" "apps/task-list/app/view-preferences.js" ".claude/skills/spot-claude-tasks/SKILL.md" "apps/home/index.html" "apps/home/home.js" "apps/home/home.css" "apps/task-list/home-boxes.js" "apps/shared/fonts/Figtree-Variable.woff2" "apps/task-list/ATTACH-CLAUDE.md" "setup/06-build-your-skills.md" "setup/09-check-and-hand-over.md" "skills-to-upload/README.md" "setup/as-installed/README.md" ".claude/skills/get-updates/SKILL.md"; do
+for f in "START-HERE.md" "CLAUDE.md" "Open Task List.html" "apps/task-list/index.html" "apps/task-list/data/tasks.json" "setup/progress.md" ".claude/skills/README.md" ".claude/settings.json" "setup/scripts/save-key.sh" "setup/scripts/start-app.sh" "apps/server/server.js" "apps/server/server.py" "setup/connections/README.md" "toolkit.json" "ATTACHING.md" "apps/installed.json" "apps/shared/catalogue.json" "apps/shared/VERSION" "apps/shared/sidebar.css" "apps/shared/js/sidebar.js" "apps/shared/js/theme.js" "apps/shared/js/braindump.js" "apps/shared/js/connections.js" "apps/shared/js/connections-box.js" ".claude/skills/sort-brain-dump/SKILL.md" "apps/shared/images/claude-icon.png" "apps/task-list/menu.json" "apps/task-list/app/view-tasks.js" "apps/task-list/app/view-preferences.js" ".claude/skills/spot-claude-tasks/SKILL.md" "apps/home/index.html" "apps/home/home.js" "apps/home/home.css" "apps/task-list/home-boxes.js" "apps/shared/fonts/Figtree-Variable.woff2" "apps/task-list/ATTACH-CLAUDE.md" "setup/06-build-your-skills.md" "setup/09-check-and-hand-over.md" "skills-to-upload/README.md" "setup/as-installed/README.md" ".claude/skills/get-updates/SKILL.md"; do
   [ -e "$OUT/$f" ] || fail "missing $f"
 done
 python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$OUT/apps/task-list/data/tasks.json" || fail "tasks.json is not valid"
