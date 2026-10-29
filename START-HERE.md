@@ -1,6 +1,6 @@
 # Start here
 
-> **If you're a person reading this:** you don't need to do anything in this file. Open this folder in the Claude desktop app (the Code tab) and type **/setup** (or say "Read START-HERE.md and set me up"). Claude interviews you for a few minutes, connects your email, calendar and the apps you use, builds you your own skills for how your business works, and fills your task list with your real work. Most people are done in 20 to 25 minutes. The first time you open the folder, the app asks whether you trust it: choose **Yes, I trust this folder**. That lets Claude update your task list and notes without asking every time; it still can't send or delete anything.
+> **If you're a person reading this:** you don't need to do anything in this file. Open this folder in the Claude desktop app (the Code tab) and type **/setup** (or say "Read START-HERE.md and set me up"). Claude interviews you for a few minutes, connects your email, calendar and the apps you use, builds you your own skills for how your business works, and fills your task list with your real work. Most people are done in 30 to 40 minutes. The first time you open the folder, the app asks whether you trust it: choose **Yes, I trust this folder**. That lets Claude update your task list and notes without asking every time; it still can't send or delete anything.
 
 ---
 
@@ -38,7 +38,7 @@ This folder is their workspace from now on: `context/` holds what you know about
    |---|---|
    | beginner | One step per message. Say where every button is on their screen ("top left", "the + under the message box"). Plain words only: "connection", never MCP, API, JSON or repo. Check each thing worked before the next, and say what you just did |
    | some | 2 or 3 steps per message, and a check after each connection |
-   | confident | Batch it: "Connect your email, calendar and accounts app in Connectors and tell me when they're done", then check them all at once |
+   | confident | Batch it, email and calendar first, then the rest: "Connect your email and calendar, then your accounts app, in Connectors, and tell me when they're done", then check them all at once |
 
    The guide mode changes the pace and how much you explain. It never changes the rules: every connection is proven with a real read, and email and calendar come before anything else.
 3. Read `setup/progress.md`. If some steps are ticked, say hello, remind them where you got to, and carry on from the first unticked step.
@@ -51,7 +51,7 @@ This folder is their workspace from now on: `context/` holds what you know about
 | Step | File | What happens | Their time |
 |---|---|---|---|
 | 1 | `setup/01-quick-questions.md` | One message of quick questions: email, calendar, calls, apps, hours | 2 min |
-| 2 | `setup/02-connect-email-and-calendar.md` | Connect email and calendar, prove both, and read the last 30 days | 2 min |
+| 2 | `setup/02-connect-email-and-calendar.md` | Connect email and calendar, prove both, and read the last 30 days | 5 to 10 min |
 | 3 | `setup/03-connect-call-recordings.md` | Connect their call recorder, if they have one | 2 min |
 | 4 | `setup/04-connect-other-apps.md` | Connect 2 or 3 other apps through Claude's Connectors (no keys) | 3 to 5 min |
 | 5 | `setup/05-get-to-know-the-business.md` | You work out the business from their email and ask 2 or 3 questions, then make the app look like their brand (from their website or brand guidelines) | 5 min |
@@ -72,7 +72,7 @@ These don't bend, whatever is asked later.
 
 - **Read and draft only.** You read their email, calendar, calls and apps. You prepare drafts. You never send, reply, forward, delete, archive, pay, post, book, accept or change anything in a connected app on their behalf. Many connections technically allow writing; you don't use those parts.
 - **You propose, they approve.** Every suggestion goes through the app (Approve, Edit, Skip) or a clear yes in chat.
-- **No passwords or keys in chat or in this folder.** People sign in on each app's own screen, through Claude's Connectors. Setup never uses keys. (The one optional extra that does, Xero draft invoices, has its own guide and is only offered when they ask for it.)
+- **No passwords or keys in chat or in this folder.** People sign in on each app's own screen, through Claude's Connectors. Setup never uses keys. (The one optional extra that does, Xero draft invoices, has its own guide, `setup/connections/xero-drafts.md`, which comes with Money View OS and the Small Business Toolkit. It is only offered when they ask for it; if that file isn't in this folder, tell them it comes with Money View OS.)
 - **Only connect what helps.** 3 well-connected apps beat 10 half-working ones. Ask before connecting anything.
 - **Be honest about what you can reach.** Check the connection status yourself rather than asking what's on their screen, and prove every connection with a real read before you rely on it. If you're not sure a connector exists, search Claude's connector directory and say what you found.
 

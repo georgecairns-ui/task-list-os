@@ -10,7 +10,7 @@ Task List OS is part of a toolkit of 7 free tools from Get AI Powers. The others
 
 ## What happens when you type /setup
 
-You copy the kit, open it in the Claude desktop app (the Code tab) and type **/setup**. In about 20 minutes, Claude:
+You copy the kit, open it in the Claude desktop app (the Code tab) and type **/setup**. In 30 to 40 minutes, Claude:
 
 - **Finds out what you already use.** It checks which apps your Claude account is already connected to, asks a few quick questions, and connects your email, calendar, call recorder and the other apps you name, one by one.
 - **Interviews you about your business.** Your services, your prices, how a new client goes from first message to finished work, and the things you explain again and again.
@@ -33,7 +33,7 @@ You copy the kit, open it in the Claude desktop app (the Code tab) and type **/s
 - **The Claude desktop app** (setup runs in its Code tab).
 - **A paid Claude plan (Pro or Max)**, signed in to the desktop app. Your email, calendar and app connections come from your Claude account, so Claude can only use them when you're signed in.
 - Nothing else to install in most cases. Your task list runs on your own computer using Node (Claude installs it for you if it's missing, with your permission).
-- About 20 to 25 minutes, once.
+- About 30 to 40 minutes, once.
 
 ## Get started
 

@@ -11,7 +11,8 @@ Setup, or whenever the person wants to connect an app or fix one, for example "c
 
 ## What you need
 
-- The connector status tool in the Claude desktop app (`session_connectors_status`). If you don't have it, you're not in the desktop app's Code tab: say "Connecting apps needs the Claude desktop app. Open it, choose the Code tab, pick this folder and ask me again." and stop.
+- The connector status tool in the Claude desktop app (`session_connectors_status`). Connector tools are often not loaded until you search for them, so before deciding you're not in the desktop app, search your tools for `session_connectors_status` and call it. Only if it can't be found or the call fails, say "Connecting apps needs the Claude desktop app. Open it, choose the Code tab, pick this folder and ask me again." and stop.
+- The other tools named here (`set_session_connector_enabled`, `reconnect_session_connector`, `search_mcp_registry`, `suggest_connectors`) may need searching for first in the same way.
 - `apps/home/data/connections.json` and `context/tools.md`, to check what's already connected and to record the result.
 - The guide mode in `setup/progress.md` (beginner, some or confident), for how much to explain.
 
@@ -43,6 +44,8 @@ Do one harmless read from the guide (for example "show me the last 3 emails" or 
 
 If the read fails, go back to 2.
 
+After a **Fix it** that reconnected or re-added an app, check that `.claude/settings.local.json` still lists that app's read tools under their current names (the names include an id that may change). If it doesn't, redo step 8's 8.2 (`setup/08-make-it-automatic.md`) for that app.
+
 ## 4. No connector
 
 Say exactly this, with the app's name: "There's no Claude connector for <app>, so I can't connect to it live. If you export a CSV or PDF from it and drop it in the files folder, I'll read it whenever you ask." Record it as `export-only` (or `no-connector` if they don't want to export), with the reason in `note`.
@@ -56,4 +59,4 @@ Outside step 2 of setup (email and calendar, which don't move on until proven or
 - Never ask the person to paste a password, key or token into the chat, or anywhere in this folder.
 - Never add a connector address that isn't in our guide, and never set up a server outside Claude's Connectors screen.
 - Default access is read and draft only. Anything that sends, pays, deletes or posts needs the person's say-so each time, even once connected.
-- Xero draft invoices (`setup/connections/xero-drafts.md`) is an optional extra: only when the person asks for Claude to put invoices into Xero. Never offer it in setup.
+- Xero draft invoices (`setup/connections/xero-drafts.md`) is an optional extra that comes with Money View OS and the Small Business Toolkit: only when the person asks for Claude to put invoices into Xero. Never offer it in setup. If that file isn't in this folder, tell them it comes with Money View OS.
