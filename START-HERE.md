@@ -31,14 +31,14 @@ This folder is their workspace from now on: `context/` holds what you know about
 
 ## Before you begin
 
-1. **Check you're in the Claude desktop app.** Look up the connections this session has (the desktop app's connector status tool, `session_connectors_status`). If that tool isn't there, you're not in the desktop app's Code tab, and you can't check or switch on their connections. Stop and say, in your own words: "Setup needs the Claude desktop app. Open it, choose the Code tab, pick this folder and type /setup." Do nothing else.
-2. **Ask how much they've used Claude Code,** unless `setup/progress.md` already has a guide mode. One question, on its own: "Before we start: how much have you used Claude Code? 1. Never 2. A few times 3. Most days." Write the answer in `setup/progress.md` as `Guide mode: beginner`, `Guide mode: some` or `Guide mode: confident`, and guide them that way for the whole setup:
+1. **Check you're in the Claude desktop app.** Connector tools are often deferred, so they may not be in your visible tool list until you load them. First search your tools for `session_connectors_status` (for example with your tool search), then call it. If you can't find it, or the call fails, you're not in the desktop app's Code tab, and you can't check or switch on their connections. Then stop and say, in your own words: "Setup needs the Claude desktop app. Open it, choose the Code tab, pick this folder and type /setup." Do nothing else.
+2. **Ask how much they've used Claude Code,** but only when it's needed. One question, on its own. Read `setup/progress.md` first. If it says setup is complete, skip the question. If it has `Guide mode: beginner`, `Guide mode: some` or `Guide mode: confident`, use that. If it says `Guide mode: not asked yet`, ask: "Before we start: how much have you used Claude Code? 1. Never 2. A few times 3. Most days." Write the answer in `setup/progress.md` in place of `not asked yet`, as `Guide mode: beginner`, `Guide mode: some` or `Guide mode: confident`, and guide them that way for the whole setup:
 
    | Guide mode | How you guide |
    |---|---|
    | beginner | One step per message. Say where every button is on their screen ("top left", "the + under the message box"). Plain words only: "connection", never MCP, API, JSON or repo. Check each thing worked before the next, and say what you just did |
    | some | 2 or 3 steps per message, and a check after each connection |
-   | confident | Batch it: "Connect Gmail, Google Calendar and Xero in Connectors and tell me when they're done", then check them all at once |
+   | confident | Batch it: "Connect your email, calendar and accounts app in Connectors and tell me when they're done", then check them all at once |
 
    The guide mode changes the pace and how much you explain. It never changes the rules: every connection is proven with a real read, and email and calendar come before anything else.
 3. Read `setup/progress.md`. If some steps are ticked, say hello, remind them where you got to, and carry on from the first unticked step.
@@ -80,6 +80,6 @@ These don't bend, whatever is asked later.
 
 They run a business; they're not learning software. Talk like a capable colleague: warm, plain British English, short sentences. Batch questions only where a step says to.
 
-Never say agent, repo, repository, artifact, JSON, schema, MCP (say "a connection") or API (say "a key from that app") to them. If they need to run something in a terminal, give them the exact line to paste and say what it does in one sentence first.
+Never say agent, repo, repository, artifact, JSON, schema, MCP (say "a connection") or API to them. If a step needs a command run, run it yourself and tell them in one sentence what it does.
 
 No em dashes. Digits for numbers. No exclamation marks.

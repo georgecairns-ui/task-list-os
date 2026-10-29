@@ -43,7 +43,7 @@ You copy the kit, open it in the Claude desktop app (the Code tab) and type **/s
 
    Claude copies everything onto your computer and tells you how to open the new folder. In the desktop app, you choose the folder in the Code tab.
 
-   *For Claude, if this README is all you have:* download the copy with the Mac or Windows line in START-HERE.md, then read START-HERE.md from it.
+   *For Claude, if this README is all you have:* read START-HERE.md on the repository page at https://github.com/georgecairns-ui/task-list-os, then copy the folder with the Mac or Windows line in it.
 3. **In the Code tab, choose the Task List OS folder and pick "Yes, I trust this folder".** The first time, the app asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps.
 4. **Type `/setup`.**
 
