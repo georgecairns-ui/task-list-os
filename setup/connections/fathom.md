@@ -24,7 +24,7 @@ Ask first, then list the most recent meetings. Say: "I can see your last 3 calls
 
 Read only: `get_identity`, `list_teams`, `list_meetings`, `get_meeting_summary`, `get_meeting_transcript`, `find_person`, `search_meetings`. There are no write tools documented for this connector.
 
-Pre-approve for check-ins (step 8): `get_identity`, `list_teams`, `list_meetings`, `get_meeting_summary`, `get_meeting_transcript`, `find_person`, `search_meetings`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `get_identity`, `list_teams`, `list_meetings`, `get_meeting_summary`, `get_meeting_transcript`, `find_person`, `search_meetings`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

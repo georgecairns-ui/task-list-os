@@ -25,7 +25,7 @@ Ask first, then list recent payments. Say: "I can see 3 payments from this week;
 
 The connector has both `stripe_api_read` and `stripe_api_write` tools. Stripe requires human confirmation for some writes such as refunds, but treat all writes as off by default. Never create, change, refund or cancel anything in Stripe unless the person asks for that one specific action in this conversation.
 
-Pre-approve for check-ins (step 8): `stripe_api_read`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `stripe_api_read`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

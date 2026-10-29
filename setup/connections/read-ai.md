@@ -24,7 +24,7 @@ Ask first, then list the most recent meetings. Say: "I can see your last 3 calls
 
 Read only: `get_meeting_by_id`, `list_meetings`. Read AI's own connector also lists 2 write tools, "Create meeting agent" (sends a bot to join a call) and "Share meeting report" (can email an invite to a report). Never use either of these unless the person asks for that one specific action in this conversation.
 
-Pre-approve for check-ins (step 8): `get_meeting_by_id`, `list_meetings`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `get_meeting_by_id`, `list_meetings`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

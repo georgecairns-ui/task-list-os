@@ -25,7 +25,7 @@ Ask first, then search for a recent page. Say: "I can see a page called 'Greenwa
 
 The connector is read and write: `search`, `fetch`, `create-pages`, `update-page` and more. Never create or update a page unless the person asks for that one specific page in this conversation. Default to reading only.
 
-Pre-approve for check-ins (step 8): `search`, `fetch`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `search`, `fetch`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

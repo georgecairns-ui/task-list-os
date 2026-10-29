@@ -27,7 +27,7 @@ This connector is not read-only: Intuit says it can create, update and send invo
 
 A separate, developer-run version exists too (Intuit's own `quickbooks-online-mcp-server` on GitHub), but it needs an Intuit Developer app with a client ID, secret and refresh token, and a public HTTPS callback. Never set it up or use it.
 
-Pre-approve for check-ins (step 8): only tools whose names start or end with get, list, search, read, find, fetch or query (as get_x or x_search), and no others; never a tool that creates, updates, sends or deletes. The exact read tool names could not be confirmed for QuickBooks (it isn't in Claude's own tool list on 2026-10-29, and the names its directory listing shows don't follow the pattern), so apply this rule to whatever the connector shows on the day.
+Pre-approve for check-ins: only names that start with `get_`, `list_`, `search_`, `read_`, `find_`, `fetch_` or `query_`, or end with `_search` or `_get`, and no others; never any name containing create, update, delete, send, mark, archive, add, remove, set, move, post, reply, label, trash or write, whatever else it matches. The exact read tool names could not be confirmed for QuickBooks (it isn't in Claude's own tool list on 2026-10-29, and the names its directory listing shows don't follow the pattern), so apply this rule to whatever the connector shows on the day.
 
 ## Record
 

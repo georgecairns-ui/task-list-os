@@ -24,7 +24,7 @@ Ask first, then read a recent channel or thread. Say: "I can see Tom asked in #g
 
 Read only: `slack_read_channel`, `slack_read_thread`, `slack_search_public_and_private`. The connector also has `slack_send_message`. Never send a Slack message unless the person asks for that one specific message in this conversation.
 
-Pre-approve for check-ins (step 8): `slack_read_channel`, `slack_read_thread`, `slack_search_public_and_private`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `slack_read_channel`, `slack_read_thread`, `slack_search_public_and_private`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

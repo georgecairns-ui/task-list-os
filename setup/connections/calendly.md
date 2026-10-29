@@ -25,7 +25,7 @@ Ask first: "Can I take a quick look at your upcoming bookings?" List the upcomin
 
 The connector has 36 tools, read ones such as `meetings-list_events` and `users-get_current_user`, and write ones such as `event_types-create_event_type` and `meetings-cancel_event`. Never create an event type, cancel a meeting, or change anything in Calendly unless the person asks for that one specific action in this conversation.
 
-Pre-approve for check-ins (step 8): `users-get_current_user`, `meetings-list_events`, `meetings-get_event`, `meetings-list_event_invitees`, `meetings-get_event_invitee`, `event_types-list_event_types`, `event_types-get_event_type`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `users-get_current_user`, `meetings-list_events`, `meetings-get_event`, `meetings-list_event_invitees`, `meetings-get_event_invitee`, `event_types-list_event_types`, `event_types-get_event_type`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

@@ -26,7 +26,7 @@ Ask first, then list recent contacts or deals. Say: "I can see 12 open deals; Gr
 
 The connector is read and write: it can create and update contacts, deals and tickets. Never create or update anything unless the person asks for that one specific action in this conversation. Default to reading and suggesting tasks only.
 
-Pre-approve for check-ins (step 8): only tools whose names start or end with get, list, search, read, find, fetch or query (as get_x or x_search), and no others; never a tool that creates, updates, sends or deletes. The exact read tool names could not be confirmed for HubSpot (it isn't in Claude's own tool list on 2026-10-29), so apply this rule to whatever the connector shows on the day.
+Pre-approve for check-ins: only names that start with `get_`, `list_`, `search_`, `read_`, `find_`, `fetch_` or `query_`, or end with `_search` or `_get`, and no others; never any name containing create, update, delete, send, mark, archive, add, remove, set, move, post, reply, label, trash or write, whatever else it matches. The exact read tool names could not be confirmed for HubSpot (it isn't in Claude's own tool list on 2026-10-29), so apply this rule to whatever the connector shows on the day.
 
 ## Record
 

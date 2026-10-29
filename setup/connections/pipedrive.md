@@ -24,7 +24,7 @@ Ask first, then list recent deals. Say: "I can see 12 open deals; Greenway Café
 
 The connector is read and write: it has `addDeal`, `addNote` and `updateActivity` alongside `getDeals`, `getActivities` and `searchDeals`. Never add or update a deal, note or activity unless the person asks for that one specific action in this conversation. Default to reading and suggesting tasks only.
 
-Pre-approve for check-ins (step 8): `getDeals`, `getActivities`, `searchDeals`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `getDeals`, `getActivities`, `searchDeals`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

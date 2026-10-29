@@ -23,7 +23,7 @@ Ask first, then list the most recent conversations. Say: "I can see your last 3 
 
 Read only: `get_user_info`, `search`, `fetch`. There are no write tools documented for this connector.
 
-Pre-approve for check-ins (step 8): `get_user_info`, `search`, `fetch`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `get_user_info`, `search`, `fetch`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

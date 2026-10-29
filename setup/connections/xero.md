@@ -25,7 +25,7 @@ Read only, by Xero's own design: "Claude connects with read-only access" and it 
 
 A separate, developer-run version of the Xero connector exists (an open-source local server that can create invoices and post transactions). Never set it up or use it. Draft invoices in Xero are a separate optional extra (`setup/connections/xero-drafts.md`), offered only when the person asks for them.
 
-Pre-approve for check-ins (step 8): `get_connected_organisations`, `get_organisation_info`, `get_organisation_financial_year`, `get_invoices`, `show_invoices_summary`, `get_aged_receivables`, `get_aged_payables`, `get_bills`, `get_contacts`, `get_profit_and_loss`, `get_cash_position`, `get_financial_position`, `get_bank_account_transactions`, `get_chart_of_accounts`, `get_top_customers_by_revenue`, `get_purchase_orders`, `get_repeating_invoices`, `get_repeating_bills`, `get_tracking_categories`, `get_1099_report_summary`. These are every tool the connector had in Claude's own tool list on 2026-10-29, and all of them read.
+Pre-approve for check-ins: `get_connected_organisations`, `get_organisation_info`, `get_organisation_financial_year`, `get_invoices`, `show_invoices_summary`, `get_aged_receivables`, `get_aged_payables`, `get_bills`, `get_contacts`, `get_profit_and_loss`, `get_cash_position`, `get_financial_position`, `get_bank_account_transactions`, `get_chart_of_accounts`, `get_top_customers_by_revenue`, `get_purchase_orders`, `get_repeating_invoices`, `get_repeating_bills`, `get_tracking_categories`, `get_1099_report_summary`. These are every tool the connector had in Claude's own tool list on 2026-10-29, and all of them read.
 
 ## Record
 

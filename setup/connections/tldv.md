@@ -24,7 +24,7 @@ Ask first, then list the most recent meetings. Say: "I can see your last 3 calls
 
 Read only: `get-meeting-metadata`, `get-meeting-notes`, `get-meeting-transcript`, `get-user-profile`, `search-meetings`. There are no write tools documented for this connector.
 
-Pre-approve for check-ins (step 8): `get-meeting-metadata`, `get-meeting-notes`, `get-meeting-transcript`, `get-user-profile`, `search-meetings`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `get-meeting-metadata`, `get-meeting-notes`, `get-meeting-transcript`, `get-user-profile`, `search-meetings`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

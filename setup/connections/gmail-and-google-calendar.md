@@ -21,7 +21,7 @@ Gmail: read, and `create_draft` only when the person asks for that one email. Ne
 
 Google Calendar: read only (`list_calendars`, `list_events`, `get_event`, `search_events`, `suggest_time`). Never `create_event`, `update_event`, `delete_event` or `respond_to_event` unless the person asks for that one event.
 
-Pre-approve for check-ins (step 8): Gmail `search_threads`, `get_thread`, `get_message`, `list_labels`; Google Calendar `list_calendars`, `list_events`, `get_event`, `search_events`.
+Pre-approve for check-ins: Gmail `search_threads`, `get_thread`, `get_message`, `list_labels`; Google Calendar `list_calendars`, `list_events`, `get_event`, `search_events`.
 
 ## Record
 

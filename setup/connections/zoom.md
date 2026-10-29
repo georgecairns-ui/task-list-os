@@ -26,7 +26,7 @@ Ask first, then list the most recent recordings. Say: "I can see your last 3 cal
 
 Read only: `search_meetings`, `recordings_list`, `get_meeting_assets`, `get_recording_resource`, `search_zoom`, `get_file_content`. The connector also has 3 write tools, `create_new_file_with_markdown`, `hub_create_file_from_content` and `hub_get_file_content`. Never use any of these to create a file unless the person asks for that one specific action in this conversation.
 
-Pre-approve for check-ins (step 8): `search_meetings`, `recordings_list`, `get_meeting_assets`, `get_recording_resource`, `search_zoom`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved. `get_file_content` is left out on purpose: the old guide calls its neighbour `hub_get_file_content` a write tool, so ask the person before using it.
+Pre-approve for check-ins: `search_meetings`, `recordings_list`, `get_meeting_assets`, `get_recording_resource`, `search_zoom`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved. `get_file_content` is left out on purpose: the old guide calls its neighbour `hub_get_file_content` a write tool, so ask the person before using it.
 
 ## Record
 

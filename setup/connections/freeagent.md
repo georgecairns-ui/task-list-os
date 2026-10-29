@@ -26,7 +26,7 @@ Once a CSV is in `files/`, read it and say: "I can see 4 unpaid invoices in your
 
 Read only. Never create, send or change an invoice, bill or any other FreeAgent record.
 
-Pre-approve for check-ins (step 8): none. With an export there is no connector to read from; Claude reads the files in `files/`.
+Pre-approve for check-ins: none. With an export there is no connector to read from; Claude reads the files in `files/`.
 
 ## Record
 

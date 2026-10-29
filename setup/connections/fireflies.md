@@ -23,7 +23,7 @@ Ask first, then list the most recent transcripts. Say: "I can see your last 3 ca
 
 Read only: `get_user`, `get_transcript`, `get_transcripts`. There are no write tools documented for this connector.
 
-Pre-approve for check-ins (step 8): `get_user`, `get_transcript`, `get_transcripts`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `get_user`, `get_transcript`, `get_transcripts`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

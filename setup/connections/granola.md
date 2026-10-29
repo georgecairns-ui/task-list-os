@@ -24,7 +24,7 @@ Ask first, then list the most recent meetings. Say: "I can see your last 3 calls
 
 Read only: `query_granola_meetings`, `search_meetings`, `list_meetings`, `get_meetings`, `get_meeting_transcript` (also `list_meeting_folders`, `get_meeting_attachment` and `get_account_info`). The connector also has tools that change folders (`add_note_to_folder`, `create_folder`, `remove_note_from_folder`, `update_folder`), `sign_out` and `give_feedback`: never use any of them unless the person asks for that one specific action in this conversation. The earlier guide called the first tool `query_granola`; Claude's own tool list on 2026-10-29 calls it `query_granola_meetings`.
 
-Pre-approve for check-ins (step 8): `query_granola_meetings`, `search_meetings`, `list_meetings`, `get_meetings`, `get_meeting_transcript`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `query_granola_meetings`, `search_meetings`, `list_meetings`, `get_meetings`, `get_meeting_transcript`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 

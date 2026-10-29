@@ -23,7 +23,7 @@ Ask first, then search for a recent file. For a call held on Google Meet, search
 
 Read only: `search_files`, `read_file_content`, `list_recent_files`, `get_file_metadata`. Never use `share_file`, `trash_file`, `create_file`, `update_file` or `copy_file` unless the person asks for that one specific action in this conversation. The connector already asks for approval before those, but treat them as off by default.
 
-Pre-approve for check-ins (step 8): `search_files`, `read_file_content`, `list_recent_files`, `get_file_metadata`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
+Pre-approve for check-ins: `search_files`, `read_file_content`, `list_recent_files`, `get_file_metadata`. Nothing that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything is pre-approved.
 
 ## Record
 
