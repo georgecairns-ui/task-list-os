@@ -10,7 +10,7 @@ In Claude Code, every skill is also a command: type `/` and its name, for exampl
 
 | Skill | Say something like | What happens |
 |---|---|---|
-| `check-in` | "Check in", "anything new?" (runs every hour if you turned that on) | Calendar copied in, new email sorted with replies drafted, new calls written up |
+| `check-in` | "Check in", "anything new?" (runs a few times a day, at times you agreed) | Calendar copied in, new email sorted with replies drafted, new calls written up |
 | `triage-inbox` | "What needs a reply?" | Every email sorted; the ones needing an answer appear in the Inbox with a draft |
 | `process-calls` | "Write up my calls" | Each call summarised on the Calls page, with actions and a follow-up email |
 | `sort-my-day` | "Sort my day" | Claude checks your list, inbox and calendar and proposes today's plan in the app |
