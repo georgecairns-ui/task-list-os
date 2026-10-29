@@ -5,13 +5,14 @@ THE HELPER: the little helper that runs this folder's tools on this computer (Py
 It calls itself by the folder's name: "name" in toolkit.json (for example "Ads OS").
 The same as server.js, for computers that have Python 3 but not Node. Claude uses whichever
 is available. It serves the app at http://localhost:4747 and lets it read and save
-the data files of the tools listed in apps/installed.json (for example apps/task-list/data/tasks.json).
+the data files of the tools listed in apps/installed.json (for example apps/task-list/data/tasks.json),
+and Home's own files in apps/home/data: layout.json, braindump.json and connections.json.
 For a tool marked "media": true there, it also keeps the photos and videos added to that tool's posts in
 the tool's own data/media folder (only a safe file name, the right kind of file, up to 200 MB, never over a
 file that is already there, no delete) and plays them back.
 
 Safety: only listens on this computer (127.0.0.1), only serves the apps folder, only ever saves
-the task file and attached tools' listed data files, keeps a backup (for example tasks.backup.json)
+the task file, attached tools' listed data files and Home's 3 files, keeps a backup (for example tasks.backup.json)
 before every save, refuses requests from other websites, refuses a save that was based on an older copy
 of the file (409) so a change made in between is never overwritten, and answers a badly formed request with
 an error instead of stopping.

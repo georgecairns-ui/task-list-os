@@ -286,7 +286,11 @@ async function runChecks(label, port, root, kind) {
     const saved = await request(port, "PUT", "/api/data/home/connections.json", { type: "application/json", body: Buffer.from(body), headers: same });
     assert.strictEqual(saved.status, 200, "PUT should be 200");
     assert.strictEqual(JSON.parse(fs.readFileSync(f, "utf8")).connections.gmail.status, "connected");
+    // A real file, so the 404 proves the helper refuses it rather than just not finding it
+    const secrets = path.join(root, "apps", "home", "data", "secrets.json");
+    fs.writeFileSync(secrets, JSON.stringify({ secret: true }));
     assert.strictEqual((await request(port, "GET", "/api/data/home/secrets.json")).status, 404, "any other Home file is refused");
+    fs.unlinkSync(secrets);
     await alive();
   });
 
