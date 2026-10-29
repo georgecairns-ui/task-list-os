@@ -25,7 +25,7 @@ A personal assistant for a small business owner, run by you, with an app on top.
 - You copy their **calendar** in, find free time and suggest when to do things.
 - You turn their **brain dump** into proper tasks, and research the ones they don't know how to do.
 - Everything lands in the **task list app**, which you run on their computer and they open at **http://localhost:4747**: Home (a dashboard they arrange), then Tasks (Today, This week or All, as a board, list or calendar), Inbox, Review and Calls. The **Brain dump** button at the top records a voice note that you turn into tasks. Tasks you could do for them show **Claude can do this** with a ready prompt. They approve your suggestions with one click, press **Draft** to open a reply you wrote, and **Add to calendar** to book time.
-- You **check in a few times a day** on your own, at times they agree, so the app keeps itself up to date.
+- If they'd like it, you **check in a few times a day** on your own, at times they choose, so the app keeps itself up to date. They can skip it.
 
 This folder is their workspace from now on: `context/` holds what you know about the business, `files/` their documents, `.claude/skills/` your saved know-how (they load automatically in Claude Code and work as commands like `/sort-my-day`), including the skills you build for them in step 6, and `skills-to-upload/` the same skills packed up for them to add to Claude.
 
@@ -57,7 +57,7 @@ This folder is their workspace from now on: `context/` holds what you know about
 | 5 | `setup/05-get-to-know-the-business.md` | You work out the business from their email and ask 2 or 3 questions, then make the app look like their brand (from their website or brand guidelines) | 5 min |
 | 6 | `setup/06-build-your-skills.md` | You ask about their services and build 3 to 5 skills for their business, saved here and packed in `skills-to-upload/` for them to add to Claude | 5 min |
 | 7 | `setup/07-first-run.md` | You fill the task list from their real inbox, calls and calendar, start it, and give them the link | 1 min |
-| 8 | `setup/08-make-it-automatic.md` | You agree the check-in times, Claude lets check-ins read without stopping, creates the check-in and proves it runs | 2 min |
+| 8 | `setup/08-make-it-automatic.md` | You agree the check-in times (or they skip it), Claude lets check-ins read without stopping, creates the check-in and proves it runs | 2 min |
 | 9 | `setup/09-check-and-hand-over.md` | Check everything works, then hand over with a summary of everything you did | 2 min |
 
 Start by telling them what's about to happen, in 3 short lines: you'll find out what they already use and connect it, you'll learn their business and build them their own skills, and you'll fill their task list with their real work so it's ready the moment it opens. Then begin step 1.

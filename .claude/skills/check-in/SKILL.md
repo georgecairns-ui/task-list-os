@@ -21,15 +21,15 @@ The routine that makes the task list feel live. It runs a few times a day, at th
 5. **Replies already dealt with.** For each reply still `waiting`, check the thread: if the person has since replied themselves, set its `status` to `replied`.
 6. **Today's plan.** If it's the first check-in of the day and there's no plan for today, follow `.claude/skills/sort-my-day`. Otherwise, add any new suggestion that clearly belongs on today as a `proposed` plan item with a reason; don't rewrite the plan.
 7. **What Claude can do.** Follow `.claude/skills/spot-claude-tasks` for new or changed open tasks, so the ones you could do carry a "Claude can do this" tag and a ready prompt.
-8. Update `triage`: `lastRunAt` now, `nextRunAt` (the next agreed check-in time, or null if there is no scheduled check-in), and add this run's counts to `emailsScanned`, `needReply`, `newTasks`, `noAction` and `callsProcessed` if `lastRunAt` was today (start from zero if it was an earlier day).
+8. Update `triage`: `lastRunAt` now, `nextRunAt` (the next agreed check-in time, which is in `context/tools.md`, or null if there is no scheduled check-in), and add this run's counts to `emailsScanned`, `needReply`, `newTasks`, `noAction` and `callsProcessed` if `lastRunAt` was today (start from zero if it was an earlier day).
 9. Save safely: read the file right before writing, write the whole file, read it back and check it parses.
 10. Make sure the app is running, so the person sees the update: `bash setup/scripts/start-app.sh` (Mac or Linux) or `powershell -ExecutionPolicy Bypass -File setup\scripts\start-app.ps1` (Windows). It does nothing if it's already running.
-11. **Connections.** For each app you read from in this check-in, set its `checked` in `apps/home/data/connections.json` to today. If a read failed, set it to `needs-attention` with what went wrong in `note`, keep the old `checked`, and say so in one line of your summary ("Couldn't read Xero this time: it may need signing in again. There's a Fix it button on Home.").
+11. **Connections.** For each app you read from in this check-in, set its `checked` in `apps/home/data/connections.json` to today, and if its status was `needs-attention`, set it back to `connected` (the read just worked). If a read failed, set it to `needs-attention` with what went wrong in `note`, keep the old `checked`, and say so in one line of your summary ("Couldn't read Xero this time: it may need signing in again. There's a Fix it button on Home.").
 
 ## What to say
 
 If the person asked: one or two lines. "2 new emails need a reply (both drafted, in your Inbox), 1 new task from your call with Tom, nothing else urgent."
-If this is a scheduled run, say nothing unless something is urgent (an email marked urgent, a call action due today); then one line.
+If this is a scheduled run, say nothing unless something is urgent (an email marked urgent, a call action due today) or a connection read failed; each of those is worth one line.
 
 ## Rules
 

@@ -14,18 +14,19 @@ A check-in that runs on its own stops if it has to ask permission, and the task 
 
 1. From your own list of tools, collect the names of that connection's read tools: exactly the ones its guide in `setup/connections/` lists under "Pre-approve for check-ins". For an app without a guide, only tools whose name starts or ends with `get`, `list`, `search`, `read`, `find`, `fetch` or `query` (as `get_x` or `x_search`), and only if they only read.
 2. Show them the list in one line per app, for example: "Gmail: search and read emails. Google Calendar: read events." Ask: "Can I let your check-ins do just these without asking each time?"
-3. With a yes, add them to `permissions.allow` in this folder's `.claude/settings.local.json` (create it if it isn't there, as `{ "permissions": { "allow": [] } }`), using the full tool names as they appear in your list (they start `mcp__`). Never add anything that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything.
+3. If they say no, tell them plainly: "Then the scheduled check-in will stop at each permission prompt and the app will go out of date. If you'd rather, say 'check in' whenever you want one." Note it in `setup/progress.md`, skip 8.3 and go to step 9.
+   With a yes, add them to `permissions.allow` in this folder's `.claude/settings.local.json` (create it if it isn't there, as `{ "permissions": { "allow": [] } }`), using the full tool names as they appear in your list (they start `mcp__`). Never add anything that sends, replies, forwards, deletes, archives, labels, pays, posts, books or changes anything.
 
 `.claude/settings.local.json` stays on this computer and is never part of an update.
 
 ## 8.3 Create the check-in
 
-Create it yourself with the desktop app's scheduled tasks tool (`create_scheduled_task`):
+First look with `list_scheduled_tasks` for an existing check-in task for this folder. If there is one, update it to the agreed times rather than making another. If not, create it yourself with the desktop app's scheduled tasks tool (`create_scheduled_task`):
 - **Folder:** this folder.
 - **Prompt:** `Run /check-in`
 - **When:** the times they agreed, on their working days.
 
-Then run it once now (`run_scheduled_task`) and check it finished without stopping to ask anything (`list_task_runs`). If it stopped at a permission, add that read tool under 8.2's rule and run it again. Only ever one check-in task for this folder.
+Then run it once now (`run_scheduled_task`) and check it finished without stopping to ask anything (`list_task_runs`). If it stopped at a permission, ask the person before adding that tool, and only if it is read-only under 8.2's rule; then run it again. If the stop is at a tool that isn't read-only, tell them and leave it. Only ever one check-in task for this folder.
 
 ## 8.4 Record it
 
