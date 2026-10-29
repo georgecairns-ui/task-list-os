@@ -59,6 +59,7 @@ function readName() {
 const NAME = readName();
 const HOME_LAYOUT = path.join(APPS, "home", "data", "layout.json");
 const BRAIN_DUMP = path.join(APPS, "home", "data", "braindump.json");   // the shared Brain dump, every tool's notes
+const CONNECTIONS = path.join(APPS, "home", "data", "connections.json");   // which apps Claude can reach, shared by every tool (shared v13)
 // A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
 const DATA_FILE_RE = /^apps\/[a-z0-9-]+\/data\/[a-z0-9-]+\.json$/;
 const MAX_BODY = 10 * 1024 * 1024;
@@ -202,7 +203,7 @@ function installedTools() {
 // The file behind /api/data/<tool>/<file>, or null if that tool isn't installed or the file isn't one of its own
 function dataFileFor(toolId, fileName) {
   // Home's own file: which boxes show, in what order and how wide
-  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : fileName === "braindump.json" ? BRAIN_DUMP : null;
+  if (toolId === "home") return fileName === "layout.json" ? HOME_LAYOUT : fileName === "braindump.json" ? BRAIN_DUMP : fileName === "connections.json" ? CONNECTIONS : null;
   for (const tool of installedTools()) {
     if (!tool || tool.id !== toolId || !Array.isArray(tool.dataFiles)) continue;
     // A tool may only save inside its own app folder, never another tool's data or the shared parts

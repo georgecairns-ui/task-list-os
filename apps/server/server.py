@@ -59,6 +59,7 @@ NAME = read_name()
 # A tool's data file must live in its own data folder: apps/<tool>/data/<name>.json
 HOME_LAYOUT = os.path.join(APPS, "home", "data", "layout.json")
 BRAIN_DUMP = os.path.join(APPS, "home", "data", "braindump.json")  # the shared Brain dump, every tool's notes
+CONNECTIONS = os.path.join(APPS, "home", "data", "connections.json")  # which apps Claude can reach, shared by every tool (shared v13)
 DATA_FILE_RE = re.compile(r"^apps/[a-z0-9-]+/data/[a-z0-9-]+\.json$")
 DATA_URL_RE = re.compile(r"^/api/data/([a-z0-9-]+)/([a-z0-9-]+\.json)(/meta)?$")
 MAX_BODY = 10 * 1024 * 1024
@@ -192,7 +193,7 @@ def data_file_for(tool_id, file_name):
     """The file behind /api/data/<tool>/<file>, or None if that tool isn't installed or the file isn't one of its own."""
     # Home's own file: which boxes show, in what order and how wide
     if tool_id == "home":
-        return HOME_LAYOUT if file_name == "layout.json" else BRAIN_DUMP if file_name == "braindump.json" else None
+        return {"layout.json": HOME_LAYOUT, "braindump.json": BRAIN_DUMP, "connections.json": CONNECTIONS}.get(file_name)
     for tool in installed_tools():
         if not isinstance(tool, dict) or tool.get("id") != tool_id or not isinstance(tool.get("dataFiles"), list):
             continue
