@@ -10,11 +10,11 @@ Goal: in one short exchange, learn what the person uses, so every later step is 
 4. **Their computer.** Mac or Windows, from the path or by running a harmless command.
 5. **What they've already told you.** Read this conversation from the start, and any notes already in `context/` (files that don't say "Status: not filled in yet") or `files/`. If they've said their name, business, website, email provider or anything else the questions below ask, write it down now and don't ask it again.
 
-## 1.2 Ask everything in one message
+## 1.2 Ask the questions
 
 Use the guide mode from `setup/progress.md`: for `beginner`, ask the questions 2 at a time instead of all at once.
 
-Open with what you found in 1.1, so they see you've already looked: "You've already got Gmail and Google Calendar connected to Claude, so I'll use those." Then send the questions as one friendly, numbered message. Leave out every question you already have the answer to from 1.1, say in one line what you already know, and renumber the rest. Tell them short answers are fine.
+Open with what you found in 1.1, so they see you've already looked: "You've already got Gmail and Google Calendar connected to Claude, so I'll use those." Say what you actually found in 1.1, for example "I can see Gmail, but it needs signing in again, so we'll do that first." Then send the questions as a friendly, numbered message (all at once, unless their guide mode says otherwise). Leave out every question you already have the answer to from 1.1, say in one line what you already know, and renumber the rest. Tell them short answers are fine.
 
 > To set this up properly I need to know a few things. Short answers are fine.
 >
@@ -36,7 +36,7 @@ Fill in `context/tools.md`:
 
 Set `settings.yourName`, `settings.businessName`, `settings.dayStarts` and `settings.dayEnds` in `apps/task-list/data/tasks.json`, and `settings.emailProvider` (`gmail`, `outlook-work`, `outlook-personal` or `other`) and `settings.calendarProvider` (`google`, `outlook-work`, `outlook-personal` or `other`), so the app's Draft and Add to calendar buttons open the right place.
 
-Create `apps/home/data/connections.json` if it isn't there, in the format in `setup/connections/README.md` ("Recording a connection"), with one row per app they named, each `"status": "not-connected"`. Only ever set `connected` after a real read works.
+Create `apps/home/data/connections.json` if it isn't there, in the format in `setup/connections/README.md` ("Recording a connection"), with one row per app they named (email and calendar from the same provider share one row, keyed by the guide's file name: `gmail-and-google-calendar` or `microsoft-365`), each `"status": "not-connected"`. Only ever set `connected` after a real read works.
 
 Tick step 1 in `setup/progress.md`.
 
