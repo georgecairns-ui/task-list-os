@@ -103,13 +103,13 @@ Tell them in 1 short message:
 - That you will save a copy of every file you change first, in `files/99-archive/`.
 - If there is no saved download: "I don't have a copy of what you installed, so I can't tell your changes from ours. This first update keeps every file you've changed and does little. I'll save a copy now, so the next one does the whole job."
 - That Claude Code will ask them to approve changes to the app's own files, because only their notes, records and files are pre-approved: "Say yes to each one, it is me updating the app."
-- That you will stop the app for a few minutes, and that the hourly check-in must not run meanwhile: ask them not to start one, and to pause it in the Claude desktop app's scheduled tasks if one is set up. Say you will tell them when it is safe again.
+- That you will stop the app for a few minutes, and that the scheduled check-in must not run meanwhile: ask them not to start one, and to pause it in the Claude desktop app's scheduled tasks if one is set up. Say you will tell them when it is safe again.
 
 Then ask: "Shall I update it?" Do nothing until they say yes.
 
 ## 6. Stop the helper, back up, then apply
 
-**First, stop the helper**, so nothing writes to their data while you work, and say again that the hourly check-in must not run until you finish.
+**First, stop the helper**, so nothing writes to their data while you work, and say again that the scheduled check-in must not run until you finish.
 
 - If the app is set to start with the computer, switch that off for now, or it restarts at once: `bash setup/scripts/autostart-mac.sh remove` (Mac) or `powershell -ExecutionPolicy Bypass -File setup\scripts\autostart-windows.ps1 -Remove` (Windows). Note that you did, to put it back in 4 below.
 - Then make sure it is stopped: `pkill -f "apps/server/server\.(js|py)"` (Mac), or in PowerShell `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "*apps\server\server.*" } | ForEach-Object { Stop-Process -Id $_.ProcessId }`.
@@ -123,7 +123,7 @@ Then:
    - every data file you touched still opens (`python3 -m json.tool <file>`, or `Get-Content <file> | ConvertFrom-Json` on Windows)
    - no em dash came in from a merge
    - their data is exactly what it was: take the fingerprint a third time into `$T/data-after.txt` and compare it with `data-start.txt` (`diff`, or `Compare-Object` on Windows). Any difference is a failure
-4. Start the helper again with the `open-the-app` skill (`.claude/skills/open-the-app`: run its start script, and put autostart back with its `install` if you switched it off), open the link it gives, and check every tool in the sidebar opens, in light and dark. If they have a brand, check it still shows. Then tell them the hourly check-in is safe again.
+4. Start the helper again with the `open-the-app` skill (`.claude/skills/open-the-app`: run its start script, and put autostart back with its `install` if you switched it off), open the link it gives, and check every tool in the sidebar opens, in light and dark. If they have a brand, check it still shows. Then tell them the scheduled check-in is safe again.
 
 If anything fails, put the backed-up files back, start the helper again so their app works, tell them what happened in 1 sentence, and stop.
 

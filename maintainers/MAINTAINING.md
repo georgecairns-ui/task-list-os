@@ -4,7 +4,7 @@ For people developing the kit itself. Customers never need this folder, but it i
 
 ## What this project is
 
-A kit a small business owner copies from GitHub (they ask Claude to clone it) and opens in Claude Code (or the Claude desktop app). They type `/setup`; Claude follows `START-HERE.md`, connects their email, calendar, call recorder and apps (`setup/connections/`), writes up the business in `context/`, and fills the task list app (`apps/task-list/`) with their real work. The downloaded folder becomes the customer's workspace. Claude can then check in every hour through a scheduled task in the Claude desktop app.
+A kit a small business owner copies from GitHub (they ask Claude to clone it) and opens in Claude Code (or the Claude desktop app). They type `/setup`; Claude follows `START-HERE.md`, connects their email, calendar, call recorder and apps (`setup/connections/`), writes up the business in `context/`, and fills the task list app (`apps/task-list/`) with their real work. The downloaded folder becomes the customer's workspace. Claude then creates a scheduled task in the Claude desktop app that checks in a few times a day, at times the person agrees.
 
 ## Stack
 

@@ -44,7 +44,7 @@ Your task list app runs from a small program in your Task List OS folder, so it 
 
 ## Does it run when I'm not there?
 
-Only if you turn on hourly check-ins during setup. Then the Claude app checks your inbox, calls and calendar every hour during your working day, while your computer is on and the app is open. It uses a little of your Claude allowance each time. You can pause it in the Claude app.
+Only if you agree to check-ins during setup. Then the Claude app checks your inbox, calls and calendar a few times a day, at the times you agreed, while your computer is on and the app is open. It uses a little of your Claude allowance each time, and it can only read: it never sends or changes anything. You can pause it in the Claude app.
 
 ## Who sees my information?
 

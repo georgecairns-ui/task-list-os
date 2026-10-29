@@ -26,7 +26,7 @@ You copy the kit, open it in the Claude desktop app (the Code tab) and type **/s
 - **One page for every task.** **Home** is your dashboard: choose the boxes you want and arrange them. **Tasks** shows Today (with Claude's plan on top), This week or All, as a **Board** (To do, In progress, Waiting on, Done: drag cards across), a **List**, or a **Calendar** of your real meetings with your tasks in the gaps. **Add meeting** puts a meeting in and opens it in your calendar, ready to save.
 - **Does some of it for you.** Claude marks the tasks it could do with your connections, such as a chaser, a reply, a figure from your accounts or a first draft. Press **Open in Claude** and it opens with the prompt ready; read it and press send.
 - **Yours to shape.** A clean, calm app in light or dark, in your own colours. **Preferences** lets you rename and recolour categories, rename the board's columns and choose how Tasks opens.
-- **Keeps itself up to date.** If you want, Claude checks in every hour while you work, so the app is always current.
+- **Keeps itself up to date.** Claude checks in a few times a day, at times you agree, so the app is always current.
 
 ## What you need
 
@@ -56,7 +56,7 @@ Apps connect through Claude's Connectors: each one asks you to sign in on that a
 | Say (or type the command) | What happens |
 |---|---|
 | "Sort my day" (`/sort-my-day`) | Your plan for today, from your list, inbox, calls and calendar |
-| "Check in" (`/check-in`) | Anything new in your inbox, calls and calendar. Runs on its own every hour if you turn that on |
+| "Check in" (`/check-in`) | Anything new in your inbox, calls and calendar. Runs on its own a few times a day, at times you agree |
 | "Sort my brain dump" (`/sort-my-brain-dump`) | Your notes become tasks, with times and how-to guides |
 | "Plan my week" (`/plan-my-week`) | A day for each task that needs one, around your meetings |
 | "Help me reply to Tom" | A draft in your voice |
