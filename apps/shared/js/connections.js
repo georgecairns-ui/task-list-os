@@ -51,10 +51,12 @@
     }).sort(function (a, b) { return STATUS[a.status].rank - STATUS[b.status].rank || a.name.localeCompare(b.name); });
   }
 
+  // "N of M connected" counts only apps Claude reads live or that need fixing: export-only, no-connector,
+  // not-connected and not-used rows are still listed in the box, but never show as a permanent gap
   function counts(d) {
     let connected = 0, attention = 0, total = 0;
     list(d).forEach(function (x) {
-      if (x.status === "not-used") return;
+      if (x.status !== "connected" && x.status !== "needs-attention") return;
       total++;
       if (x.status === "connected") connected++;
       if (x.status === "needs-attention") attention++;

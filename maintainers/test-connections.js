@@ -46,11 +46,14 @@ check("list puts needs-attention first, then connected, then the rest, and uses 
 check("an entry with no name gets one from its key", function () {
   assert.strictEqual(C.list(file({ "my-booking-system": { status: "no-connector" } }))[0].name, "My booking system");
 });
-check("counts leave out not-used", function () {
+check("counts include only connected and needs-attention", function () {
   const d = file({
     a: { name: "A", status: "connected", checked: "2026-10-28" },
     b: { name: "B", status: "needs-attention" },
-    c: { name: "C", status: "not-used" }
+    c: { name: "C", status: "not-used" },
+    d: { name: "D", status: "export-only" },
+    e: { name: "E", status: "no-connector" },
+    f: { name: "F", status: "not-connected" }
   });
   assert.deepStrictEqual(JSON.parse(JSON.stringify(C.counts(d))), { connected: 1, attention: 1, total: 2 });
 });

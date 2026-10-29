@@ -30,9 +30,10 @@
     if (problem) return empty(problem);
     if (!data) return empty("Claude fills this in when it connects your apps during setup.");
     const n = C.counts(data);
-    if (!n.total) return empty("Claude fills this in when it connects your apps during setup.");
-    const stat = '<p class="hstat"><span class="hstat__num">' + n.connected + " of " + n.total + '</span><span class="hstat__label">connected</span></p>';
     const shown = C.list(data).filter(function (x) { return x.status !== "not-used"; });
+    if (!shown.length) return empty("Claude fills this in when it connects your apps during setup.");
+    // The count covers only live connections and ones to fix; export-only and the rest are still listed below it
+    const stat = n.total ? '<p class="hstat"><span class="hstat__num">' + n.connected + " of " + n.total + '</span><span class="hstat__label">connected</span></p>' : "";
     return stat + '<ul class="hlist" role="list">' + shown.slice(0, 5).map(row).join("") + "</ul>" +
       (shown.length > 5 ? '<p class="hbox__more">' + esc("and " + (shown.length - 5) + " more") + "</p>" : "");
   }
