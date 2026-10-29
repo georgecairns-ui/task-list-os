@@ -34,7 +34,7 @@ Then run it once now (`run_scheduled_task`) and check it finished without stoppi
 
 Then look up that first run's session with the desktop app's session tools (for example `get_session` with the run's session id) and check 2 things:
 - **It ran in this folder.** If it ran somewhere else, delete nothing: update the task's prompt so it opens with this folder's full path, and run it again. If it still runs elsewhere, tell the person plainly that the scheduled check-in can't find this folder, and offer the alternative: they say "check in" whenever they want one.
-- **It didn't run in an Auto or Bypass permission mode.** If it did, tell the person in one line: "This session is set to act without asking, so the check-ins would too." Then recreate the task from a session in the normal mode, where Claude asks first, so there is still only one check-in task.
+- **It didn't run in an Auto or Bypass permission mode.** If it did, tell the person in one line: "This session is set to act without asking, so the check-ins would too." Then ask them to switch this session to the normal permission mode, where Claude asks first. Once it is switched, delete that check-in task and create it again from this session, so there is still only one check-in task. (The "delete nothing" rule above is only for the wrong-folder case.)
 
 ## 8.4 Record it
 

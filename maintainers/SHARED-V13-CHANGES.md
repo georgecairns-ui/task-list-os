@@ -60,6 +60,7 @@ Task List OS's own versions are the reference. "Its own equivalent" means the sa
   - The intro line for the person: Claude desktop app, Code tab.
 - **`README.md`:** "What you need" is the desktop app and a paid Claude plan (no GitHub access item); "Get started" opens the desktop app's Code tab and drops the GitHub sign-in sentences; the note for Claude points at START-HERE.md on the repository page; the paragraph about keys becomes the Connectors paragraph; "last 30 days of email"; check-ins "a few times a day, at times you choose"; the folder map drops "the key scripts". Each tool's own README wording.
 - **`setup/progress.md`:** add `Guide mode: not asked yet` under "Setup status".
+- **The tool's own app:** check its empty-state setup time says 30 to 40 minutes (Task List OS: `apps/task-list/app/components.js`).
 - **`setup/connections/README.md`:** the tool table is per tool, so keep your own. Take the intro line (same 6 sections) and the "Recording a connection" section, which is identical in every tool. Table rows for QuickBooks, FreeAgent and Stripe updated where the tool lists them.
 - **`maintainers/PRIVATE-INSTALL.md`:** new. The v12 sign-in wording, to put back when the repositories go private. It names the tool and repository, so adapt both.
 - **`CLAUDE.md`:** add the line about `apps/home/data/connections.json` under the rule that covers secrets and connections (rule 3 in Task List OS).
@@ -84,24 +85,25 @@ Task List OS's own versions are the reference. "Its own equivalent" means the sa
 
 ## Decisions made while building
 
-**The 3 differences from the spec** (also in the PR description):
+**The 4 differences from the spec** (also in the PR description):
 
 1. **Where the status file lives:** `apps/home/data/connections.json`, not `context/connections.json`. The helper serves only files under `apps/` on purpose, so the app can never read the person's private `context/` notes. `apps/home/data/` is already shared by every attached tool, is never shipped, and is where the Brain dump lives.
 2. **The status word for "proven":** the file says `"connected"`, the word the kit's Connections page already uses. A row may only say `connected` with a `checked` date, set after a real read. The model refuses `connected` without one.
 3. **Where the experience question is asked:** `START-HERE.md`, "Before you begin", straight after the surface check. That way it is asked once and identically in all 7 tools, including the 4 with no `01-quick-questions.md`.
+4. **The calendar copy:** `events` gets yesterday to 14 days ahead, as the app and the check-in already keep it. The past 30 days of the calendar are only read, to learn people and routines, not copied.
 
 **Other decisions:**
 
-4. **The pre-approve rule is wider than the plan's first wording.** A guide's "Pre-approve for check-ins" list governs, whatever the tool-name prefix (Microsoft's read tools end in `_search`). An app without a guide uses only names that start with `get_`, `list_`, `search_`, `read_`, `find_`, `fetch_` or `query_`, or end with `_search` or `_get`, and only if they only read; never any name containing create, update, delete, send, mark, archive, add, remove, set, move, post, reply, label, trash or write, whatever else it matches (tightened in the final review). HubSpot and QuickBooks use only that mechanical rule, because their exact tool names are not confirmed. Microsoft 365's list includes SharePoint and Teams chat search, which George may want to narrow.
-5. **The desktop-app check searches for the connector status tool first.** Connector tools are often deferred, so the tool may not be in Claude's visible list. Claude searches for `session_connectors_status`, then calls it, and stops only if it can't be found or the call fails.
-6. **Live checks on 29 October 2026.** FreeAgent has no connector, so it is an export. Intuit's QuickBooks connector is US only, so everyone else exports. Stripe still signs in on Stripe's own page; the 30 November 2026 key deadline applies to keys only, which setup no longer uses.
+5. **The pre-approve rule is wider than the plan's first wording.** A guide's "Pre-approve for check-ins" list governs, whatever the tool-name prefix (Microsoft's read tools end in `_search`). An app without a guide uses only names that start with `get_`, `list_`, `search_`, `read_`, `find_`, `fetch_` or `query_`, or end with `_search` or `_get`, and only if they only read; never any name containing create, update, delete, send, mark, archive, add, remove, set, move, post, reply, label, trash or write, whatever else it matches (tightened in the final review). HubSpot and QuickBooks use only that mechanical rule, because their exact tool names are not confirmed. Microsoft 365's list includes SharePoint and Teams chat search, which George may want to narrow.
+6. **The desktop-app check searches for the connector status tool first.** Connector tools are often deferred, so the tool may not be in Claude's visible list. Claude searches for `session_connectors_status`, then calls it, and stops only if it can't be found or the call fails.
+7. **Live checks on 29 October 2026.** FreeAgent has no connector, so it is an export. Intuit's QuickBooks connector is US only, so everyone else exports. Stripe still signs in on Stripe's own page; the 30 November 2026 key deadline applies to keys only, which setup no longer uses.
 
-7. **The scheduled check-in is created from this session.** The desktop app's `create_scheduled_task` has no folder field (it takes a task id, prompt, description, schedule or one-off time, title and notify setting). Each run starts fresh in the folder of the session that created it, and the task may inherit an Auto or Bypass mode. So step 8 creates it from the setup session, writes the folder's full path into the prompt, and after the first run checks the run's session (`get_session`) for the folder and the permission mode.
-8. **Email and calendar from different providers** are proven and recorded separately. A no-connector email row is keyed by the provider's name (`icloud-mail`); a proven calendar keeps its guide's key. The no-connector exit covers only the half that has none.
-9. **Only email, calendar, the call recorder and the step 4 shortlist need a final status at hand-over.** Other named apps may stay `not-connected` ("Chose not to connect yet"). The Home count covers only `connected` and `needs-attention`, so export-only apps are never a permanent gap.
-10. **The calendar copy stays yesterday to 14 days ahead**, as `apps/task-list/CLAUDE.md` and the check-in already do. The last 30 days are read for people and routines only.
-11. **Deferred tools are searched for first** in step 8 and `connect-a-tool`, and after a Fix it the pre-approved read tool names are rechecked (they include an id that may change).
-12. **The release check's give-up phrases apply only to the files that connect apps.** Elsewhere "move on" or "skip it" is harmless (the brand step, the check-in choice). "then move on" and "skip it" were added to the give-up phrases, since no connection file uses them.
+8. **The scheduled check-in is created from this session.** The desktop app's `create_scheduled_task` has no folder field (it takes a task id, prompt, description, schedule or one-off time, title and notify setting). Each run starts fresh in the folder of the session that created it, and the task may inherit an Auto or Bypass mode. So step 8 creates it from the setup session, writes the folder's full path into the prompt, and after the first run checks the run's session (`get_session`) for the folder and the permission mode.
+9. **Email and calendar from different providers** are proven and recorded separately. A no-connector email row is keyed by the provider's name (`icloud-mail`); a proven calendar keeps its guide's key. The no-connector exit covers only the half that has none.
+10. **Only email, calendar, the call recorder and the step 4 shortlist need a final status at hand-over.** Other named apps may stay `not-connected` ("Chose not to connect yet"). The Home count covers only `connected` and `needs-attention`, so export-only apps are never a permanent gap.
+11. **The calendar copy stays yesterday to 14 days ahead**, as `apps/task-list/CLAUDE.md` and the check-in already do. The last 30 days are read for people and routines only.
+12. **Deferred tools are searched for first** in step 8 and `connect-a-tool`, and after a Fix it the pre-approved read tool names are rechecked (they include an id that may change).
+13. **The release check's give-up phrases apply only to the files that connect apps.** Elsewhere "move on" or "skip it" is harmless (the brand step, the check-in choice). "then move on" and "skip it" were added to the give-up phrases, since no connection file uses them.
 
 ## Known false positives in other tools
 
@@ -133,7 +135,7 @@ In Task List OS, on the `claude/shared-v13-connected-onboarding` branch:
 - **`node maintainers/test-helper-safety.js`:** 17 checks pass against the Node helper, 17 against the Python helper, and 1 against an older helper. First run red on the new connections-file check, then green. Run in a terminal tab, because the Bash sandbox can't open ports.
 - **`node maintainers/test-helper-media.js`:** 13 checks pass against each helper, in a terminal tab.
 - **Home box in the browser** (a scratch copy served by the helper, before the final review's count change): with a sample file it read "1 of 3 connected" (now "1 of 2"), HubSpot first with "Needs attention" and a Fix it link, then Gmail and Google Calendar (Connected), then Sage (Export only). With the file removed it reads "Claude fills this in when it connects your apps during setup." The only console error is a 404 for the saved layout on a fresh copy, which existed before.
-- **Not tested:** a real `claude -p` setup run end to end, the Windows install lines, and the scheduled check-in on a clean install.
+- **Not tested:** a real `claude -p` setup run end to end, the Windows install lines, the scheduled check-in on a clean install, whether a run's session record shows its permission mode, and the folder check on a check-in run.
 
 ## What the other 6 tools do
 

@@ -1,6 +1,6 @@
 ---
 name: check-in
-description: The regular check-in that keeps the task list up to date on its own. Copies the calendar in, sorts new email (drafting replies), writes up new calls, and adds new suggestions to Review. Use for scheduled runs ("Run /check-in"), or when the person says "check in", "check my inbox", "anything new?" or "what's come in?".
+description: The regular check-in that keeps the task list up to date on its own. Copies the calendar in, sorts new email (drafting replies), writes up new calls, and adds new suggestions to Review. Use for a scheduled check-in, or when the person says "check in", "check my inbox", "anything new?" or "what's come in?".
 ---
 
 # Check in
