@@ -10,7 +10,7 @@ Task List OS is part of a toolkit of 7 free tools from Get AI Powers. The others
 
 ## What happens when you type /setup
 
-You copy the kit, open it in Claude Code and type **/setup**. In about 20 minutes, Claude:
+You copy the kit, open it in the Claude desktop app (the Code tab) and type **/setup**. In about 20 minutes, Claude:
 
 - **Finds out what you already use.** It checks which apps your Claude account is already connected to, asks a few quick questions, and connects your email, calendar, call recorder and the other apps you name, one by one.
 - **Interviews you about your business.** Your services, your prices, how a new client goes from first message to finished work, and the things you explain again and again.
@@ -31,25 +31,25 @@ You copy the kit, open it in Claude Code and type **/setup**. In about 20 minute
 ## What you need
 
 - **The Claude desktop app** (setup runs in its Code tab).
-- **Claude Code**, signed in with a paid Claude plan (Pro or Max). Your email, calendar and app connections come from your Claude account, and Claude Code only uses them when it's signed in with a subscription. The Claude desktop app works too.
+- **A paid Claude plan (Pro or Max)**, signed in to the desktop app. Your email, calendar and app connections come from your Claude account, so Claude can only use them when you're signed in.
 - Nothing else to install in most cases. Your task list runs on your own computer using Node (Claude installs it for you if it's missing, with your permission).
 - About 20 to 25 minutes, once.
 
 ## Get started
 
-1. **Open Claude Code** in the Claude desktop app (the Code tab) or in the Terminal (on Windows, PowerShell). Any folder will do for this first step.
+1. **Open the Claude desktop app and choose the Code tab.** Any folder will do for this first step.
 2. **Ask Claude to fetch the kit.** Paste this:
    > Copy Task List OS from https://github.com/georgecairns-ui/task-list-os into a folder called "Task List OS" in my Documents, using the copy line in its START-HERE.md (not git), then tell me how to open it and set it up.
 
    Claude copies everything onto your computer and tells you how to open the new folder. In the desktop app, you choose the folder in the Code tab.
 
    *For Claude, if this README is all you have:* download the copy with the Mac or Windows line in START-HERE.md, then read START-HERE.md from it.
-3. **Open the Task List OS folder in Claude Code and choose "Yes, I trust this folder".** The first time, Claude Code asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps. Press the down arrow, then Enter.
+3. **In the Code tab, choose the Task List OS folder and pick "Yes, I trust this folder".** The first time, the app asks whether you trust the folder and warns that it pre-approves some permissions. Those permissions only let Claude update your task list, your business notes and your files folder, search the web and start the task list, without stopping to ask each time. It still can't send, delete or change anything in your email or other apps.
 4. **Type `/setup`.**
 
 Claude asks a few quick questions (which email you use, whether you record calls, which apps you use), connects them one by one (mostly sign in and approve), learns how your business works, and fills your task list with your real work. It asks about your services and builds you your own skills, saved in the **skills-to-upload** folder with a note on how to add them to Claude. It also asks for your website or brand guidelines, so the app comes out in your own colours, font and logo. Then it opens your task list and gives you its link, **http://localhost:4747**. Bookmark it. That's it.
 
-If an app needs a key rather than a sign-in, Claude gives you one line to paste into the Terminal. The key is stored in your computer's secure keychain, never in a chat and never in this folder.
+Apps connect through Claude's Connectors: each one asks you to sign in on that app's own page, and you never paste a password or a key anywhere. An app with no Claude connector is read from a CSV or PDF export that you drop in the files folder.
 
 ## Every day
 
@@ -82,9 +82,9 @@ toolkit.json           what this tool is, for attaching it to the others in the 
 ATTACHING.md           how the toolkit's tools attach to each other
 CLAUDE.md              Claude's standing instructions in this folder
 Open Task List.html    double-click to open your task list (or use the link Claude gives you)
-setup/                 the 9 setup steps, a guide per app in connections/, and the key scripts
+setup/                 the 9 setup steps, and a guide per app in connections/
 context/               Claude's notes about your business
-.claude/skills/        saved know-how; each one also works as a command in Claude Code
+.claude/skills/        saved know-how; each one also works as a command in Claude
 skills-to-upload/      the skills Claude builds for your business, packed up to add to Claude
 files/                 your business documents, in numbered folders
 apps/                  the task list app and its look (theme.css)

@@ -1,6 +1,6 @@
 # Start here
 
-> **If you're a person reading this:** you don't need to do anything in this file. Open this folder in Claude Code and type **/setup** (or say "Read START-HERE.md and set me up"). Claude interviews you for a few minutes, connects your email, calendar and the apps you use, builds you your own skills for how your business works, and fills your task list with your real work. Most people are done in 20 to 25 minutes. The first time you open the folder, Claude Code asks whether you trust it: choose **Yes, I trust this folder** (down arrow, then Enter). That lets Claude update your task list and notes without asking every time; it still can't send or delete anything.
+> **If you're a person reading this:** you don't need to do anything in this file. Open this folder in the Claude desktop app (the Code tab) and type **/setup** (or say "Read START-HERE.md and set me up"). Claude interviews you for a few minutes, connects your email, calendar and the apps you use, builds you your own skills for how your business works, and fills your task list with your real work. Most people are done in 20 to 25 minutes. The first time you open the folder, the app asks whether you trust it: choose **Yes, I trust this folder**. That lets Claude update your task list and notes without asking every time; it still can't send or delete anything.
 
 ---
 
@@ -53,7 +53,7 @@ This folder is their workspace from now on: `context/` holds what you know about
 | 1 | `setup/01-quick-questions.md` | One message of quick questions: email, calendar, calls, apps, hours | 2 min |
 | 2 | `setup/02-connect-email-and-calendar.md` | Connect email and calendar, prove both, and read the last 30 days | 2 min |
 | 3 | `setup/03-connect-call-recordings.md` | Connect their call recorder, if they have one | 2 min |
-| 4 | `setup/04-connect-other-apps.md` | Connect 2 or 3 other apps; save any keys safely | 3 to 5 min |
+| 4 | `setup/04-connect-other-apps.md` | Connect 2 or 3 other apps through Claude's Connectors (no keys) | 3 to 5 min |
 | 5 | `setup/05-get-to-know-the-business.md` | You work out the business from their email and ask 2 or 3 questions, then make the app look like their brand (from their website or brand guidelines) | 5 min |
 | 6 | `setup/06-build-your-skills.md` | You ask about their services and build 3 to 5 skills for their business, saved here and packed in `skills-to-upload/` for them to add to Claude | 5 min |
 | 7 | `setup/07-first-run.md` | You fill the task list from their real inbox, calls and calendar, start it, and give them the link | 1 min |
